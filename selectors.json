@@ -1,0 +1,14 @@
+{
+  "sites": [
+    {
+      "indeed": {
+        "highlighted-job-selectors": ["section#job-full-details", ".jobsearch-RightPane"]
+      }
+    },
+    {
+      "dice": {
+        "highlighted-job-selectors": ["foo", "bar"]
+      }
+    }
+  ]
+}

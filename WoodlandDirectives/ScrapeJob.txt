@@ -9,5 +9,5 @@ PageParser:
     - Supports: #id, .class, tag selectors
     - Returns: clean text content from matched element
 
-If the contents of clipboard.html appear to be from Indeed:
- - look for the text inside the element with selector "section#job-full-details" or if that doesn't work try usig the selector ".jobsearch-RightPane"
+Use selectors.json to know what css selectors to query for:
+    - If the contents of clipboard.html appear to be from Indeed use sites.indeed.highlighted-job-selectors 
