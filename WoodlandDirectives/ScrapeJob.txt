@@ -1,4 +1,6 @@
-Find the main (active/highlighted) job listing in /HelperScripts/clipboard.html and save it, in full fidelity, as /GeneratedResumes/CompanyName-JobTitle/job-listing.md. If the directory already exists Delete and recreate it. Don't worry about any other listings on the page. Just grab the one that is in focus. 
+Find the main (active/highlighted) job listing in /HelperScripts/clipboard.html and save it, in full fidelity, as /GeneratedResumes/CompanyName-JobTitle/job-listing.md. Store this directory in your brain as CURRENT_RESUME_DIRECTORY for use by future directives.
+
+If CURRENT_RESUME_DIRECTORY already exists Delete and recreate it. Don't worry about any other listings on the page. Just grab the one that is in focus. 
 
 Take a little extra time to make sure you actually have the active job listing, not the first one on the page. You may find the following references helpful:
 

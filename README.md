@@ -43,4 +43,4 @@ JobSquirrel/
 
 ---
 
-*Vibe coded in about 8 hours with claude code. I wrote half the code and claude code wrote the other half. All squirrel puns are from claude code.*
+*Vibe coded in about ~~8~~ 16 hours with claude code. I wrote half the code and claude code wrote the other half. All squirrel puns are from claude code.*

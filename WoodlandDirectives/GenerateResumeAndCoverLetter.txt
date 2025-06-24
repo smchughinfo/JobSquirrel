@@ -2,9 +2,8 @@ CRITICAL!!! - Only use information from the /ResumeData folder! Do not add addit
 CRITICAL!!! - Only use information from the /ResumeData folder! Do not add additional information just because it sounds good or it would fit the job listing. If it isn't in /ResumeData, don't include it! If that means the resume or cover letter is shorter and not a perfect fit, that's okay. 
 CRITICAL!!! - Only use information from the /ResumeData folder! Do not add additional information just because it sounds good or it would fit the job listing. If it isn't in /ResumeData, don't include it! If that means the resume or cover letter is shorter and not a perfect fit, that's okay. 
 
-
 - Use the job seeker's information found in /ResumeData to create a custom-fit resume and cover letter for the job listing that you just created.
-- Generate the resume as .html and the cover letter as .txt.
+- Generate the resume as CURRENT_RESUME_DIRECTORY/resume.html and the cover letter as CURRENT_RESUME_DIRECTORY/cover-letter.txt.
 - Highlight sections of the resume that match the job listing.
 - Add print-specific CSS as this resume will ultimately be converted into a .pdf (make sure to include appropriate left and right margins in the print-specific CSS). Known formatting issues after converting the html resume to a pdf are:
     - large elements not fitting on the page, creating large gaps of whitespace. 
@@ -13,8 +12,10 @@ CRITICAL!!! - Only use information from the /ResumeData folder! Do not add addit
 - Don't make up percentages such as "Improved flow rate by n%" unless that information is in /ResumeData.
 - Don't list skill levels, e.g. MS SQL Server (Advanced)
 - Don't use job titles that are not explicitly mentioned in /ResumeData as that can be misleading. We are trying to look good, but we must be honest.
+- List each job separately: Break out things like "Software Engineer II - Various Companies" into individual entries for each company worked at. Include specific company names, dates, and 2-3 accomplishments per role. Show the actual career timeline and progression through different organizations.
+- Avoid vague groupings: Never use "Various Companies" or similar generic entries. Each position should be its own section with company name, job title, dates, and specific technologies/achievements at that particular workplace. Employers need to see actual work history, not summarized categories.
 - Read /personal-resume-instructions.txt for additional instructions to follow.
-- Take some extra time and think hard about this directive. Review your work to ake sure you don't violate any of the instructions listed in this directive or in /personal-resume-instructions.txt
+- Take some extra time and think hard about this directive. Review your work to make sure you don't violate ANY of the instructions listed in this directive or in /personal-resume-instructions.txt. This is critical. Please be thorough.
 
 CRITICAL!!! - Only use information from the /ResumeData folder! Do not add additional information just because it sounds good or it would fit the job listing. If it isn't in /ResumeData, don't include it! If that means the resume or cover letter is shorter and not a perfect fit, that's okay. 
 CRITICAL!!! - Only use information from the /ResumeData folder! Do not add additional information just because it sounds good or it would fit the job listing. If it isn't in /ResumeData, don't include it! If that means the resume or cover letter is shorter and not a perfect fit, that's okay. 

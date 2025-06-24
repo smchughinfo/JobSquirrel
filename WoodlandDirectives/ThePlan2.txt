@@ -1,0 +1,2 @@
+I notice all the instructions in WoodlandDirectives/GenerateResumeAndCoverLetter.txt and personal-resume-instructions.txt were not followed. Can you adjust resume.html accordingly. When complete can you create a file called resume-changes.md in the same directory where you saved the resume. Have it list the changes you made.
+# domo arigato

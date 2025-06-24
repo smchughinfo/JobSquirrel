@@ -1,4 +1,4 @@
-Convert the resume you just generated from html to pdf using /HelperScripts/GenerateResume.bat. You will have to run it from windows, not wsl, which is why the batch script is provided (to bridge the gap).
+Convert CURRENT_RESUME_DIRECTORY/resume.html to a pdf using /HelperScripts/GenerateResume.bat. You will have to run it from windows, not wsl, which is why the batch script is provided (to bridge the gap).
 
 For Example: 
 

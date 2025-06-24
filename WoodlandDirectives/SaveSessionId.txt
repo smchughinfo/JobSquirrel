@@ -1,0 +1,1 @@
+Please save this current Claude Code session id to a file called CURRENT_RESUME_DIRECTORY/session-id.txt.
