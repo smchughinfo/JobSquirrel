@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "JobSquirrel Page Copier",
+  "version": "1.0",
+  "description": "HTML Grabber",
+  "permissions": [
+    "activeTab"
+  ],
+  "action": {
+    "default_title": "Copy current page <html> to clipboard"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ]
+}

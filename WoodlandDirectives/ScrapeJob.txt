@@ -1,0 +1,11 @@
+Find the main (active/highlighted) job listing in /HelperScripts/clipboard.html and save it, in full fidelity, as /GeneratedResumes/CompanyName-JobTitle/job-listing.md. If the directory already exists Delete and recreate it. Don't worry about any other listings on the page. Just grab the one that is in focus. 
+
+Take a little extra time to make sure you actually have the active job listing, not the first one on the page. You may find the following references helpful:
+
+PageParser:
+    - Use: node /HelperScripts/PageParser.js /HelperScripts/clipboard.html "css-selector"
+    - Supports: #id, .class, tag selectors
+    - Returns: clean text content from matched element
+
+If the contents of clipboard.html appear to be from Indeed:
+ - look for the text inside the element with selector "section#job-full-details" or if that doesn't work try usig the selector ".jobsearch-RightPane"

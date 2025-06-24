@@ -1,0 +1,21 @@
+CRITICAL!!! - Only use information from the /ResumeData folder! Do not add additional information just because it sounds good or it would fit the job listing. If it isn't in /ResumeData, don't include it! If that means the resume or cover letter is shorter and not a perfect fit, that's okay. 
+CRITICAL!!! - Only use information from the /ResumeData folder! Do not add additional information just because it sounds good or it would fit the job listing. If it isn't in /ResumeData, don't include it! If that means the resume or cover letter is shorter and not a perfect fit, that's okay. 
+CRITICAL!!! - Only use information from the /ResumeData folder! Do not add additional information just because it sounds good or it would fit the job listing. If it isn't in /ResumeData, don't include it! If that means the resume or cover letter is shorter and not a perfect fit, that's okay. 
+
+
+- Use the job seeker's information found in /ResumeData to create a custom-fit resume and cover letter for the job listing that you just created.
+- Generate the resume as .html and the cover letter as .txt.
+- Highlight sections of the resume that match the job listing.
+- Add print-specific CSS as this resume will ultimately be converted into a .pdf (make sure to include appropriate left and right margins in the print-specific CSS). Known formatting issues after converting the html resume to a pdf are:
+    - large elements not fitting on the page, creating large gaps of whitespace. 
+    - highlighted text not being horizontally aligned with non-highlighted text (for example, if the first word in list item 1 isn't highlited but the first word in list item 2 is highlighted formatting may create padding which throws it off visually)
+- If the job seekers credentials don't match the job listing's requirements don't make up details in order to fill out the resume. 
+- Don't make up percentages such as "Improved flow rate by n%" unless that information is in /ResumeData.
+- Don't list skill levels, e.g. MS SQL Server (Advanced)
+- Don't use job titles that are not explicitly mentioned in /ResumeData as that can be misleading. We are trying to look good, but we must be honest.
+- Read /personal-resume-instructions.txt for additional instructions to follow.
+- Take some extra time and think hard about this directive.
+
+CRITICAL!!! - Only use information from the /ResumeData folder! Do not add additional information just because it sounds good or it would fit the job listing. If it isn't in /ResumeData, don't include it! If that means the resume or cover letter is shorter and not a perfect fit, that's okay. 
+CRITICAL!!! - Only use information from the /ResumeData folder! Do not add additional information just because it sounds good or it would fit the job listing. If it isn't in /ResumeData, don't include it! If that means the resume or cover letter is shorter and not a perfect fit, that's okay. 
+CRITICAL!!! - Only use information from the /ResumeData folder! Do not add additional information just because it sounds good or it would fit the job listing. If it isn't in /ResumeData, don't include it! If that means the resume or cover letter is shorter and not a perfect fit, that's okay. 

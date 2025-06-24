@@ -1,0 +1,5 @@
+Convert the resume you just generated from html to pdf using /HelperScripts/GenerateResume.bat. You will have to run it from windows, not wsl, which is why the batch script is provided (to bridge the gap).
+
+For Example: 
+
+cmd.exe /c "C:\Users\seanm\Desktop\JobSquirrel\HelperScripts\GenerateResume.bat ResumeData\resume1.html ResumeData\resume1.pdf"
