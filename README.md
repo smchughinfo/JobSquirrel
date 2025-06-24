@@ -26,7 +26,7 @@ Flow: Click browser extension -> Copies page html to clipboard with JobSquirrel 
 
 ```
 JobSquirrel/
-    ResumeData/           # Your resumes, cover letters, and any other data sources you want claude to use as a data source for building your resume
+    ResumeData/           # Your resumes, cover letters, and any other data sources you want Claude to use as a data source for building your resume
     GeneratedResumes/     # This is where tailored resumes get output
     BrowserExtension/     # Location of JobSquirrel Chrome browser extension
     HelperScripts/        # Core squirrel logic
@@ -40,8 +40,8 @@ JobSquirrel/
 - `JobSquirrel\HelperScripts\remargin-resume.bat 0` - Reformat resume with 0" margin
 - `JobSquirrel\HelperScripts\remargin-resume.bat .5` - Reformat resume with .5" margin
 - `node HelperScripts/GenerateResume.js htmlFilePath pdfFilePath` - Converts html into pdf using Puppeteer (resumes are generated in html and then converted to pdf)
-- `node HelperScripts/PageParser.js htmlFilePath cssSelector` - Gets outer html of element using cheerio (this makes searching documents easier for claude)
+- `node HelperScripts/PageParser.js htmlFilePath cssSelector` - Gets outer html of element using cheerio (this makes searching documents easier for Claude)
 
 ---
 
-*Vibe coded in about ~~8~~ 16 hours with Claude Code. I wrote half the code and Claude Code wrote the other half. All squirrel puns are from claude code.*
+*Vibe coded in about ~~8~~ 16 hours with Claude Code. I wrote half the code and Claude Code wrote the other half. All squirrel puns are from Claude Code.*
