@@ -1,7 +1,23 @@
 # JobSquirrel Orchestrator - Main execution script
 # Manages the complete job application processing workflow
 
-# Import utility functions
+
+##########################################################
+##### SET CWD TO PARENT DIR ##############################
+##########################################################
+
+$scriptDir = if ($MyInvocation.MyCommand.Path) { 
+    Split-Path -Parent $MyInvocation.MyCommand.Path
+} else { 
+    Get-Location 
+}
+$parentDir = Split-Path -Parent $scriptDir # Go up one directory
+Set-Location $parentDir # Set the current working directory
+
+##########################################################
+##### IMPORT UTILITY FUNCTIONS ###########################
+##########################################################
+
 $scriptDir = if ($MyInvocation.MyCommand.Path) { 
     Split-Path -Parent $MyInvocation.MyCommand.Path 
 } else { 
@@ -9,6 +25,12 @@ $scriptDir = if ($MyInvocation.MyCommand.Path) {
 }
 $utilitiesPath = Join-Path $scriptDir "JobSquirrelUtilities.ps1"
 . $utilitiesPath
+
+pwd
+
+##########################################################
+##### MAIN LOGIC #########################################
+##########################################################
 
 function Process-JobApplication {
     param(
@@ -30,7 +52,7 @@ function Process-JobApplication {
     Wait-ForFileToDisappear -FilePath $RawHTMLFilePath -StatusMessage "Waiting on first draft..."
     
     # Get the working directory and file paths
-    $workingResumeDir = Get-MostRecentSubdirectory -Path "/GeneratedResumes"
+    $workingResumeDir = Get-MostRecentSubdirectory -Path "GeneratedResumes"
     $paths = Get-ResumeDirectoryPaths -WorkingResumeDir $workingResumeDir
     
     # Phase 2: Resume refinement
@@ -54,8 +76,7 @@ function Process-JobApplication {
 
 function Start-JobSquirrelOrchestrator {
     # Initialize paths
-    $scriptDir = Get-SafeScriptDirectory
-    $rawHTMLFilePath = Join-Path $scriptDir "clipboard.html"
+    $rawHTMLFilePath = "HelperScripts/clipboard.html"
     
     Write-Host "JobSquirrel Orchestrator Started"
     Write-Host "Watching: $rawHTMLFilePath"

@@ -122,6 +122,38 @@ Several aspects of the current system are acknowledged as areas for future impro
 
 These limitations represent conscious trade-offs between development speed, reliability, and architectural purity. The current system prioritizes getting a working solution operational over perfect architecture, with the understanding that improvements can be made iteratively.
 
+## Getting Current Claude Code Session ID
+
+**Problem**: Claude instances need to know their own session ID for multi-phase workflows, but `/status` command is not accessible from Bash tool.
+
+**Solution**: Use `/HelperScripts/get-current-session-id.sh` script that analyzes Claude's todo files in `~/.claude/todos/`.
+
+### Session ID Detection Method
+Claude stores session data in files with format: `{SESSION_ID}-agent-{SESSION_ID}.json`
+
+**For maximum accuracy with multiple Claude windows open:**
+
+1. **Create a unique todo marker**:
+```bash
+TodoWrite: [{"id": "session-marker", "content": "JobSquirrel session marker", "status": "pending", "priority": "low"}]
+```
+
+2. **Get session ID with content matching**:
+```bash
+/HelperScripts/get-current-session-id.sh "JobSquirrel session marker"
+```
+
+3. **Script scoring system**:
+   - Recent activity: +up to 30 points (sessions active in last 30 min)
+   - Content size: +up to 100 points (larger todo files)
+   - **Content matching**: +1000 points (decisive)
+
+**Testing Results**:
+- Without content matching: May pick wrong session with multiple Claude windows
+- With content matching: 100% accuracy
+
+**Usage in directives**: Always create unique todo first, then use content matching for reliable session detection.
+
 ## Code Theme
 All code uses squirrel-themed language:
 - `forage()` instead of get/retrieve

@@ -145,13 +145,4 @@ function Get-ResumeDirectoryPaths {
     }
 }
 
-function Get-SafeScriptDirectory {
-    # Handle case where $MyInvocation.MyCommand.Path is null
-    if ($MyInvocation.MyCommand.Path) {
-        return Split-Path -Parent $MyInvocation.MyCommand.Path
-    } else {
-        return Get-Location
-    }
-}
-
 # Functions are automatically available when dot-sourced

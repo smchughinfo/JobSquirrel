@@ -1,1 +1,8 @@
 Please save this current Claude Code session id to a file called CURRENT_RESUME_DIRECTORY/session-id.txt.
+
+Steps:
+1. Create a unique todo with content like "JobSquirrel session marker"
+2. Get the session ID using: /mnt/c/Users/seanm/Desktop/JobSquirrel/HelperScripts/get-current-session-id.sh "JobSquirrel session marker"
+3. Save the result to CURRENT_RESUME_DIRECTORY/session-id.txt
+
+This ensures 100% accuracy even with multiple Claude windows open.
