@@ -39,6 +39,10 @@ JobSquirrel/
 
 ## Commands
 
+- `JobSquirrel\HelperScripts\refine.bat` - Ask Claude to adjust something on the resume
+- `JobSquirrel\HelperScripts\restyle-resume.bat` - Ask Claude to restyle the resume with more attention to print formatting
+- `JobSquirrel\HelperScripts\remargin-resume.bat 0` - Reformat resume with 0" margin
+- `JobSquirrel\HelperScripts\remargin-resume.bat .5` - Reformat resume with .5" margin
 - `node HelperScripts/GenerateResume.js htmlFilePath pdfFilePath` - Converts html into pdf using Puppeteer (resumes are generated in html and then converted to pdf)
 - `node HelperScripts/PageParser.js htmlFilePath cssSelector` - Gets outer html of element using cheerio (this makes searching documents easier for claude)
 
