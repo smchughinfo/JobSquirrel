@@ -9,11 +9,118 @@ JobSquirrel is a personalized resume and cover letter generator that tailors car
   - `job-listing.md` - Job descriptions saved in markdown format
   - Generated resume and cover letter files
 
-## Workflow
-1. Place career data in `/ResumeData/`
-2. Input job description
-3. JobSquirrel processes data to create tailored resume and cover letter
-4. Output saved in company-specific folder
+## Complete System Architecture & Workflow
+
+### Prerequisites
+1. Place all career data sources in `/ResumeData/` (resumes, cover letters, project summaries, reports, etc.)
+2. Run `start.bat` to launch background processes:
+   - `clipboard-watcher.ps1` - monitors clipboard for JobSquirrel-marked content
+   - `orchestrator.ps1` - manages the multi-phase Claude processing workflow
+
+### Automated Workflow
+1. **Job Capture**: User clicks browser extension button on job posting page
+   - Browser extension copies DOM HTML to clipboard with JobSquirrel identifier
+   - `clipboard-watcher.ps1` detects JobSquirrel marker and saves content to `clipboard.html`
+
+2. **Phase 1 - Job Processing** (`ThePlan.txt`):
+   - `orchestrator.ps1` detects `clipboard.html` and launches Claude with `ThePlan.txt`
+   - Claude processes job posting using `ScrapeJob.txt` directive
+   - Creates `/GeneratedResumes/[Company - Job Title]/job-listing.md`
+   - Generates first draft of resume and cover letter
+   - Saves `session-id.txt` for subsequent phases
+   - Deletes `clipboard.html` (used as completion signal)
+
+3. **Phase 2 - Resume Revision** (`ThePlan2.txt`):
+   - `orchestrator.ps1` continues with existing Claude session
+   - Claude revises the resume for better quality
+   - Creates `resume-changes.md` documenting improvements
+
+4. **Phase 3 - Final Processing** (`ThePlan3.txt`):
+   - `orchestrator.ps1` completes final phase
+   - Final resume and cover letter saved in company folder
+
+### File Lifecycle & Signaling
+- **Wait Signals**: `orchestrator.ps1` uses file creation/deletion as inter-phase signals
+- **Current**: Waits for `clipboard.html` deletion (spaghetti code, could be improved)
+- **Better**: Could wait for `session-id.txt` creation instead
+- **Output Structure**: Each job creates `/GeneratedResumes/[Company - Job Title]/` containing:
+  - `job-listing.md` - parsed job description
+  - `session-id.txt` - Claude session identifier
+  - `resume-changes.md` - revision documentation
+  - Final resume and cover letter files
+
+### Technical Components
+- **Browser Extension**: `/BrowserExtension/` - captures job postings from web pages
+- **Orchestrator**: `orchestrator.ps1` - manages multi-phase workflow and file signaling
+- **Clipboard Monitor**: `clipboard-watcher.ps1` - detects and saves JobSquirrel clipboard content
+- **HTML Parser**: `/HelperScripts/PageParser.js` - Cheerio-based tool for parsing large HTML files
+- **Woodland Directives**: `/WoodlandDirectives/` - "poor man's MCP server" - bridge between deterministic code and Claude's AI capabilities
+  - `ScrapeJob.txt` - job parsing instructions (includes site-specific selectors for indeed.com)
+  - `ThePlan.txt`, `ThePlan2.txt`, `ThePlan3.txt` - multi-phase processing instructions
+  - `GenerateResumeAndCoverLetter.txt` - resume/cover letter generation
+  - `ConvertToPDF.txt`, `SubstitutePersonalInformation.txt` - additional processing directives
+
+### Architecture Notes
+- **Single-threaded**: Only processes one job at a time (limitation for future improvement)
+- **Multi-phase Design**: Broken into phases because Claude follows instructions better with multiple focused passes
+- **Hybrid Deterministic/AI**: Uses file-based signaling for deterministic flow control while leveraging Claude's AI for content generation
+- **Selector-based Parsing**: Uses manually-researched CSS selectors for reliable job posting extraction (currently optimized for indeed.com)
+- **Fully Automated**: Complete end-to-end automation from browser click to final documents (user still submits applications manually)
+
+## Development History & Design Evolution
+
+### The Browser Automation Challenge
+The current browser extension + clipboard approach was the result of extensive experimentation with automated web scraping solutions. Multiple approaches were attempted before settling on the current architecture:
+
+**Puppeteer Attempt**: Initially tried using Puppeteer for automated job posting extraction, but it consistently failed "I am human" tests on job sites, even with manual intervention and extensive configuration of flags and settings. Despite many attempts to configure Puppeteer to appear more human-like, job sites reliably detected and blocked the automation.
+
+**Playwright Issues**: Playwright was tested as an alternative to Puppeteer, but presented usability problems that made it impractical for daily use. It insisted on controlling browser positioning, constantly moving windows around when opening new tabs, and forcing odd screen resolutions that disrupted the user's normal browsing experience.
+
+**Chrome CDP Integration**: Chrome DevTools Protocol was explored as a more direct approach, but integrating it with Claude across the WSL (Windows Subsystem for Linux) environment became prohibitively complex, creating too many technical hurdles for reliable daily operation.
+
+**Current Solution**: The browser extension approach emerged as the most reliable method. By having the user manually trigger the capture with a browser extension button, it completely bypasses anti-automation measures while still providing the HTML content needed for processing. The clipboard-based transfer mechanism works seamlessly across different operating system environments.
+
+### The Multi-Phase Claude Architecture
+The current three-phase processing system evolved from lessons learned about Claude's instruction-following behavior:
+
+**Original Single-Phase**: Initially, all processing instructions were contained in a single `ThePlan.txt` file. However, this approach had significant quality issues - Claude would not consistently follow all directives when presented with a large, complex instruction set.
+
+**Quality Through Iteration**: The breakthrough insight was that Claude produces significantly better results when asked to revise its own work. A second pass at resume generation consistently yielded much higher quality output than trying to get everything perfect in a single attempt.
+
+**Pragmatic Phase Division**: The current three-phase structure (`ThePlan.txt`, `ThePlan2.txt`, `ThePlan3.txt`) represents a pragmatic division of the original comprehensive instructions. While the specific task division between phases is somewhat arbitrary, the multi-phase approach enables programmatic interaction with Claude - allowing the system to wait for completion of one phase before requesting improvements in the next.
+
+### The "Poor Man's MCP Server" Concept
+The Woodland Directives represent a hybrid approach between traditional deterministic programming and AI instruction:
+
+**Bridging Deterministic and AI**: The directives are designed to be "code-ish enough" that Claude will predictably follow instructions, while remaining flexible enough to handle the variability inherent in job postings and resume generation. They serve as a bridge between typical deterministic software behavior and Claude's "magical super powers."
+
+**Reliability Through Structure**: While the system's deterministic logic ultimately relies on Claude actually following the provided instructions (making it imperfect), the structured approach provides enough reliability to be "definitely good enough" for practical daily use.
+
+**File-Based State Management**: The current file-based signaling system (using creation/deletion of files like `clipboard.html`, `session-id.txt`, and `resume-changes.md` as coordination mechanisms) represents functional but admittedly "spaghetti code" architecture. This approach works reliably but could be improved - for example, waiting for `session-id.txt` creation instead of `clipboard.html` deletion would be cleaner.
+
+### HTML Processing Evolution
+The current Cheerio-based parsing approach addresses the reality of modern web job postings:
+
+**Scale Challenge**: Job posting HTML files can be enormous (20,000+ lines), making direct processing challenging and expensive in terms of token usage.
+
+**Cheerio Solution**: `/HelperScripts/PageParser.js` provides Claude with a tool to efficiently query large HTML documents using CSS selectors, dramatically reducing the token overhead while maintaining parsing reliability.
+
+**Site-Specific Optimization**: Currently optimized for indeed.com with manually-researched selectors stored in the `ScrapeJob.txt` directive. While Claude is intended to be as general-purpose as possible, the indeed.com-specific selectors were added to solve immediate reliability problems. Other job sites may work without custom selectors, but this will need to be evaluated case-by-case.
+
+**Autonomy vs. Reliability Trade-off**: The current approach trades some of Claude's autonomous adaptability for increased reliability and reduced token costs. The manually-researched selectors ensure consistent parsing, though ideally Claude would have more autonomy than the current "Cheerio + predefined selectors" approach.
+
+### Current Limitations & Technical Debt
+Several aspects of the current system are acknowledged as areas for future improvement:
+
+**Single-Threaded Processing**: The application can only handle one job at a time, which could become a bottleneck for heavy usage.
+
+**File-Based Signaling**: The current approach of using file creation/deletion as inter-process signals works but creates coupling between the orchestrator logic and the Claude directives. Paths are duplicated across regular code and directive files, requiring caution when making changes.
+
+**Session Management**: The `session-id.txt` approach works but could be more elegant. The file serves both as a state store and a completion signal.
+
+**Resume Changes Tracking**: The `resume-changes.md` file is functionally unnecessary - it exists primarily as a completion flag for the orchestrator rather than serving a genuine functional purpose.
+
+These limitations represent conscious trade-offs between development speed, reliability, and architectural purity. The current system prioritizes getting a working solution operational over perfect architecture, with the understanding that improvements can be made iteratively.
 
 ## Code Theme
 All code uses squirrel-themed language:
