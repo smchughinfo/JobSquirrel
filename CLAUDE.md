@@ -1,5 +1,7 @@
 # JobSquirrel Project
 
+**Note**: This project contains additional CLAUDE.md files in subdirectories (`/AcornDepot/CLAUDE.md`) with component-specific documentation.
+
 ## Application Concept
 JobSquirrel is a personalized resume and cover letter generator that tailors career information to specific job applications.
 

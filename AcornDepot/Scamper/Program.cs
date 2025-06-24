@@ -1,15 +1,18 @@
 ﻿using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using Scamper.Territories;
+using System.Diagnostics;
+
+/////////////////////////////////////////////////////////////////////////
+////// UTILITY FUNCTIONS ////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
 
 IWebDriver GetWebDriver()
 {
     var options = new ChromeOptions();
 
-    var userDataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Google", "Chrome", "User Data");
+    var userDataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ScamperChrome");
     options.AddArgument($"--user-data-dir={userDataDir}");
-    options.AddArgument("--profile-directory=Default");
-
     options.AddArgument("--disable-blink-features=AutomationControlled");
     options.AddArgument("--disable-dev-shm-usage");
     options.AddArgument("--no-sandbox");
@@ -23,12 +26,36 @@ IWebDriver GetWebDriver()
     return driver;
 }
 
-var driver = GetWebDriver();
-var territories = new List<ITerritory> { new Indeed() };
-foreach (var territory in territories)
+void ChaseAwayRivals() // kill chrome and other instances of scamper
 {
-    territory.Forage(driver);
+    var processes = new List<Process>();
+    processes.AddRange(Process.GetProcessesByName("chrome"));
+    processes.AddRange(Process.GetProcessesByName("chromedriver"));
+
+    foreach (var process in processes)
+    {
+        process.Kill();
+        process.WaitForExit();
+    }
 }
+
+void ForageTerritories()
+{
+    var driver = GetWebDriver();
+    
+    var territories = new List<ITerritory> { new Indeed() };
+    foreach (var territory in territories)
+    {
+        territory.Forage(driver);
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////
+////// MAIN LOGIC ///////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
+
+ChaseAwayRivals();
+ForageTerritories();
 
 Console.WriteLine("All territories foraged");
 Console.ReadLine();
