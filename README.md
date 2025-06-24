@@ -22,10 +22,6 @@ Flow: Click browser extension -> Copies page html to clipboard with JobSquirrel 
 
 *Remember: The early squirrel catches the job!*
 
-## Restyle
-
-If the resume doesn't look good after generation run HelperScripts/restyle-resume.bat to restyle it with more emphasis on print styling.
-
 ## File Structure
 
 ```
