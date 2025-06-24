@@ -3,6 +3,7 @@ CRITICAL!!! - Only use information from the /ResumeData folder! Do not add addit
 CRITICAL!!! - Only use information from the /ResumeData folder! Do not add additional information just because it sounds good or it would fit the job listing. If it isn't in /ResumeData, don't include it! If that means the resume or cover letter is shorter and not a perfect fit, that's okay. 
 
 - Use the job seeker's information found in /ResumeData to create a custom-fit resume and cover letter for the job listing that you just created.
+- pdftotext should be available to you. Use it to read any pdfs in /ResumeData. If you are unable to read any pdf with pdftotext stop processing and alert the user.
 - Generate the resume as CURRENT_RESUME_DIRECTORY/resume.html and the cover letter as CURRENT_RESUME_DIRECTORY/cover-letter.txt.
 - Highlight sections of the resume that match the job listing.
 - Add print-specific CSS as this resume will ultimately be converted into a .pdf (make sure to include appropriate left and right margins in the print-specific CSS). Known formatting issues after converting the html resume to a pdf are:

@@ -54,6 +54,7 @@ JobSquirrel is a personalized resume and cover letter generator that tailors car
 - **Orchestrator**: `orchestrator.ps1` - manages multi-phase workflow and file signaling
 - **Clipboard Monitor**: `clipboard-watcher.ps1` - detects and saves JobSquirrel clipboard content
 - **HTML Parser**: `/HelperScripts/PageParser.js` - Cheerio-based tool for parsing large HTML files
+- **PDF Text Extraction**: `pdftotext` (poppler-utils) - converts PDF resume files to text for Claude processing
 - **Woodland Directives**: `/WoodlandDirectives/` - "poor man's MCP server" - bridge between deterministic code and Claude's AI capabilities
   - `ScrapeJob.txt` - job parsing instructions (includes site-specific selectors for indeed.com)
   - `ThePlan.txt`, `ThePlan2.txt`, `ThePlan3.txt` - multi-phase processing instructions

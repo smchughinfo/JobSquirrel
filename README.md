@@ -10,6 +10,7 @@ JobSquirrel is your career's best friend - a personalized resume and cover lette
 
 1. Install VS Code Theme [Quiet Light for VSC](https://vscodethemes.com/e/onecrayon.theme-quietlight-vsc/quiet-light-for-vsc)
 2. Install Claude Code (JobSquirrel development was done on Windows WSL)
+3. In wsl `sudo apt install poppler-utils` (this contains pdftotext, which Claude uses to read pdfs)
 3. Populate `ResumeData/` with your career information (resumes, cover letters, LLM memory dumps about you, personal project summaries, etc.)
 4. Fill out personal-information.txt with your own information.
 5. Fill out personal-resume-instructions.txt with resume generation instructions that are specific to you (e.g. address that job gap like so...).
