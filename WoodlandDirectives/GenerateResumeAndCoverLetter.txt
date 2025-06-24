@@ -14,7 +14,7 @@ CRITICAL!!! - Only use information from the /ResumeData folder! Do not add addit
 - Don't list skill levels, e.g. MS SQL Server (Advanced)
 - Don't use job titles that are not explicitly mentioned in /ResumeData as that can be misleading. We are trying to look good, but we must be honest.
 - Read /personal-resume-instructions.txt for additional instructions to follow.
-- Take some extra time and think hard about this directive.
+- Take some extra time and think hard about this directive. Review your work to ake sure you don't violate any of the instructions listed in this directive or in /personal-resume-instructions.txt
 
 CRITICAL!!! - Only use information from the /ResumeData folder! Do not add additional information just because it sounds good or it would fit the job listing. If it isn't in /ResumeData, don't include it! If that means the resume or cover letter is shorter and not a perfect fit, that's okay. 
 CRITICAL!!! - Only use information from the /ResumeData folder! Do not add additional information just because it sounds good or it would fit the job listing. If it isn't in /ResumeData, don't include it! If that means the resume or cover letter is shorter and not a perfect fit, that's okay. 
