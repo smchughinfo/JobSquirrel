@@ -1,6 +1,6 @@
 const express = require('express');
 const path = require('path');
-const { spawn } = require('child_process');
+const { runCommandWithStreaming } = require('./utils/commandRunner');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,53 +16,30 @@ app.get('/', (req, res) => {
 
 // API endpoints
 app.get('/api/run-scamper', (req, res) => {
-    console.log('🐿️ API Call: Running Scamper...');
-    
-    // Set headers for Server-Sent Events
-    res.writeHead(200, {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
-        'Access-Control-Allow-Origin': '*'
-    });
-
-    // Send initial message
-    res.write('data: {"type":"start","message":"🐿️ Starting Scamper..."}\n\n');
-
-    // Dummy command for testing - replace with actual Scamper command
-    const scamperProcess = spawn('ping', ['google.com', '-n', '5']);
-    
-    scamperProcess.stdout.on('data', (data) => {
-        const output = data.toString().trim();
-        console.log(`Scamper stdout: ${output}`);
-        res.write(`data: {"type":"stdout","message":"${output}"}\n\n`);
-    });
-
-    scamperProcess.stderr.on('data', (data) => {
-        const output = data.toString().trim();
-        console.log(`Scamper stderr: ${output}`);
-        res.write(`data: {"type":"stderr","message":"${output}"}\n\n`);
-    });
-
-    scamperProcess.on('close', (code) => {
-        console.log(`🐿️ Scamper process exited with code ${code}`);
-        res.write(`data: {"type":"end","message":"🐿️ Scamper finished with code ${code}","code":${code}}\n\n`);
-        res.end();
-    });
-
-    // Handle client disconnect
-    req.on('close', () => {
-        console.log('🐿️ Client disconnected, killing Scamper process');
-        scamperProcess.kill();
-    });
+    const scamperPath = path.join(__dirname, '..', 'Scamper', 'bin', 'Debug', 'net8.0', 'Scamper.exe');
+    runCommandWithStreaming(req, res, scamperPath);
 });
 
-app.post('/api/process-acorns', (req, res) => {
-    console.log('🌰 API Call: Processing acorns...');
-    res.json({ 
-        success: true, 
-        message: 'Acorns are being cracked and sorted!' 
-    });
+app.get('/api/process-acorns', (req, res) => {
+    console.log('🌰 Process acorns endpoint hit!');
+    
+    // Convert Windows path to WSL path
+    const scamperDir = path.join(__dirname, '..', 'Scamper');
+    const wslPath = scamperDir.replace(/\\/g, '/').replace(/^([A-Z]):/, (match, drive) => `/mnt/${drive.toLowerCase()}`);
+    
+    console.log(`🌰 Scamper dir: ${scamperDir}`);
+    console.log(`🌰 WSL path: ${wslPath}`);
+    
+    // Run Claude to process job files with fake TTY
+    const wslArgs = [
+        '-e', 'bash', '-c', 
+        `cd ${wslPath} && script -qec "claude --print --dangerously-skip-permissions 'Hi Claude, can God make a rock so heavy that even he cant lift it?'" /dev/null`
+    ];
+
+    // `cd ${wslPath} && echo "Testing Claude with timeout..." && timeout 10s claude --print --dangerously-skip-permissions hello && echo "Claude completed" || echo "Claude timed out or failed"`
+
+    console.log(`🌰 Running: wsl ${wslArgs.join(' ')}`);
+    runCommandWithStreaming(req, res, 'wsl', wslArgs);
 });
 
 app.listen(PORT, () => {

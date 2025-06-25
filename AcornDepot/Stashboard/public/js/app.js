@@ -64,27 +64,49 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     });
     
-    processAcornsBtn.addEventListener('click', async function() {
+    processAcornsBtn.addEventListener('click', function() {
         console.log('🌰 Processing acorns...');
         this.innerHTML = '⚙️ Processing...';
         this.disabled = true;
         
-        try {
-            const response = await fetch('/api/process-acorns', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
+        // Create EventSource for real-time updates
+        const eventSource = new EventSource('/api/process-acorns');
+        
+        eventSource.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            console.log(`🌰 ${data.type}: ${data.message}`);
+            
+            // Update job list with live output
+            const jobList = document.getElementById('job-list');
+            if (data.type === 'start') {
+                jobList.innerHTML = '<div style="color: #666;"><h3>🌰 Acorn Processing Output:</h3><pre id="scamper-output"></pre></div>';
+            }
+            
+            if (data.type === 'stdout' || data.type === 'stderr') {
+                const output = document.getElementById('scamper-output');
+                if (output) {
+                    output.textContent += data.message + '\n';
+                    output.scrollTop = output.scrollHeight;
                 }
-            });
+            }
             
-            const result = await response.json();
-            console.log('✅ Process response:', result.message);
-            
-        } catch (error) {
-            console.error('❌ Process error:', error);
-        } finally {
-            this.innerHTML = '🌰 Process Acorns';
-            this.disabled = false;
-        }
+            if (data.type === 'end') {
+                eventSource.close();
+                processAcornsBtn.innerHTML = '🌰 Process Acorns';
+                processAcornsBtn.disabled = false;
+                
+                const output = document.getElementById('scamper-output');
+                if (output) {
+                    output.textContent += `\n🌰 Acorn processing completed with exit code: ${data.code}`;
+                }
+            }
+        };
+        
+        eventSource.onerror = function(error) {
+            console.error('❌ Acorn processing EventSource error:', error);
+            eventSource.close();
+            processAcornsBtn.innerHTML = '🌰 Process Acorns';
+            processAcornsBtn.disabled = false;
+        };
     });
 });
