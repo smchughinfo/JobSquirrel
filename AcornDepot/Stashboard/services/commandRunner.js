@@ -20,7 +20,7 @@ function runCommandWithStreaming(req, res, command, args = [], options = {}) {
     });
 
     // Send initial message
-    res.write(`data: {"type":"start","message":"Starting ${command}..."}\n\n`);
+    res.write(`data: {"type":"start","message":"Starting ${escape(command)}..."}\n\n`);
 
     // Spawn the process
     const childProcess = spawn(command, args, options);
@@ -39,7 +39,7 @@ function runCommandWithStreaming(req, res, command, args = [], options = {}) {
 
     childProcess.on('close', (code) => {
         console.log(`🐿️ ${command} process exited with code ${code}`);
-        res.write(`data: {"type":"end","message":"${command} finished with code ${code}","code":${code}}\n\n`);
+        res.write(`data: {"type":"end","message":"${escape(command)} finished with code ${code}","code":${code}}\n\n`);
         res.end();
     });
 
