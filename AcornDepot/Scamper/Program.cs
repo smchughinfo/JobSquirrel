@@ -42,11 +42,13 @@ void ChaseAwayRivals() // kill chrome and other instances of scamper
 void ForageTerritories()
 {
     var driver = GetWebDriver();
-    
-    var territories = new List<ITerritory> { new Indeed() };
-    foreach (var territory in territories)
-    {
-        territory.Forage(driver);
+    var searchTerms = new List<string> { "ASP.NET", "C#" };
+
+    var territories = new List<Territory> { new Indeed(driver) };
+    foreach (var territory in territories) {
+        foreach (var searchTerm in searchTerms) {
+            territory.Forage(searchTerm, "Remote");
+        }
     }
 }
 

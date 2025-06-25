@@ -9,5 +9,5 @@ PageParser:
     - Supports: #id, .class, tag selectors
     - Returns: clean text content from matched element
 
-Use selectors.json to know what css selectors to query for:
-    - If the contents of clipboard.html appear to be from Indeed use sites.indeed.highlighted-job-selectors 
+Use /selectors.json to know what css selectors to query for. First, figure out what site the html is from (indeed, dice, ziprecruiter, etc.). Then lookup the appropriate selector:
+    - indeed -> sites.indeed.mainPage.highlightedJob

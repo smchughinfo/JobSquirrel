@@ -10,6 +10,8 @@ JobSquirrel is a personalized resume and cover letter generator that tailors car
 - `/GeneratedResumes/[Company Name - Job Title]/` - Output folder for generated applications
   - `job-listing.md` - Job descriptions saved in markdown format
   - Generated resume and cover letter files
+- `/AcornDepot/` - Job scraper system (see `/AcornDepot/CLAUDE.md`)
+- `selectors.json` - Global cache of CSS selectors for job site scraping, organized by site (indeed, dice, etc.)
 
 ## Complete System Architecture & Workflow
 
