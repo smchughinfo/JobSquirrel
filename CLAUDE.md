@@ -10,8 +10,83 @@ JobSquirrel is a personalized resume and cover letter generator that tailors car
 - `/GeneratedResumes/[Company Name - Job Title]/` - Output folder for generated applications
   - `job-listing.md` - Job descriptions saved in markdown format
   - Generated resume and cover letter files
-- `/AcornDepot/` - Job scraper system (see `/AcornDepot/CLAUDE.md`)
-- `selectors.json` - Global cache of CSS selectors for job site scraping, organized by site (indeed, dice, etc.)
+- `/AcornDepot/` - **NEW**: Comprehensive job scraper system with web interface (see `/AcornDepot/CLAUDE.md`)
+  - `/Scamper/` - C# Selenium-based job scraper with stealth features
+  - `/Stashboard/` - Node.js Express web interface with real-time streaming
+  - `/Cache/` - Temporary storage for scraped job HTML and processed markdown files
+- `selectors.json` - Global CSS selector configuration for all job sites (indeed, dice, etc.)
+
+## AcornDepot: Autonomous Job Scraper System
+
+**AcornDepot** represents a significant evolution of JobSquirrel - a complete autonomous job scraping and processing system with real-time web interface. Unlike the original browser extension + clipboard approach, AcornDepot provides fully automated job collection and processing.
+
+### AcornDepot Architecture
+
+**Scamper** (C# Selenium Scraper):
+- **Stealth Automation**: Chrome configured with extensive anti-detection measures
+- **Territory Pattern**: Modular site-specific implementations (Indeed.cs, future: Dice.cs, etc.)
+- **Smart Authentication**: Uses Google OAuth instead of email/password to bypass "human" challenges
+- **Process Management**: Kills competing Chrome instances before starting
+- **Intelligent Caching**: Sanitizes filenames and stores job HTML in `/Cache/`
+
+**Stashboard** (Node.js Web Interface):
+- **Real-time Streaming**: Server-Sent Events (SSE) for live command output
+- **Dual Operations**: Scamper execution + Claude processing with separate streaming endpoints
+- **Squirrel Theming**: Brown/orange woodland aesthetic with squirrel emojis
+- **Process Control**: Start/stop operations with live feedback
+
+**Claude Integration**: 
+- **WSL Command Execution**: Runs Claude Code through Windows Subsystem for Linux
+- **TTY Emulation**: Uses `script -qec` to provide fake TTY for Claude requirements
+- **Sequential Processing**: Processes cached jobs one-by-one with immediate streaming results
+- **Smart Escaping**: Base64 encoding to handle complex messages with quotes/newlines
+
+### AcornDepot Workflow
+
+1. **Job Scraping**: User clicks "Run Scamper" in Stashboard web interface
+   - Scamper launches with stealth Chrome configuration
+   - Navigates to job sites using Territory pattern
+   - Scrapes job listings and caches HTML files in `/Cache/`
+   - Live output streams to browser via Server-Sent Events
+
+2. **Job Processing**: User clicks "Process Acorns" in Stashboard
+   - System identifies unprocessed HTML files (those without corresponding .md files)
+   - Sequential Claude processing: converts each HTML job listing to clean markdown
+   - Real-time progress updates show each file being processed individually
+   - Results stream live to browser as each file completes
+
+### Technical Innovations
+
+**Stealth Web Scraping**:
+- Separate Chrome profile (`ScamperChrome`) to avoid conflicts
+- Google OAuth authentication bypasses most bot detection
+- Human-like delays and scrolling patterns
+- Extensive Chrome flags to appear non-automated
+
+**Real-time Web Streaming**:
+- Server-Sent Events (SSE) for live command output
+- JSON message escaping handles complex Claude responses
+- Sequential processing with forced delays ensures proper streaming
+- Browser receives updates immediately, not batched
+
+**Cross-Platform Integration**:
+- C# Selenium scraper runs natively on Windows
+- Node.js web server provides cross-platform interface  
+- WSL integration allows Claude Code execution from Windows
+- File-based coordination between components
+
+### Vs. Original JobSquirrel System
+
+| Aspect | Original JobSquirrel | AcornDepot |
+|--------|---------------------|------------|
+| **Job Capture** | Manual browser extension click | Automated scraping |
+| **Processing** | Multi-phase Claude workflow | Real-time Claude streaming |
+| **Interface** | File-based signals | Web interface with live updates |
+| **Authentication** | Manual login required | OAuth automation |
+| **Scale** | One job at a time | Bulk scraping + processing |
+| **Feedback** | File completion signals | Real-time streaming UI |
+
+AcornDepot represents the "scaled up" version of JobSquirrel - moving from manual job-by-job processing to automated bulk collection and processing with a professional web interface.
 
 ## Complete System Architecture & Workflow
 
