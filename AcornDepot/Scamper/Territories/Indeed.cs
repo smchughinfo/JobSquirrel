@@ -46,8 +46,20 @@ namespace Scamper.Territories
             Console.WriteLine("Foraging Indeed territory...");
             _driver.Navigate().GoToUrl("https://www.indeed.com");
 
-            _driver.WaitFor(selectors["searchTerm"]);
-            Thread.Sleep(5000);
+            try
+            {
+                while (true)
+                {
+                    _driver.WaitFor(selectors["searchTerm"]);
+                    Thread.Sleep(5000);
+                    break;
+                }
+                
+            }
+            catch (Exception ex) {
+                Console.WriteLine($"Waiting on {selectors["searchTerm"]}");
+            }
+            
 
             var whatField = _driver.FindElement(By.CssSelector(selectors["searchTerm"]));
             whatField.SendKeys(Keys.Control + "a");

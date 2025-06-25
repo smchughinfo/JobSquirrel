@@ -1,32 +1,67 @@
 // Stashboard App - Squirrel Job Cache Viewer
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     console.log('🐿️ Stashboard loaded - time to check the winter cache!');
     
     const jobList = document.getElementById('job-list');
     const runScamperBtn = document.getElementById('run-scamper');
     const processAcornsBtn = document.getElementById('process-acorns');
     
-    // Placeholder for now
-    setTimeout(() => {
-        jobList.innerHTML = `
-            <div style="text-align: center; color: #666;">
-                <h3>🥜 No cached acorns yet!</h3>
-                <p>Run Scamper to start collecting job listings</p>
-            </div>
-        `;
-    }, 1000);
-    
-    // Button handlers
-    runScamperBtn.addEventListener('click', function() {
-        console.log('🐿️ Running Scamper...');
-        this.innerHTML = '⏳ Scampering...';
-        this.disabled = true;
+    // Scamper state management
+    let scamperEventSource = null;
+    let scamperRunning = false;
+
+    // Function to update button state
+    function updateScamperButton() {
+        if (scamperRunning) {
+            runScamperBtn.innerHTML = '🔪 Kill Scamper';
+            runScamperBtn.disabled = false;
+            runScamperBtn.style.backgroundColor = '#dc3545'; // Red color
+        } else {
+            runScamperBtn.innerHTML = '🐿️ Run Scamper';
+            runScamperBtn.disabled = false;
+            runScamperBtn.style.backgroundColor = ''; // Reset to default
+        }
+    }
+
+    // Function to kill Scamper
+    async function killScamper() {
+        try {
+            const response = await fetch('/api/kill-scamper', { method: 'POST' });
+            const data = await response.json();
+            
+            if (response.ok) {
+                console.log('🔪 Scamper killed:', data.message);
+                if (scamperEventSource) {
+                    scamperEventSource.close();
+                    scamperEventSource = null;
+                }
+                scamperRunning = false;
+                updateScamperButton();
+                
+                // Update output
+                const output = document.getElementById('scamper-output');
+                if (output) {
+                    output.textContent += '\n🔪 Scamper process killed by user\n';
+                }
+            } else {
+                console.error('❌ Failed to kill Scamper:', data.error);
+            }
+        } catch (error) {
+            console.error('❌ Error killing Scamper:', error);
+        }
+    }
+
+    // Function to start Scamper
+    function startScamper() {
+        console.log('🐿️ Starting Scamper...');
+        scamperRunning = true;
+        updateScamperButton();
         
         // Create EventSource for real-time updates
-        const eventSource = new EventSource('/api/run-scamper');
+        scamperEventSource = new EventSource('/api/run-scamper');
         
-        eventSource.onmessage = function(event) {
+        scamperEventSource.onmessage = function(event) {
             const data = JSON.parse(event.data);
             console.log(`🐿️ ${data.type}: ${data.message}`);
             
@@ -45,9 +80,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (data.type === 'end') {
-                eventSource.close();
-                runScamperBtn.innerHTML = '🐿️ Run Scamper';
-                runScamperBtn.disabled = false;
+                scamperEventSource.close();
+                scamperEventSource = null;
+                scamperRunning = false;
+                updateScamperButton();
                 
                 const output = document.getElementById('scamper-output');
                 if (output) {
@@ -56,13 +92,46 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
         
-        eventSource.onerror = function(error) {
+        scamperEventSource.onerror = function(error) {
             console.error('❌ Scamper EventSource error:', error);
-            eventSource.close();
-            runScamperBtn.innerHTML = '🐿️ Run Scamper';
-            runScamperBtn.disabled = false;
+            scamperEventSource.close();
+            scamperEventSource = null;
+            scamperRunning = false;
+            updateScamperButton();
         };
+    }
+
+    // Button handler - toggles between run and kill
+    runScamperBtn.addEventListener('click', function() {
+        if (scamperRunning) {
+            killScamper();
+        } else {
+            startScamper();
+        }
     });
+
+    // Check if Scamper is already running on page load
+    try {
+        const statusResponse = await fetch('/api/scamper-status');
+        const statusData = await statusResponse.json();
+        if (statusData.running) {
+            console.log('🐿️ Scamper is already running (PID:', statusData.pid, ')');
+            scamperRunning = true;
+            updateScamperButton();
+        }
+    } catch (error) {
+        console.warn('⚠️ Could not check Scamper status:', error);
+    }
+    
+    // Placeholder for now
+    setTimeout(() => {
+        jobList.innerHTML = `
+            <div style="text-align: center; color: #666;">
+                <h3>🥜 No cached acorns yet!</h3>
+                <p>Run Scamper to start collecting job listings</p>
+            </div>
+        `;
+    }, 1000);
     
     processAcornsBtn.addEventListener('click', function() {
         console.log('🌰 Processing acorns...');
