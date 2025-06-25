@@ -3,6 +3,21 @@ const path = require('path');
 const { runCommandWithStreaming } = require('./services/commandRunner');
 const { getUnProcessedAcorns, askClaudeSync, askClaudeStream, testWSLCommand } = require('./services/utilities');
 
+// Helper function to properly escape JSON strings
+function escapeJsonString(str) {
+    return str
+        .replace(/\\/g, '\\\\')
+        .replace(/"/g, '\\"')
+        .replace(/\n/g, '\\n')
+        .replace(/\r/g, '\\r')
+        .replace(/\t/g, '\\t');
+}
+
+// Helper function to add delay for streaming
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -30,31 +45,53 @@ app.get('/api/test-wsl', (req, res) => {
     res.json({ command, result });
 });
 
-app.get('/api/process-acorns', (req, res) => {
+app.get('/api/process-acorns', async (req, res) => {
     // Set up Server-Sent Events manually
     res.writeHead(200, {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive'
+        'Connection': 'keep-alive',
+        'X-Accel-Buffering': 'no' // Disable nginx buffering if present
     });
+
+    // Disable Express buffering
+    res.socket.setNoDelay(true);
 
     const unprocessedAcorns = getUnProcessedAcorns();
 
     res.write(`data: {"type":"start","message":"Processing ${unprocessedAcorns.length} acorns..."}\n\n`);
+    res.flushHeaders(); // Force flush
 
-    unprocessedAcorns.forEach((file, index) => {
+    // Process files sequentially, one at a time
+    for (let index = 0; index < unprocessedAcorns.length; index++) {
+        const file = unprocessedAcorns[index];
+        
         try {
-            res.write(`data: {"type":"progress","message":"Processing file ${index + 1}: ${file}"}\n\n`);
+            console.log(`🐿️ [${new Date().toISOString()}] Starting file ${index + 1}: ${file}`);
+            res.write(`data: {"type":"progress","message":"${escapeJsonString(`Processing file ${index + 1}: ${file}/${unprocessedAcorns.length}`)}"}\n\n`);
+            
+            // Add small delay to ensure message is sent
+            await delay(100);
 
-            //const messageToClaude = `Hi Claude, can you reformat this job listing, in full fidelity, as a .md file. Don't do anything to the html file, just create a new md file with the exact same file name. The file is:  ${file}`;
             const messageToClaude = `Hi Claude, can you copy what you see in ${file}. to a file called ${file.replace(/html$/, "")}md.`;
+            
+            // Process this file and immediately send the result
             const result = askClaudeSync(messageToClaude);
-
-            res.write(`data: {"type":"result","file":"${file}","result":"${result.replace(/"/g, '\\"')}"}\n\n`);
+            
+            console.log(`🐿️ [${new Date().toISOString()}] Completed file ${index + 1}: ${file}`);
+            
+            // Send the result immediately after this file is processed
+            res.write(`data: {"type":"result","file":"${escapeJsonString(file)}","result":"${escapeJsonString(result)}"}\n\n`);
+            
+            // Add small delay to ensure message is sent before next iteration
+            await delay(100);
+            
         } catch (error) {
-            res.write(`data: {"type":"error","file":"${file}","error":"${error.message}"}\n\n`);
+            console.log(`🐿️ [${new Date().toISOString()}] Error with file ${index + 1}: ${file} - ${error.message}`);
+            res.write(`data: {"type":"error","file":"${escapeJsonString(file)}","error":"${escapeJsonString(error.message)}"}\n\n`);
+            await delay(100);
         }
-    });
+    }
 
     res.write(`data: {"type":"end","message":"All acorns processed!"}\n\n`);
     res.end();

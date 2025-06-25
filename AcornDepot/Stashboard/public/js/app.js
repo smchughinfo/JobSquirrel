@@ -74,18 +74,24 @@ document.addEventListener('DOMContentLoaded', function() {
         
         eventSource.onmessage = function(event) {
             const data = JSON.parse(event.data);
-            console.log(`🌰 ${data.type}: ${data.message}`);
+            console.log(`🌰 ${data.type}: ${data.message || data.result || data.error}`);
             
             // Update job list with live output
             const jobList = document.getElementById('job-list');
             if (data.type === 'start') {
-                jobList.innerHTML = '<div style="color: #666;"><h3>🌰 Acorn Processing Output:</h3><pre id="scamper-output"></pre></div>';
+                jobList.innerHTML = '<div style="color: #666;"><h3>🌰 Acorn Processing Output:</h3><pre id="acorn-output"></pre></div>';
             }
             
-            if (data.type === 'stdout' || data.type === 'stderr') {
-                const output = document.getElementById('scamper-output');
+            if (data.type === 'progress' || data.type === 'result' || data.type === 'error') {
+                const output = document.getElementById('acorn-output');
                 if (output) {
-                    output.textContent += data.message + '\n';
+                    if (data.type === 'progress') {
+                        output.textContent += `📁 ${data.message}\n`;
+                    } else if (data.type === 'result') {
+                        output.textContent += `✅ ${data.file}:\n   ${data.result}\n\n`;
+                    } else if (data.type === 'error') {
+                        output.textContent += `❌ ${data.file}: ${data.error}\n\n`;
+                    }
                     output.scrollTop = output.scrollHeight;
                 }
             }
@@ -95,9 +101,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 processAcornsBtn.innerHTML = '🌰 Process Acorns';
                 processAcornsBtn.disabled = false;
                 
-                const output = document.getElementById('scamper-output');
+                const output = document.getElementById('acorn-output');
                 if (output) {
-                    output.textContent += `\n🌰 Acorn processing completed with exit code: ${data.code}`;
+                    output.textContent += `\n🌰 Acorn processing completed!`;
                 }
             }
         };
