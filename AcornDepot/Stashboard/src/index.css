@@ -1,0 +1,13 @@
+/* Stashboard Squirrel Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%);
+    color: #333;
+    min-height: 100vh;
+}

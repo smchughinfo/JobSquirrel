@@ -85,6 +85,15 @@ dist
 # https://nextjs.org/blog/next-9-1#public-directory-support
 # public
 
+# React + Vite build output
+public/assets/
+public/index.html
+public/js/app.js
+public/css/style.css
+
+# Vite
+.vite/
+
 # vuepress build output
 .vuepress/dist
 
