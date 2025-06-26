@@ -83,25 +83,61 @@ function askOllamaSync(message, model = 'llama3:latest', workingDir = null) {
         // Detect if we're running in WSL or Windows
         const isInWSL = process.platform === 'linux' && process.env.WSL_DISTRO_NAME;
         
-        // Clean the message for safe shell execution
-        const cleanMessage = message
-            .replace(/'/g, '"')  // Replace single quotes with double quotes
-            .replace(/`/g, '')   // Remove backticks
-            .replace(/\$/g, '')  // Remove dollar signs (shell variables)
-            .replace(/\\/g, ' '); // Replace backslashes with spaces
-        
+        // For job processing, always use temp files to preserve formatting
+        // For other messages, use temp files if over 8000 chars
+        const isJobProcessing = message.includes('complete description of this job listing');
+        const useFileForLongMessage = isJobProcessing || message.length > 8000;
         let command;
-        if (isInWSL) {
-            // We're already in WSL, call ollama.exe directly
-            command = `cd '${workingDir}' && ollama.exe run ${model} '${cleanMessage}'`;
+        
+        if (useFileForLongMessage) {
+            // Write message to temporary file and read from stdin
+            const tempFile = path.join(workingDir, 'temp_ollama_input.txt');
+            const cleanMessage = message
+                .replace(/\r\n/g, '\n')  // Normalize line endings
+                .replace(/\r/g, '\n');   // Handle old Mac line endings
+            
+            fs.writeFileSync(tempFile, cleanMessage, 'utf8');
+            
+            if (isInWSL) {
+                command = `cd '${workingDir}' && cat temp_ollama_input.txt | /mnt/c/Users/seanm/AppData/Local/Programs/Ollama/ollama.exe run ${model}`;
+            } else {
+                const wslWorkingDir = convertPathToWSL(workingDir);
+                command = `wsl -e bash -c "cd '${wslWorkingDir}' && cat temp_ollama_input.txt | /mnt/c/Users/seanm/AppData/Local/Programs/Ollama/ollama.exe run ${model}"`;
+            }
+            
+            console.log(`🦙 Using temporary file for long message (${message.length} chars)`);
         } else {
-            // We're in Windows, use WSL bridge with centralized path conversion
-            const wslWorkingDir = convertPathToWSL(workingDir);
-            command = `wsl -e bash -c "cd '${wslWorkingDir}' && ollama.exe run ${model} '${cleanMessage}'"`;
+            // Use command line for shorter messages
+            const cleanMessage = message
+                .replace(/['"]/g, '')  // Remove both single and double quotes entirely
+                .replace(/`/g, '')     // Remove backticks
+                .replace(/\$/g, '')    // Remove dollar signs (shell variables)
+                .replace(/\\/g, ' ')   // Replace backslashes with spaces
+                .replace(/\n/g, ' ')   // Replace newlines with spaces
+                .replace(/\s+/g, ' ')  // Normalize multiple spaces
+                .trim();
+            
+            if (isInWSL) {
+                command = `cd '${workingDir}' && /mnt/c/Users/seanm/AppData/Local/Programs/Ollama/ollama.exe run ${model} '${cleanMessage}'`;
+            } else {
+                const wslWorkingDir = convertPathToWSL(workingDir);
+                command = `wsl -e bash -c "cd '${wslWorkingDir}' && /mnt/c/Users/seanm/AppData/Local/Programs/Ollama/ollama.exe run ${model} '${cleanMessage}'"`;
+            }
         }
         
         console.log(`🦙 Command: ${command}`);
         const result = execSync(command, { encoding: 'utf8', timeout: 300000 }); // 5 minutes timeout
+
+        // Clean up temporary file if it was used
+        if (useFileForLongMessage) {
+            try {
+                const tempFile = path.join(workingDir, 'temp_ollama_input.txt');
+                fs.unlinkSync(tempFile);
+                console.log(`🦙 Cleaned up temporary file`);
+            } catch (cleanupError) {
+                console.warn(`🦙 Warning: Could not clean up temporary file: ${cleanupError.message}`);
+            }
+        }
 
         // Clean up ANSI escape sequences and extra whitespace (similar to Claude cleaning)
         const cleanResult = result
@@ -110,7 +146,8 @@ function askOllamaSync(message, model = 'llama3:latest', workingDir = null) {
             .replace(/\[[0-9]*[GKJH]/g, '') // Remove cursor position/clear sequences
             .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') // Remove control chars
             .replace(/[⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏]/g, '') // Remove spinner characters
-            .replace(/\s+/g, ' ') // Normalize whitespace
+            .replace(/[ \t]+/g, ' ') // Normalize spaces and tabs (but preserve newlines)
+            .replace(/\n\s*\n\s*\n+/g, '\n\n') // Collapse multiple newlines to double newlines
             .trim();
             
         console.log(`🦙 [${new Date().toISOString()}] Ollama completed: ${cleanResult.substring(0, 100)}...`);

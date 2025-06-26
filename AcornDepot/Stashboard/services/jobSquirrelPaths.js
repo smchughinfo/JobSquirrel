@@ -26,6 +26,15 @@ function getCacheDirectory(wsl) {
     return cacheDir;
 }
 
+function getScatterHoardinMapPath(wsl) {
+    let adDir = getAcornDepotDirectory();
+    let scatterHoardingMapPath = path.join(adDir, "scatterHoardingMap.json");
+    if(wsl) {
+        scatterHoardingMapPath = convertPathToWSL(scatterHoardingMapPath);
+    }
+    return scatterHoardingMapPath;
+}
+
 function convertPathToWSL(windowPath) {
     return windowPath.replace(/\\/g, '/').replace(/^([A-Z]):/, (match, drive) => `/mnt/${drive.toLowerCase()}`);
 }
@@ -34,5 +43,6 @@ module.exports = {
     getJobSquirrelRootDirectory,
     getCacheDirectory,
     getAcornDepotDirectory,
+    getScatterHoardinMapPath,
     convertPathToWSL
 };

@@ -3,6 +3,7 @@ const fs = require('fs');
 const EventEmitter = require('events');
 const { askClaudeSync, askOllamaSync } = require('./llm');
 const { getCacheDirectory } = require('./jobSquirrelPaths');
+const { addAcornToScatterHoardingMap } = require('./scatterHoardingMap');
 const cheerio = require('cheerio');
 
 /**
@@ -45,32 +46,38 @@ class AcornProcessor extends EventEmitter {
 
     /**
      * Process a single HTML file with Claude/Ollama
-     * @param {string} fileName - HTML filename to process
+     * @param {string} htmlFilePath - HTML filename to process
      * @returns {Promise<string>} Processing result message
      */
-    async processFile(fileName) {
+    async processAcorn(fileName) {
+        //const htmlFilePath = path.join(getCacheDirectory(), fileName);
+        //const mdFilePath = this.convertToMarkdown(htmlFilePath)
+        addAcornToScatterHoardingMap(fileName.replace(/.html$/, )); 
 
-    console.log("OKAY GONNA PROCESS " + fileName);
 
-        let filePath = path.join(getCacheDirectory(), fileName);
 
-        console.log("OKAY GONNA PROCESS PATH" + filePath);
 
-        const htmlContent = "<jobSquirrel>" + fs.readFileSync(filePath, 'utf8') + "</jobSquirrel>";
+
+        return fileName;
+        //return mdFilePath;
+    }
+
+    convertToMarkdown(htmlFilePath) {
+        const mdFilePath = htmlFilePath.replace(/html$/, "md");
+
+        const htmlContent = "<jobSquirrel>" + fs.readFileSync(htmlFilePath, 'utf8') + "</jobSquirrel>";
         const $ = cheerio.load(htmlContent);
         $('style').remove();
         $('script').remove();
         const element = $("jobSquirrel");
         const textContent = element.text().trim();
+        
+        const prompt = `Return a complete description of this job listing in .md format. Don't lose any details. Organize it into sections that are easy for a human to read:\n\n\n\n${textContent}`;
+        const result = askOllamaSync(prompt);
 
-        console.log(textContent);
-        
-        const simplePrompt = `Return a complete description of this job listing in .md format: \n\n\n\n${textContent}`;
-        console.log("🦙 Testing Ollama with simple extraction...");
-        const result = askOllamaSync(simplePrompt);
-        console.log("🦙 Ollama result:", result);
-        
-        return result;
+        fs.writeFileSync(mdFilePath, result);
+
+        return mdFilePath;
     }
 
     /**
@@ -81,8 +88,8 @@ class AcornProcessor extends EventEmitter {
         try {
             let files = this.getUnProcessedAcorns();
             
-            files = [files[0]];
-            console.log("DOING DEBUG PROCESSING. ALL ACORNS ---> " - files.join(","))
+            //files = [files[0]];
+            //console.log("DOING DEBUG PROCESSING. ALL ACORNS ---> " - files.join(","))
 
             // Emit start event
             this.emit('start', { 
@@ -115,7 +122,7 @@ class AcornProcessor extends EventEmitter {
                     console.log(`🐿️ [${new Date().toISOString()}] Starting file ${index + 1}: ${file}`);
                     
                     // Process the file
-                    const result = await this.processFile(file);
+                    const result = await this.processAcorn(file);
                     
                     console.log(`🐿️ [${new Date().toISOString()}] Completed file ${index + 1}: ${file}`);
                     
