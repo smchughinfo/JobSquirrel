@@ -105,7 +105,7 @@ namespace Scamper.Territories
                 var rightPane = _driver.FindElement(By.CssSelector(selectors["highlightedJob"]));
                 var jobHtml = rightPane.GetAttribute("outerHTML");
 
-                Cache(companyName, jobTitle, jobHtml);
+                Cache(_driver.Url, companyName, jobTitle, jobHtml);
             }
 
             Console.WriteLine($"Foraging on page complete! Total Jobs: {jobCards.Count} | Already Cached Jobs: {alreadyCachedCards}");

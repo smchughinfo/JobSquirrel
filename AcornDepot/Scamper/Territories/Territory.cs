@@ -11,11 +11,12 @@ namespace Scamper.Territories
     {
         internal abstract void Forage(string job, string location);
 
-        internal void Cache(string companyName, string jobTitle, string jobHtml)
+        internal void Cache(string url, string companyName, string jobTitle, string jobHtml)
         {
             var fileName = GetCacheFileName(companyName, jobTitle);
             var filePath = Path.Combine(Utilities.CachePath, fileName);
 
+            jobHtml = $"<h1 data-job-squirrel-reference='url'>url: {url}</h1>" + jobHtml;
             File.WriteAllText(filePath, jobHtml);
         }
 

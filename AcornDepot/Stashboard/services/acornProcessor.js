@@ -4,7 +4,8 @@ const EventEmitter = require('events');
 const { askClaudeSync, askOllamaSync } = require('./llm');
 const { getCacheDirectory } = require('./jobSquirrelPaths');
 const { addAcornToScatterHoardingMap } = require('./scatterHoardingMap');
-const cheerio = require('cheerio');
+const htmlUtilities = require('./htmlUtilities');
+const NutNote = require('../NutNote');
 
 /**
  * Event-driven AcornProcessor for converting job HTML files to markdown
@@ -33,7 +34,6 @@ class AcornProcessor extends EventEmitter {
             const hasProcessedVersion = mdFiles.some(md => md.replace(/\.md$/, "") === baseName);
             
             if (!hasProcessedVersion) {
-                // Return just the filename, not the full path
                 unprocessedFiles.push(html);
             }
         });
@@ -42,7 +42,7 @@ class AcornProcessor extends EventEmitter {
         console.log(`🌰 ${unprocessedFiles.length} unprocessed acorns`);
         
         return unprocessedFiles;
-    }
+    }1
 
     /**
      * Process a single HTML file with Claude/Ollama
@@ -50,28 +50,23 @@ class AcornProcessor extends EventEmitter {
      * @returns {Promise<string>} Processing result message
      */
     async processAcorn(fileName) {
-        //const htmlFilePath = path.join(getCacheDirectory(), fileName);
-        //const mdFilePath = this.convertToMarkdown(htmlFilePath)
-        addAcornToScatterHoardingMap(fileName.replace(/.html$/, )); 
+        const htmlFilePath = path.join(getCacheDirectory(), fileName);
+        const acorn = fs.readFileSync(this.convertToMarkdown(htmlFilePath));
 
+        const nutNote = NutNote.fromFileName(fileName);
+        nutNote.url = htmlUtilities.getInnerTextFromFile(htmlFilePath, "[data-job-squirrel-reference='url']");
+        nutNote.salary = askOllamaSync(`What salary is this job offering? Respond with a value the value they provide, not a sentence. If they don't provide a value just respond with N/A.\n\n\n\n'${acorn}'`);
+        nutNote.workSummary = askOllamaSync(`Give a two to three sentence description of what type of work is performed at this job. Don't say things like 'here is a two sentence description...'. Just give the description.\n\n\n\n'${acorn}'`);
+        nutNote.location = askOllamaSync(`What is the location of this job? Respond with the value they provice, not a sentence. If it's ill-defined just say 'unkown'.\n\n\n\n'${acorn}'`);
 
-
-
-
+        addAcornToScatterHoardingMap(nutNote); 
         return fileName;
-        //return mdFilePath;
     }
 
     convertToMarkdown(htmlFilePath) {
         const mdFilePath = htmlFilePath.replace(/html$/, "md");
+        const textContent = htmlUtilities.getInnerTextFromFile(htmlFilePath);
 
-        const htmlContent = "<jobSquirrel>" + fs.readFileSync(htmlFilePath, 'utf8') + "</jobSquirrel>";
-        const $ = cheerio.load(htmlContent);
-        $('style').remove();
-        $('script').remove();
-        const element = $("jobSquirrel");
-        const textContent = element.text().trim();
-        
         const prompt = `Return a complete description of this job listing in .md format. Don't lose any details. Organize it into sections that are easy for a human to read:\n\n\n\n${textContent}`;
         const result = askOllamaSync(prompt);
 
@@ -84,13 +79,10 @@ class AcornProcessor extends EventEmitter {
      * Process all unprocessed acorn files
      * Emits events throughout the process for real-time feedback
      */
-    async processAllAcorns() {
+    async processAllUnprocessedAcorns() {
         try {
             let files = this.getUnProcessedAcorns();
             
-            //files = [files[0]];
-            //console.log("DOING DEBUG PROCESSING. ALL ACORNS ---> " - files.join(","))
-
             // Emit start event
             this.emit('start', { 
                 total: files.length,

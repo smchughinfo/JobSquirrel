@@ -210,7 +210,7 @@ app.get('/api/process-acorns', (req, res) => {
     });
 
     // Start processing
-    processor.processAllAcorns().catch(error => {
+    processor.processAllUnprocessedAcorns().catch(error => {
         console.error('Processor error:', error);
         res.write(`data: {"type":"error","error":"${escapeJsonString(error.message)}"}\n\n`);
         res.end();

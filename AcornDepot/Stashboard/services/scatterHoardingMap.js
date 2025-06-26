@@ -1,12 +1,15 @@
+const path = require("path");
 const fs = require("fs");
-const { getScatterHoardinMapPath } = require('./jobSquirrelPaths');
+const { getScatterHoardinMapPath, getCacheDirectory } = require('./jobSquirrelPaths');
+const { askOllamaSync } = require('./llm');
+const NutNote = require('../NutNote');
 
 const mapPath = getScatterHoardinMapPath();
 
-function addAcornToScatterHoardingMap(fileName) {
-    let map = recallScatterHoardingMap(fileName);
-    map[fileName] = {};
-    memorizeScatterHoardingMap(map)
+function addAcornToScatterHoardingMap(nutNote) {  
+    let map = recallScatterHoardingMap();
+    map[nutNote.getIdentifier()] = nutNote.toJSON();
+    memorizeScatterHoardingMap(map);
 }
 
 function recallScatterHoardingMap() {
@@ -19,10 +22,12 @@ function recallScatterHoardingMap() {
 }
 
 function memorizeScatterHoardingMap(map) {
-    const mapString = JSON.stringify(map);
+    const mapString = JSON.stringify(map, null, 2); // Pretty print JSON
     fs.writeFileSync(mapPath, mapString);
 }
 
 module.exports = {
-    addAcornToScatterHoardingMap
+    addAcornToScatterHoardingMap,
+    recallScatterHoardingMap,
+    memorizeScatterHoardingMap
 };

@@ -44,4 +44,8 @@ JobSquirrel/
 
 ---
 
+## Tree-ory of Mind
+
+Job Squirrel development was a bit of a fever dream. Me, over caffinated on tea, two robots, coding through the nights. The squirrel theme in the code, while absolutely hilarious, does make it a bit harder to read. Typescript, refactors, etc. 
+
 *Vibe coded in only ~~8~~ ~~16~~ 24 hours with Claude Code. I wrote half the code and Claude Code wrote the other half. All squirrel puns are from Claude Code.*
