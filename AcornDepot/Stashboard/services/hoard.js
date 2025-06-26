@@ -3,7 +3,7 @@ const fs = require("fs");
 const { getHoardPath } = require('./jobSquirrelPaths');
 const NutNote = require('../NutNote');
 
-const mapPath = getHoardPath();
+const hoardPath = getHoardPath();
 
 function addNutNote(nutNote) {  
     let map = getHoard();
@@ -12,8 +12,8 @@ function addNutNote(nutNote) {
 }
 
 function getHoard() {
-    if(fs.existsSync(mapPath)) {
-        return JSON.parse(fs.readFileSync(mapPath));
+    if(fs.existsSync(hoardPath)) {
+        return JSON.parse(fs.readFileSync(hoardPath));
     }
     else {
         return {}
@@ -22,11 +22,10 @@ function getHoard() {
 
 function saveHoard(map) {
     const mapString = JSON.stringify(map, null, 2); // Pretty print JSON
-    fs.writeFileSync(mapPath, mapString);
+    fs.writeFileSync(hoardPath, mapString);
 }
 
 module.exports = {
     addNutNote,
     getHoard,
-    saveHoard
 };
