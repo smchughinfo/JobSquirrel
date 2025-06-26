@@ -17,22 +17,13 @@ function getAcornDepotDirectory(wsl) {
     return adDir;
 }
 
-function getCacheDirectory(wsl) {
+function getHoardPath(wsl) {
     let adDir = getAcornDepotDirectory();
-    let cacheDir = path.join(adDir, "Cache");
+    let hoardPath = path.join(adDir, "hoard.json");
     if(wsl) {
-        cacheDir = convertPathToWSL(cacheDir);
+        hoardPath = convertPathToWSL(hoardPath);
     }
-    return cacheDir;
-}
-
-function getScatterHoardinMapPath(wsl) {
-    let adDir = getAcornDepotDirectory();
-    let scatterHoardingMapPath = path.join(adDir, "scatterHoardingMap.json");
-    if(wsl) {
-        scatterHoardingMapPath = convertPathToWSL(scatterHoardingMapPath);
-    }
-    return scatterHoardingMapPath;
+    return hoardPath;
 }
 
 function convertPathToWSL(windowPath) {
@@ -41,8 +32,7 @@ function convertPathToWSL(windowPath) {
 
 module.exports = {
     getJobSquirrelRootDirectory,
-    getCacheDirectory,
     getAcornDepotDirectory,
-    getScatterHoardinMapPath,
+    getHoardPath,
     convertPathToWSL
 };

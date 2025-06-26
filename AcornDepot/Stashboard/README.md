@@ -31,4 +31,4 @@ Stashboard/
     └── api.js
 ```
 
-Visit http://localhost:3000 to view your winter job stash! 🥜
+Visit http://localhost:3000 to view your hoard! 🥜

@@ -7,22 +7,16 @@ AcornDepot consists of three main components working together to provide a compl
 ## System Architecture Overview
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│    Scamper      │───▶│     Cache       │───▶│   Stashboard    │
-│  (C# Scraper)   │    │  (HTML Files)   │    │ (Web Interface) │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         │                       │                       ▼
-         │                       │              ┌─────────────────┐
-         │                       │              │     Claude      │
-         │                       │              │  (AI Processing)│
-         │                       │              └─────────────────┘
-         │                       │                       │
-         │                       ▼                       ▼
-         │              ┌─────────────────┐    ┌─────────────────┐
-         │              │   Job HTML      │    │  Processed MD   │
-         │              │  (Raw Data)     │    │ (Clean Format)  │
-         │              └─────────────────┘    └─────────────────┘
+┌─────────────────┐                        ┌─────────────────┐
+│    Scamper      │───────────────────────▶│   Stashboard    │
+│  (C# Scraper)   │                        │ (Web Interface) │
+└─────────────────┘                        └─────────────────┘
+         │                                           │
+         │                                           ▼
+         │                                  ┌─────────────────┐
+         │                                  │     Claude      │
+         │                                  │  (AI Processing)│
+         │                                  └─────────────────┘
          │
          ▼
 ┌─────────────────┐
@@ -70,7 +64,7 @@ public abstract class Territory
     
     public abstract void Forage(string searchTerm, string location);
     protected abstract void SearchJobAndLocation(string searchTerm, string location);
-    protected abstract void Cache(string companyName, string jobTitle, string jobHtml);
+    protected abstract void ProcessJob(string companyName, string jobTitle, string jobHtml);
 }
 ```
 
@@ -85,8 +79,6 @@ public abstract class Territory
 
 **Key Files**:
 - **`server.js`**: Express server with streaming endpoints
-- **`services/commandRunner.js`**: Process execution with SSE streaming
-- **`services/acornProcessor.js`**: Event-driven job processing with cancellation support
 - **`services/llm.js`**: Unified Claude/Ollama integration layer (uses jobSquirrelPaths for all path operations)
 - **`services/jobSquirrelPaths.js`**: **REQUIRED** - Centralized path management for entire JobSquirrel ecosystem
 - **`public/js/app.js`**: Frontend JavaScript for real-time UI updates
@@ -94,36 +86,11 @@ public abstract class Territory
 
 **API Endpoints**:
 ```javascript
-// Stream Scamper execution in real-time
-GET /api/run-scamper
-// Response: Server-Sent Events with stdout/stderr
-
-// Process cached job files with Claude
-GET /api/process-acorns  
-// Response: Server-Sent Events with progress/result/error
-
 // Test WSL commands for debugging
 GET /api/test-wsl?cmd=<command>
 // Response: JSON with command result
 ```
 
-**Real-time Streaming Architecture**:
-```javascript
-// Server-Sent Events setup
-res.writeHead(200, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive',
-    'X-Accel-Buffering': 'no'
-});
-
-// Sequential processing with immediate streaming
-for (let file of unprocessedFiles) {
-    res.write(`data: {"type":"progress","message":"Processing ${file}"}\n\n`);
-    const result = await processFile(file);
-    res.write(`data: {"type":"result","file":"${file}","result":"${result}"}\n\n`);
-}
-```
 
 ### 3. Claude Integration System
 **Location**: Embedded within Stashboard services
@@ -145,31 +112,7 @@ const result = execSync(command, { encoding: 'utf8', timeout: 600000 });
 - **Sequential Processing**: One file at a time to ensure proper streaming
 - **Real-time Feedback**: Progress updates stream immediately to browser
 
-**Message Flow**:
-1. Browser triggers processing via `/api/process-acorns`
-2. Server identifies unprocessed HTML files in `/Cache/`
-3. For each file: WSL → Claude Code → Clean markdown output
-4. Results stream live to browser as each file completes
 
-## Cache Directory Structure
-**Location**: Managed by `services/jobSquirrelPaths.js` - `getCacheDirectory()`
-
-```
-AcornDepot/Cache/
-├── Company1 - Job Title1.html          (Raw scraped HTML)
-├── Company1 - Job Title1.md            (AI-processed markdown)
-├── Company2 - Job Title2.html
-├── Company2 - Job Title2.md
-└── ...
-```
-
-**File Lifecycle**:
-1. **Scamper** scrapes job → saves `JobTitle.html` in Cache
-2. **AcornProcessor** detects unprocessed files (HTML without corresponding MD)
-3. **LLM (Claude/Ollama)** processes HTML → creates clean `JobTitle.md`
-4. **Result**: Paired HTML/MD files for each job
-
-**Future Integration**: Processed jobs will eventually flow from Cache → JobSquirrel's `GeneratedResumes/` workflow for resume generation.
 
 ## Configuration System
 
@@ -186,8 +129,7 @@ getJobSquirrelRootDirectory(wsl = false)
 // Get AcornDepot directory  
 getAcornDepotDirectory(wsl = false)
 
-// Get Cache directory for scraped jobs
-getCacheDirectory(wsl = false) 
+ 
 
 // Convert Windows paths to WSL format
 convertPathToWSL(windowsPath)
@@ -195,13 +137,13 @@ convertPathToWSL(windowsPath)
 
 **Usage Pattern**:
 ```javascript
-const { getCacheDirectory, convertPathToWSL } = require('./services/jobSquirrelPaths');
+const { getAcornDepotDirectory, convertPathToWSL } = require('./services/jobSquirrelPaths');
 
 // For file operations (Windows paths)
-const cacheDir = getCacheDirectory();
+const acornDepotDir = getAcornDepotDirectory();
 
 // For WSL command execution  
-const wslCacheDir = getCacheDirectory(true);
+const wslAcornDepotDir = getAcornDepotDirectory(true);
 
 // Manual path conversion when needed
 const wslPath = convertPathToWSL(windowsPath);
@@ -262,14 +204,9 @@ string searchField = selectors["searchTerm"]; // "#text-input-what"
 
 2. **Access Web Interface**: Open browser to `http://localhost:3000`
 
-3. **Run Job Scraping**: Click "🐿️ Run Scamper" button
-   - Real-time output streams to browser
-   - Job HTML files saved to `/Cache/`
-
-4. **Process Jobs**: Click "🌰 Process Acorns" button  
-   - Claude converts HTML → clean markdown
-   - Progress updates stream live
-   - Results appear immediately as each file completes
+3. **Monitor Clipboard**: The interface shows clipboard monitoring status
+   - Background clipboard monitoring runs automatically
+   - Server console logs clipboard changes
 
 ### Development Setup
 
@@ -320,20 +257,6 @@ node server.js
 - **JSON Escaping**: Handle complex Claude responses with quotes/newlines
 - **Forced Delays**: Small delays to ensure messages stream individually vs. batching
 
-**Message Types**:
-```javascript
-// Progress indicator
-{"type":"progress","message":"Processing file 1: Company - Job.html"}
-
-// Successful result  
-{"type":"result","file":"Company - Job.html","result":"Done! Created markdown file."}
-
-// Error handling
-{"type":"error","file":"Company - Job.html","error":"Processing failed: reason"}
-
-// Completion signal
-{"type":"end","message":"All acorns processed!"}
-```
 
 ### WSL Integration Strategy
 
@@ -359,10 +282,6 @@ node server.js
 - Verify Claude Code installation in WSL
 - Check working directory path conversion
 
-**3. Streaming Not Working**:
-- Disable browser cache for `/api/process-acorns` endpoint
-- Check for proxy/firewall blocking SSE connections
-- Verify sequential processing (not parallel)
 
 ### Debug Endpoints
 
@@ -389,7 +308,7 @@ All components follow woodland/squirrel naming conventions:
 
 **Actions**:
 - `Forage()` - scraping/gathering data
-- `Cache()` - storing collected data
+- `stash()` - storing collected data
 - `ChaseAwayRivals()` - eliminating competing processes
 - `scamper()` - navigation/iteration  
 - `chatter()` - logging/communication
@@ -399,12 +318,11 @@ All components follow woodland/squirrel naming conventions:
 - `Scamper` - the scraper that gathers acorns (jobs)
 - `Stashboard` - interface for viewing winter cache
 - `Territories` - different areas to forage for jobs
-- `Cache` - winter storage for collected acorns
 
 **UI Elements**:
 - 🐿️ Squirrel emoji for Scamper operations
 - 🌰 Acorn emoji for processing operations
-- 🥜 Nut emoji for cached data
+- 🥜 Nut emoji for stored data
 - Brown/orange color scheme throughout interface
 
 This thematic consistency makes the codebase more memorable and fun to work with while maintaining professional functionality.
@@ -429,14 +347,13 @@ This thematic consistency makes the codebase more memorable and fun to work with
 - Mobile-responsive design
 
 **Ecosystem Integration**:
-- **Connect to original JobSquirrel**: Bridge Cache → GeneratedResumes workflow
+- **Connect to original JobSquirrel**: Direct integration with GeneratedResumes workflow
 - **Unified LLM management**: Shared Claude/Ollama service layer
 - **Config-driven processing**: System-wide LLM selection based on task complexity
 - **Consistent user experience**: Eventually merge Stashboard with original JobSquirrel UI
 
 **Technical Improvements**:
-- **Parallel processing**: Multiple files simultaneously vs. current sequential approach
-- **Database storage**: Replace file-based cache with proper data persistence
+- **Database storage**: Implement proper data persistence
 - **API endpoints**: RESTful interfaces for external system integration
 - **Cloud deployment**: Containerized deployment options for scalability
 

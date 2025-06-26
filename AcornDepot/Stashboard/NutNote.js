@@ -1,5 +1,5 @@
 /**
- * NutNote - Simple data class for job metadata in the scatterHoardingMap
+ * NutNote - Simple data class for job metadata in the hoard
  * Represents essential information about a cached job posting
  */
 class NutNote {
