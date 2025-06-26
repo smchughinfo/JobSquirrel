@@ -4,6 +4,7 @@ const { execSync } = require('child_process');
 const { runCommandWithStreaming } = require('./services/commandRunner');
 const { AcornProcessor } = require('./services/acornProcessor');
 const { getCacheDirectory, getAcornDepotDirectory } = require('./services/jobSquirrelPaths');
+const { ClipboardMonitor } = require('./services/clipboard');
 
 // Helper function to properly escape JSON strings
 function escapeJsonString(str) {
@@ -50,6 +51,9 @@ function testWSLCommand(command = 'ls') {
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Initialize clipboard monitor
+const clipboardMonitor = new ClipboardMonitor();
 
 // Track running processes for kill functionality
 let runningProcesses = {
@@ -243,6 +247,15 @@ app.get('/api/acorns-status', (req, res) => {
     });
 });
 
+// Set up clipboard monitoring
+clipboardMonitor.on('clipboardChange', (text) => {
+    console.log(`📋 Clipboard changed: ${text.substring(0, 100)}${text.length > 100 ? '...' : ''}`);
+});
+
+// Start clipboard monitoring when server starts
+clipboardMonitor.startMonitoring();
+
 app.listen(PORT, () => {
     console.log(`🐿️ Stashboard running at http://localhost:${PORT}`);
+    console.log(`📋 Clipboard monitoring started`);
 });
