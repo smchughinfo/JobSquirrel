@@ -1,8 +1,9 @@
 const path = require('path');
 const fs = require('fs');
 const EventEmitter = require('events');
-const { askClaudeSync } = require('./llm');
+const { askClaudeSync, askOllamaSync } = require('./llm');
 const { getCacheDirectory } = require('./jobSquirrelPaths');
+const cheerio = require('cheerio');
 
 /**
  * Event-driven AcornProcessor for converting job HTML files to markdown
@@ -44,18 +45,32 @@ class AcornProcessor extends EventEmitter {
 
     /**
      * Process a single HTML file with Claude/Ollama
-     * @param {string} filename - HTML filename to process
+     * @param {string} fileName - HTML filename to process
      * @returns {Promise<string>} Processing result message
      */
-    async processFile(filename) {
-        console.log("OKAY GONNA PROCESS " + filename);
-        // 1. convert 
-        //const messageToClaude = `Hi Claude, can you copy what you see in ${filename}. to a file called ${filename.replace(/html$/, "")}md.`;
+    async processFile(fileName) {
+
+    console.log("OKAY GONNA PROCESS " + fileName);
+
+        let filePath = path.join(getCacheDirectory(), fileName);
+
+        console.log("OKAY GONNA PROCESS PATH" + filePath);
+
+        const htmlContent = "<jobSquirrel>" + fs.readFileSync(filePath, 'utf8') + "</jobSquirrel>";
+        const $ = cheerio.load(htmlContent);
+        $('style').remove();
+        $('script').remove();
+        const element = $("jobSquirrel");
+        const textContent = element.text().trim();
+
+        console.log(textContent);
         
-        // Use Claude for now, can be swapped for Ollama later
-        //const result = askClaudeSync(messageToClaude);
+        const simplePrompt = `Return a complete description of this job listing in .md format: \n\n\n\n${textContent}`;
+        console.log("🦙 Testing Ollama with simple extraction...");
+        const result = askOllamaSync(simplePrompt);
+        console.log("🦙 Ollama result:", result);
         
-        //return result;
+        return result;
     }
 
     /**

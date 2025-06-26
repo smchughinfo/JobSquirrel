@@ -87,8 +87,8 @@ public abstract class Territory
 - **`server.js`**: Express server with streaming endpoints
 - **`services/commandRunner.js`**: Process execution with SSE streaming
 - **`services/acornProcessor.js`**: Event-driven job processing with cancellation support
-- **`services/llm.js`**: Unified Claude/Ollama integration layer
-- **`services/jobSquirrelPaths.js`**: Centralized path management for entire JobSquirrel ecosystem
+- **`services/llm.js`**: Unified Claude/Ollama integration layer (uses jobSquirrelPaths for all path operations)
+- **`services/jobSquirrelPaths.js`**: **REQUIRED** - Centralized path management for entire JobSquirrel ecosystem
 - **`public/js/app.js`**: Frontend JavaScript for real-time UI updates
 - **`public/index.html`**: Web interface with control buttons
 
@@ -195,14 +195,19 @@ convertPathToWSL(windowsPath)
 
 **Usage Pattern**:
 ```javascript
-const { getCacheDirectory } = require('./services/jobSquirrelPaths');
+const { getCacheDirectory, convertPathToWSL } = require('./services/jobSquirrelPaths');
 
 // For file operations (Windows paths)
 const cacheDir = getCacheDirectory();
 
 // For WSL command execution  
 const wslCacheDir = getCacheDirectory(true);
+
+// Manual path conversion when needed
+const wslPath = convertPathToWSL(windowsPath);
 ```
+
+**IMPORTANT**: All AcornDepot services MUST use `jobSquirrelPaths.js` for path operations. Never manually construct paths or do Windows→WSL conversion in service files. This ensures consistency and makes path changes manageable from a single location.
 
 **Benefits**:
 - ✅ Single source of truth for all path resolution
