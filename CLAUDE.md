@@ -202,6 +202,66 @@ Several aspects of the current system are acknowledged as areas for future impro
 
 These limitations represent conscious trade-offs between development speed, reliability, and architectural purity. The current system prioritizes getting a working solution operational over perfect architecture, with the understanding that improvements can be made iteratively.
 
+## Local LLM Integration with Ollama
+
+**AcornDepot** supports both Claude AI (via API) and local LLM processing via Ollama for cost optimization and faster processing.
+
+### Ollama Setup & Integration
+
+**Installation**: Install Ollama on Windows for optimal GPU/CUDA performance
+
+**WSL Integration**: Ollama Windows executables are directly accessible from WSL:
+```bash
+# From WSL, call Windows Ollama directly
+ollama.exe --version
+ollama.exe list
+ollama.exe run llama3:latest "Your prompt here"
+```
+
+**Architecture Benefits**:
+- **Native GPU Performance**: Full CUDA acceleration on Windows
+- **Existing Infrastructure**: Uses same WSL command bridge as Claude Code
+- **Cost Optimization**: Free local processing vs. expensive Claude API calls
+- **A/B Testing**: Easy switching between Claude and Ollama processing
+
+**Technical Implementation**:
+```javascript
+// Claude command:
+wsl -e bash -c "cd ${workingDir} && script -qec \"claude --print --dangerously-skip-permissions '${message}'\" /dev/null"
+
+// Ollama command:
+wsl -e bash -c "cd ${workingDir} && ollama.exe run llama3:latest '${message}'"
+```
+
+**Output Cleaning**: Like Claude, Ollama outputs ANSI control sequences that require cleaning:
+```javascript
+const cleanResult = result
+    .replace(/\x1b\[[0-9;]*[mGKHF]?/g, '')  // Remove ANSI sequences
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')  // Remove control chars
+    .replace(/\?25[hl]/g, '')  // Remove cursor visibility sequences
+    .trim();
+```
+
+**Model Management**:
+- **List models**: `ollama.exe list`
+- **Pull models**: `ollama.exe pull llama3.2`
+- **Recommended models**: `llama3:latest`, `llama3.2`, `codellama` for different use cases
+
+### Performance Comparison
+
+| Aspect | Claude API | Ollama Local |
+|--------|------------|--------------|
+| **Cost** | ~$0.15 per 1K tokens | Free after setup |
+| **Speed** | Network dependent | GPU dependent |
+| **Quality** | Excellent | Good (model dependent) |
+| **Availability** | Requires internet | Always available |
+| **GPU Usage** | None | High (beneficial) |
+
+**Usage Strategy**: 
+- **Ollama for bulk processing** - Fast, free job conversion
+- **Claude for complex tasks** - High-quality resume generation
+- **Hybrid approach** - Best of both worlds
+
 ## Getting Current Claude Code Session ID
 
 **Problem**: Claude instances need to know their own session ID for multi-phase workflows, but `/status` command is not accessible from Bash tool.

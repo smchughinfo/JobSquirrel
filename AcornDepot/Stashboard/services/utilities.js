@@ -21,7 +21,7 @@ function askClaudeSync(message, workingDir = null) {
     
     try {
         const command = `wsl -e bash -c "cd ${workingDir} && script -qec \\"claude --print --dangerously-skip-permissions '${message}'\\" /dev/null"`;
-        const result = execSync(command, { encoding: 'utf8', timeout: 600000 }); // 10 minutes
+        const result = execSync(command, { encoding: 'utf8', timeout: 180000 });
 
         // Clean up ANSI escape sequences and extra whitespace
         const cleanResult = result

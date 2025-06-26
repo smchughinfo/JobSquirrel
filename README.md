@@ -9,14 +9,15 @@ JobSquirrel is your career's best friend - a personalized resume and cover lette
 ## Getting Started
 
 1. Install VS Code Theme [Quiet Light for VSC](https://vscodethemes.com/e/onecrayon.theme-quietlight-vsc/quiet-light-for-vsc)
-2. Install Claude Code (JobSquirrel development was done on Windows WSL)
-3. In wsl `sudo apt install poppler-utils` (this contains pdftotext, which Claude uses to read pdfs)
-3. Populate `ResumeData/` with your career information (resumes, cover letters, LLM memory dumps about you, personal project summaries, etc.)
-4. Fill out personal-information.txt with your own information.
-5. Fill out personal-resume-instructions.txt with resume generation instructions that are specific to you (e.g. address that job gap like so...).
-6. [Install the Job Squirrel browser extension in /BrowserExtension.](https://claude.ai/share/9c00acf1-23bd-486d-85a4-300b63d6d24b)
-7. run HelperScripts/start.bat
-8. Go to a job website (indeed.com) and click on the browser extension.
+2. Install [Ollama](https://ollama.com/download/windows) (test -> `ollama run llama3:latest "What's the most efficient way to cache 500 acorns for winter?"`)
+3. Install Claude Code (JobSquirrel development was done on Windows WSL)
+4. In wsl `sudo apt install poppler-utils` (this contains pdftotext, which Claude uses to read pdfs)
+5. Populate `ResumeData/` with your career information (resumes, cover letters, LLM memory dumps about you, personal project summaries, etc.)
+5. Fill out personal-information.txt with your own information.
+6. Fill out personal-resume-instructions.txt with resume generation instructions that are specific to you (e.g. address that job gap like so...).
+7. [Install the Job Squirrel browser extension in /BrowserExtension.](https://claude.ai/share/9c00acf1-23bd-486d-85a4-300b63d6d24b)
+8. run HelperScripts/start.bat
+9. Go to a job website (indeed.com) and click on the browser extension.
 
 Flow: Click browser extension -> Copies page html to clipboard with JobSquirrel identifier -> terminal applications launched from HelperScripts/start.bat notice the JobSquirrel clipboard message and save it to /HelperScripts/clipboard.html -> Claude code is then launched and told to execute /WoodlandDirectives/ThePlan.txt
 
