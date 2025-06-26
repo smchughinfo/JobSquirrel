@@ -56,13 +56,13 @@ void ForageTerritories()
 ////// MAIN LOGIC ///////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
 
-/*int i = 0;
+int i = 0;
 while(true)
 {
     Console.WriteLine("scampering...");
     File.AppendAllText("c:/users/seanm/desktop/counter.txt", $"{i++}");
     Thread.Sleep(1000);
-}*/
+}
 
 ChaseAwayRivals();
 ForageTerritories();

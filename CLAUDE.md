@@ -3,18 +3,56 @@
 **Note**: This project contains additional CLAUDE.md files in subdirectories (`/AcornDepot/CLAUDE.md`) with component-specific documentation.
 
 ## Application Concept
-JobSquirrel is a personalized resume and cover letter generator that tailors career information to specific job applications.
+JobSquirrel is a comprehensive job application automation ecosystem that combines job scraping, processing, and personalized resume/cover letter generation. The system has evolved into two parallel workflows that will eventually be unified:
+
+1. **Original JobSquirrel** - Manual job capture with browser extension → multi-phase Claude processing → tailored resumes/cover letters
+2. **AcornDepot** - Automated job scraping with Selenium → bulk AI processing → structured job data
+
+Both systems share the squirrel/woodland theme and aim to automate the job application process, with plans for architectural unification and cost optimization through local LLM integration.
+
+## System Architecture Overview
+
+JobSquirrel consists of two parallel workflows:
+
+### Original JobSquirrel Workflow (Proven & Stable)
+```
+Browser Extension → Clipboard → Orchestrator → Claude Processing → Generated Resumes
+```
+
+### AcornDepot Workflow (Automated & Scalable)  
+```
+Scamper Scraper → Cache → Stashboard Processing → Structured Job Data
+```
+
+### Planned Integration
+Both systems will eventually converge with:
+- **Unified LLM Management**: Config-driven Claude vs Ollama selection
+- **Shared Job Processing**: AcornDepot feeding into original resume generation
+- **Cost Optimization**: Local Ollama for bulk processing, Claude for complex tasks
 
 ## File Structure
-- `/ResumeData/` - Contains all career data (resumes, cover letters, certifications, career info, etc.)
-- `/GeneratedResumes/[Company Name - Job Title]/` - Output folder for generated applications
-  - `job-listing.md` - Job descriptions saved in markdown format
+
+### Core JobSquirrel System
+- `/ResumeData/` - All career data sources (resumes, cover letters, certifications, career info)
+- `/GeneratedResumes/[Company - Job Title]/` - Final output for job applications
+  - `job-listing.md` - Parsed job descriptions  
+  - `session-id.txt` - Claude session tracking
+  - `resume-changes.md` - Revision documentation
   - Generated resume and cover letter files
-- `/AcornDepot/` - **NEW**: Comprehensive job scraper system with web interface (see `/AcornDepot/CLAUDE.md`)
+- `/HelperScripts/` - PowerShell orchestration and utility scripts
+- `/WoodlandDirectives/` - AI instruction templates for multi-phase processing
+- `/BrowserExtension/` - Manual job capture from web pages
+
+### AcornDepot System  
+- `/AcornDepot/` - Autonomous job scraper system (see `/AcornDepot/CLAUDE.md`)
   - `/Scamper/` - C# Selenium-based job scraper with stealth features
-  - `/Stashboard/` - Node.js Express web interface with real-time streaming
-  - `/Cache/` - Temporary storage for scraped job HTML and processed markdown files
-- `selectors.json` - Global CSS selector configuration for all job sites (indeed, dice, etc.)
+  - `/Stashboard/` - Node.js Express web interface with real-time streaming  
+  - `/Cache/` - Raw scraped HTML and processed markdown files
+  - `/services/jobSquirrelPaths.js` - Centralized path management
+
+### Shared Configuration
+- `selectors.json` - Global CSS selector configuration for job sites
+- `personal-information.txt` - User data for resume customization
 
 ## AcornDepot: Autonomous Job Scraper System
 
@@ -202,6 +240,42 @@ Several aspects of the current system are acknowledged as areas for future impro
 
 These limitations represent conscious trade-offs between development speed, reliability, and architectural purity. The current system prioritizes getting a working solution operational over perfect architecture, with the understanding that improvements can be made iteratively.
 
+## Current Architectural State & Future Plans
+
+### Present Reality: "Plate of Spaghetti" 🍝
+The JobSquirrel ecosystem has evolved organically into two parallel systems with some architectural inconsistencies:
+
+**What Works Well**:
+- ✅ Original JobSquirrel workflow is proven and stable for daily use
+- ✅ AcornDepot provides automated scraping and bulk processing capabilities  
+- ✅ Both systems produce quality results for their intended use cases
+- ✅ Real-time streaming and process control work reliably
+
+**Architectural Challenges**:
+- 🔄 Duplicate path management and configuration (being addressed with `jobSquirrelPaths.js`)
+- 🔄 Inconsistent LLM integration patterns between systems
+- 🔄 Unclear data flow between AcornDepot cache and GeneratedResumes
+- 🔄 Mixed file-based signaling approaches
+
+### Planned Architectural Evolution
+
+**Phase 1: Stabilize Current Systems**
+- ✅ Centralized path management (`jobSquirrelPaths.js`) 
+- 🚧 Local LLM integration (Ollama) for cost optimization
+- 🔜 Config-driven LLM selection system
+
+**Phase 2: Incremental Integration**  
+- 🔜 Bridge AcornDepot cache → GeneratedResumes workflow
+- 🔜 Unified LLM service layer across both systems
+- 🔜 Consistent event-driven processing patterns
+
+**Phase 3: Architectural Unification**
+- 🔜 Single job processing pipeline with multiple input sources
+- 🔜 Unified configuration and state management
+- 🔜 Consolidated user interface for both manual and automated workflows
+
+**Design Philosophy**: "Don't break what works" - The original JobSquirrel workflow remains untouched while AcornDepot serves as an experimental platform for new approaches. Integration happens incrementally as patterns prove successful.
+
 ## Local LLM Integration with Ollama
 
 **AcornDepot** supports both Claude AI (via API) and local LLM processing via Ollama for cost optimization and faster processing.
@@ -257,10 +331,20 @@ const cleanResult = result
 | **Availability** | Requires internet | Always available |
 | **GPU Usage** | None | High (beneficial) |
 
-**Usage Strategy**: 
-- **Ollama for bulk processing** - Fast, free job conversion
-- **Claude for complex tasks** - High-quality resume generation
-- **Hybrid approach** - Best of both worlds
+**Planned Integration Strategy**: 
+- **Config-driven LLM selection** - System-wide configuration for Claude vs Ollama per task type
+- **Ollama for bulk processing** - Job HTML conversion, data extraction, simple transformations
+- **Claude for agentic tasks** - Resume generation, cover letter writing, complex reasoning
+- **Cost optimization** - Reduce API costs while maintaining quality where it matters
+- **Unified ecosystem** - Both Original JobSquirrel and AcornDepot benefit from local LLM integration
+
+**Future Convergence**:
+The current parallel systems will eventually merge into a unified workflow:
+```
+Automated Scraping (Scamper) → Job Processing (Ollama) → Resume Generation (Claude) → Final Output
+                              ↗
+Manual Capture (Browser Extension) → [Same processing pipeline]
+```
 
 ## Getting Current Claude Code Session ID
 

@@ -1,5 +1,6 @@
 const { spawn } = require('child_process');
-
+const { getJobSquirrelRootDirectory } = require('./jobSquirrelPaths');
+const { convertPathToWSL } = require('./jobSquirrelPaths');
 /**
  * Runs a command and streams output via Server-Sent Events
  * @param {Object} req - Express request object
@@ -66,6 +67,34 @@ function escape(str) {
         .replace(/"/g, '\\"')
         .replace(/\n/g, '\\n')
         .replace(/\r/g, '\\r');
+}
+
+/**
+ * Test function for debugging WSL commands
+ */
+function testWSLCommand(command = 'ls') {
+    const jobSquirrelRootDir = getJobSquirrelRootDirectory();
+    const workingDir = convertPathToWSL(jobSquirrelRootDir);
+    
+    console.log(`🧪 __dirname: ${__dirname}`);
+    console.log(`🧪 cacheDir (before WSL conversion): ${jobSquirrelRootDir}`);
+    console.log(`🧪 workingDir (after WSL conversion): ${workingDir}`);
+    console.log(`🧪 Testing WSL command: ${command}`);
+    
+    try {
+        // Test if the directory exists first
+        const testDirCommand = `wsl -e bash -c "ls -la '${workingDir}'"`;
+        console.log(`🧪 Testing directory existence: ${testDirCommand}`);
+        
+        const wslCommand = `wsl -e bash -c "cd '${workingDir}' && pwd && ${command}"`;
+        console.log(`🧪 Full command: ${wslCommand}`);
+        const result = execSync(wslCommand, { encoding: 'utf8', timeout: 30000 });
+        console.log(`🧪 Success: ${result}`);
+        return result;
+    } catch (error) {
+        console.error(`🧪 Error: ${error.message}`);
+        return `Error: ${error.message}`;
+    }
 }
 
 module.exports = {

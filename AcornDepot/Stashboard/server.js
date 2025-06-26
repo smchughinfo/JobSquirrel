@@ -2,11 +2,20 @@ const express = require('express');
 const path = require('path');
 const { execSync } = require('child_process');
 const { runCommandWithStreaming } = require('./services/commandRunner');
-const { getUnProcessedAcorns, askClaudeSync, askClaudeStream, testWSLCommand } = require('./services/utilities');
+const { AcornProcessor } = require('./services/acornProcessor');
+const { getCacheDirectory, getAcornDepotDirectory } = require('./services/jobSquirrelPaths');
 
 // Helper function to properly escape JSON strings
 function escapeJsonString(str) {
-    return str
+    // Handle null, undefined, or non-string values
+    if (str === null || str === undefined) {
+        return '';
+    }
+    
+    // Convert to string if it's not already
+    const stringValue = String(str);
+    
+    return stringValue
         .replace(/\\/g, '\\\\')
         .replace(/"/g, '\\"')
         .replace(/\n/g, '\\n')
@@ -17,6 +26,26 @@ function escapeJsonString(str) {
 // Helper function to add delay for streaming
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Test function for debugging WSL commands
+function testWSLCommand(command = 'ls') {
+    const cacheDir = getCacheDirectory(true)
+    const workingDir = cacheDir.replace(/\\/g, '/').replace(/^([A-Z]):/, (match, drive) => `/mnt/${drive.toLowerCase()}`);
+    
+    console.log(`🧪 Testing WSL command: ${command}`);
+    console.log(`🧪 Working directory: ${workingDir}`);
+    
+    try {
+        const wslCommand = `wsl -e bash -c "cd '${workingDir}' && pwd && ${command}"`;
+        console.log(`🧪 Full command: ${wslCommand}`);
+        const result = execSync(wslCommand, { encoding: 'utf8', timeout: 30000 });
+        console.log(`🧪 Success: ${result}`);
+        return result;
+    } catch (error) {
+        console.error(`🧪 Error: ${error.message}`);
+        return `Error: ${error.message}`;
+    }
 }
 
 const app = express();
@@ -45,7 +74,8 @@ app.get('/api/run-scamper', (req, res) => {
         return;
     }
 
-    const scamperPath = path.join(__dirname, '..', 'Scamper', 'bin', 'Debug', 'net8.0', 'Scamper.exe');
+    const acornDepotPath = getAcornDepotDirectory();
+    const scamperPath = path.join(acornDepotPath, 'Scamper', 'bin', 'Debug', 'net8.0', 'Scamper.exe');
     const childProcess = runCommandWithStreaming(req, res, scamperPath);
     
     // Store the process reference
@@ -108,7 +138,7 @@ app.get('/api/test-wsl', (req, res) => {
     res.json({ command, result });
 });
 
-app.get('/api/process-acorns', async (req, res) => {
+app.get('/api/process-acorns', (req, res) => {
     if (runningProcesses.acorns) {
         // Already running, send error
         res.status(409).json({ error: 'Acorns processing is already running. Use /api/kill-acorns to stop it.' });
@@ -126,64 +156,66 @@ app.get('/api/process-acorns', async (req, res) => {
     // Disable Express buffering
     res.socket.setNoDelay(true);
 
-    const unprocessedAcorns = getUnProcessedAcorns();
-
-    // Mark as running and store cancellation flag
-    runningProcesses.acorns = { 
-        cancelled: false,
+    // Create new processor instance
+    const processor = new AcornProcessor();
+    
+    // Store processor reference for kill functionality
+    runningProcesses.acorns = {
+        processor: processor,
         response: res,
         startTime: new Date()
     };
 
-    res.write(`data: {"type":"start","message":"Processing ${unprocessedAcorns.length} acorns..."}\n\n`);
-    res.flushHeaders(); // Force flush
+    // Set up event listeners for streaming
+    processor.on('start', (data) => {
+        res.write(`data: {"type":"start","message":"${escapeJsonString(data.message)}"}\n\n`);
+    });
 
-    // Process files sequentially, one at a time
-    for (let index = 0; index < unprocessedAcorns.length; index++) {
-        // Check if cancelled
-        if (runningProcesses.acorns && runningProcesses.acorns.cancelled) {
-            console.log('🔪 Acorns processing cancelled by user');
-            res.write(`data: {"type":"end","message":"Acorns processing cancelled by user"}\n\n`);
-            res.end();
-            runningProcesses.acorns = null;
-            return;
+    processor.on('progress', (data) => {
+        res.write(`data: {"type":"progress","message":"${escapeJsonString(data.message)}"}\n\n`);
+    });
+
+    processor.on('result', (data) => {
+        res.write(`data: {"type":"result","file":"${escapeJsonString(data.file)}","result":"${escapeJsonString(data.result)}"}\n\n`);
+    });
+
+    processor.on('error', (data) => {
+        // Handle both file-specific errors and general errors
+        if (data.file) {
+            res.write(`data: {"type":"error","file":"${escapeJsonString(data.file)}","error":"${escapeJsonString(data.error)}"}\n\n`);
+        } else {
+            res.write(`data: {"type":"error","error":"${escapeJsonString(data.error)}"}\n\n`);
         }
+    });
 
-        const file = unprocessedAcorns[index];
-        
-        try {
-            console.log(`🐿️ [${new Date().toISOString()}] Starting file ${index + 1}: ${file}`);
-            res.write(`data: {"type":"progress","message":"${escapeJsonString(`Processing file ${index + 1}: ${file}/${unprocessedAcorns.length}`)}"}\n\n`);
-            
-            // Add small delay to ensure message is sent
-            await delay(100);
-
-            const messageToClaude = `Hi Claude, can you copy what you see in ${file}. to a file called ${file.replace(/html$/, "")}md.`;
-            
-            // Process this file and immediately send the result
-            const result = askClaudeSync(messageToClaude);
-            
-            console.log(`🐿️ [${new Date().toISOString()}] Completed file ${index + 1}: ${file}`);
-            
-            // Send the result immediately after this file is processed
-            res.write(`data: {"type":"result","file":"${escapeJsonString(file)}","result":"${escapeJsonString(result)}"}\n\n`);
-            
-            // Add small delay to ensure message is sent before next iteration
-            await delay(100);
-            
-        } catch (error) {
-            console.log(`🐿️ [${new Date().toISOString()}] Error with file ${index + 1}: ${file} - ${error.message}`);
-            res.write(`data: {"type":"error","file":"${escapeJsonString(file)}","error":"${escapeJsonString(error.message)}"}\n\n`);
-            await delay(100);
-        }
-    }
-
-    // Clean completion
-    if (runningProcesses.acorns && !runningProcesses.acorns.cancelled) {
-        res.write(`data: {"type":"end","message":"All acorns processed!"}\n\n`);
+    processor.on('cancelled', (data) => {
+        res.write(`data: {"type":"end","message":"${escapeJsonString(data.message)}"}\n\n`);
         res.end();
         runningProcesses.acorns = null;
-    }
+    });
+
+    processor.on('complete', (data) => {
+        res.write(`data: {"type":"end","message":"${escapeJsonString(data.message)}"}\n\n`);
+        res.end();
+        runningProcesses.acorns = null;
+    });
+
+    // Handle client disconnect
+    req.on('close', () => {
+        console.log('Client disconnected, cancelling acorn processing');
+        if (processor) {
+            processor.cancel();
+        }
+        runningProcesses.acorns = null;
+    });
+
+    // Start processing
+    processor.processAllAcorns().catch(error => {
+        console.error('Processor error:', error);
+        res.write(`data: {"type":"error","error":"${escapeJsonString(error.message)}"}\n\n`);
+        res.end();
+        runningProcesses.acorns = null;
+    });
 });
 
 // Kill Acorns processing endpoint
@@ -191,19 +223,12 @@ app.post('/api/kill-acorns', (req, res) => {
     if (runningProcesses.acorns) {
         console.log('🔪 Killing acorns processing...');
         
-        // Set cancellation flag
-        runningProcesses.acorns.cancelled = true;
-        
-        // Close the SSE connection if it exists
-        if (runningProcesses.acorns.response) {
-            try {
-                runningProcesses.acorns.response.end();
-            } catch (error) {
-                console.log('Response already closed');
-            }
+        // Cancel the processor
+        if (runningProcesses.acorns.processor) {
+            runningProcesses.acorns.processor.cancel();
         }
         
-        runningProcesses.acorns = null;
+        // The processor will emit 'cancelled' event which will clean up runningProcesses.acorns
         res.json({ success: true, message: 'Acorns processing cancelled' });
     } else {
         res.status(404).json({ error: 'No acorns processing running' });

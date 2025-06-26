@@ -1,6 +1,8 @@
 # AcornDepot - Autonomous Job Scraper System
 
-**AcornDepot** is a comprehensive job scraping and processing system that automates the collection of job postings from multiple sites and processes them using Claude AI. It consists of three main components working together to provide a complete solution.
+**AcornDepot** is a comprehensive job scraping and processing system that automates the collection of job postings from multiple sites and processes them using AI (Claude/Ollama). It serves as the "automated" component of the larger JobSquirrel ecosystem, complementing the original manual workflow with bulk processing capabilities.
+
+AcornDepot consists of three main components working together to provide a complete autonomous job collection solution, with plans for integration into the broader JobSquirrel resume generation workflow.
 
 ## System Architecture Overview
 
@@ -84,7 +86,9 @@ public abstract class Territory
 **Key Files**:
 - **`server.js`**: Express server with streaming endpoints
 - **`services/commandRunner.js`**: Process execution with SSE streaming
-- **`services/utilities.js`**: Claude integration and file processing
+- **`services/acornProcessor.js`**: Event-driven job processing with cancellation support
+- **`services/llm.js`**: Unified Claude/Ollama integration layer
+- **`services/jobSquirrelPaths.js`**: Centralized path management for entire JobSquirrel ecosystem
 - **`public/js/app.js`**: Frontend JavaScript for real-time UI updates
 - **`public/index.html`**: Web interface with control buttons
 
@@ -148,12 +152,12 @@ const result = execSync(command, { encoding: 'utf8', timeout: 600000 });
 4. Results stream live to browser as each file completes
 
 ## Cache Directory Structure
-**Location**: `/AcornDepot/Cache/`
+**Location**: Managed by `services/jobSquirrelPaths.js` - `getCacheDirectory()`
 
 ```
-Cache/
+AcornDepot/Cache/
 ├── Company1 - Job Title1.html          (Raw scraped HTML)
-├── Company1 - Job Title1.md            (Claude-processed markdown)
+├── Company1 - Job Title1.md            (AI-processed markdown)
 ├── Company2 - Job Title2.html
 ├── Company2 - Job Title2.md
 └── ...
@@ -161,11 +165,50 @@ Cache/
 
 **File Lifecycle**:
 1. **Scamper** scrapes job → saves `JobTitle.html` in Cache
-2. **Stashboard** detects unprocessed files (HTML without corresponding MD)
-3. **Claude** processes HTML → creates clean `JobTitle.md`
+2. **AcornProcessor** detects unprocessed files (HTML without corresponding MD)
+3. **LLM (Claude/Ollama)** processes HTML → creates clean `JobTitle.md`
 4. **Result**: Paired HTML/MD files for each job
 
+**Future Integration**: Processed jobs will eventually flow from Cache → JobSquirrel's `GeneratedResumes/` workflow for resume generation.
+
 ## Configuration System
+
+### Centralized Path Management
+**Location**: `services/jobSquirrelPaths.js`
+
+**Purpose**: Provides consistent path resolution across the entire JobSquirrel ecosystem
+
+**Key Functions**:
+```javascript
+// Get root JobSquirrel directory (Windows or WSL paths)
+getJobSquirrelRootDirectory(wsl = false)
+
+// Get AcornDepot directory  
+getAcornDepotDirectory(wsl = false)
+
+// Get Cache directory for scraped jobs
+getCacheDirectory(wsl = false) 
+
+// Convert Windows paths to WSL format
+convertPathToWSL(windowsPath)
+```
+
+**Usage Pattern**:
+```javascript
+const { getCacheDirectory } = require('./services/jobSquirrelPaths');
+
+// For file operations (Windows paths)
+const cacheDir = getCacheDirectory();
+
+// For WSL command execution  
+const wslCacheDir = getCacheDirectory(true);
+```
+
+**Benefits**:
+- ✅ Single source of truth for all path resolution
+- ✅ Automatic Windows ↔ WSL path conversion
+- ✅ Consistent across AcornDepot and future unified JobSquirrel system
+- ✅ Easy to relocate directories without code changes
 
 ### selectors.json - Global Site Configuration
 **Location**: `/selectors.json` (project root)
@@ -380,8 +423,38 @@ This thematic consistency makes the codebase more memorable and fun to work with
 - Statistics and analytics dashboard
 - Mobile-responsive design
 
-**Integration**:
-- Connect to original JobSquirrel resume generation system
-- API endpoints for external systems
-- Database storage vs. file-based cache
-- Cloud deployment options
+**Ecosystem Integration**:
+- **Connect to original JobSquirrel**: Bridge Cache → GeneratedResumes workflow
+- **Unified LLM management**: Shared Claude/Ollama service layer
+- **Config-driven processing**: System-wide LLM selection based on task complexity
+- **Consistent user experience**: Eventually merge Stashboard with original JobSquirrel UI
+
+**Technical Improvements**:
+- **Parallel processing**: Multiple files simultaneously vs. current sequential approach
+- **Database storage**: Replace file-based cache with proper data persistence
+- **API endpoints**: RESTful interfaces for external system integration
+- **Cloud deployment**: Containerized deployment options for scalability
+
+## Relationship to JobSquirrel Ecosystem
+
+AcornDepot serves as the "automated job collection" component within the larger JobSquirrel system:
+
+**Current State**: Parallel Systems
+```
+Original JobSquirrel:  Browser Extension → Manual Processing → Resume Generation
+AcornDepot:           Scamper → Automated Processing → Structured Data
+```
+
+**Future Integration**: Unified Pipeline  
+```
+┌─ Manual Capture (Browser Extension) ─┐
+│                                      ▼
+└─ Automated Capture (Scamper) ────── Job Processing ── Resume Generation ── Final Output
+                                      (Ollama/Claude)    (Claude)
+```
+
+**Architectural Benefits**:
+- **Best of both worlds**: Manual precision + automated scale
+- **Cost optimization**: Bulk processing with local LLM, quality tasks with Claude
+- **Incremental migration**: Proven workflows remain stable during integration
+- **Unified configuration**: Single path management and LLM selection system
