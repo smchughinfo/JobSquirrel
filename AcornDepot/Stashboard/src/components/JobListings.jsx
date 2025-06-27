@@ -4,6 +4,7 @@ function JobListings({ lastEvent }) {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [expandedMarkdown, setExpandedMarkdown] = useState(new Set());
 
   // Fetch jobs from the API
   const fetchJobs = async () => {
@@ -54,6 +55,18 @@ function JobListings({ lastEvent }) {
       return ['No specific requirements listed'];
     }
     return requirements;
+  };
+
+  const toggleMarkdown = (jobIndex) => {
+    setExpandedMarkdown(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(jobIndex)) {
+        newSet.delete(jobIndex);
+      } else {
+        newSet.add(jobIndex);
+      }
+      return newSet;
+    });
   };
 
   if (loading) {
@@ -136,11 +149,9 @@ function JobListings({ lastEvent }) {
               transition: 'transform 0.2s ease, box-shadow 0.2s ease'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
               e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.15)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
               e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
             }}>
               
@@ -220,7 +231,7 @@ function JobListings({ lastEvent }) {
                   flexWrap: 'wrap',
                   gap: '0.5rem'
                 }}>
-                  {formatRequirements(job.requirements).slice(0, 6).map((requirement, reqIndex) => (
+                  {formatRequirements(job.requirements).slice(0, 99).map((requirement, reqIndex) => (
                     <span key={reqIndex} style={{
                       background: '#f8f9fa',
                       color: '#495057',
@@ -232,17 +243,74 @@ function JobListings({ lastEvent }) {
                       {requirement}
                     </span>
                   ))}
-                  {formatRequirements(job.requirements).length > 6 && (
+                  {formatRequirements(job.requirements).length > 99 && (
                     <span style={{
                       color: '#666',
                       fontSize: '0.8rem',
                       padding: '0.25rem 0.5rem'
                     }}>
-                      +{formatRequirements(job.requirements).length - 6} more
+                      +{formatRequirements(job.requirements).length - 99} more
                     </span>
                   )}
                 </div>
               </div>
+
+              {/* Markdown view toggle */}
+              {job.markdown && (
+                <div style={{ marginTop: '1rem' }}>
+                  <button
+                    onClick={() => toggleMarkdown(index)}
+                    style={{
+                      background: expandedMarkdown.has(index) ? '#8B4513' : '#f8f9fa',
+                      color: expandedMarkdown.has(index) ? 'white' : '#8B4513',
+                      border: '1px solid #8B4513',
+                      borderRadius: '5px',
+                      padding: '0.4rem 0.8rem',
+                      fontSize: '0.8rem',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!expandedMarkdown.has(index)) {
+                        e.target.style.background = '#e9ecef';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!expandedMarkdown.has(index)) {
+                        e.target.style.background = '#f8f9fa';
+                      }
+                    }}
+                  >
+                    📄 {expandedMarkdown.has(index) ? 'Hide' : 'View'} Markdown
+                  </button>
+                  
+                  {/* Markdown content */}
+                  {expandedMarkdown.has(index) && (
+                    <div style={{
+                      marginTop: '1rem',
+                      padding: '1rem',
+                      background: '#f8f9fa',
+                      borderRadius: '5px',
+                      border: '1px solid #dee2e6',
+                      maxHeight: '400px',
+                      overflowY: 'auto',
+                      fontSize: '0.85rem',
+                      lineHeight: '1.5'
+                    }}>
+                      <pre style={{
+                        whiteSpace: 'pre-wrap',
+                        wordWrap: 'break-word',
+                        margin: '0',
+                        fontFamily: 'Monaco, Consolas, "Lucida Console", monospace',
+                        color: '#333'
+                      }}>
+                        {job.markdown}
+                      </pre>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* URL if available */}
               {job.url && job.url !== 'N/A' && (

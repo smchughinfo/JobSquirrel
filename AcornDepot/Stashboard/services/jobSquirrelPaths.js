@@ -19,7 +19,7 @@ function getAcornDepotDirectory(wsl) {
 
 function getHoardPath(wsl) {
     let adDir = getAcornDepotDirectory();
-    let hoardPath = path.join(adDir, "Stashboard", "public", "hoard.json");
+    let hoardPath = path.join(adDir, "Stashboard", "hoard.json");
     if(wsl) {
         hoardPath = convertPathToWSL(hoardPath);
     }

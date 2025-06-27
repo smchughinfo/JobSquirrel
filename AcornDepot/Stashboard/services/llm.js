@@ -96,9 +96,14 @@ function askOllamaSync(message, model = 'llama3:latest', workingDir = null) {
         const isInWSL = process.platform === 'linux' && process.env.WSL_DISTRO_NAME;
         
         // For job processing, always use temp files to preserve formatting
-        // For other messages, use temp files if over 8000 chars
-        const isJobProcessing = message.includes('complete description of this job listing');
-        const useFileForLongMessage = isJobProcessing || message.length > 8000;
+        // For other messages, use temp files if over 8000 chars  
+        const isJobProcessing = message.includes('complete description of this job listing') || 
+                               message.includes('job listing parser') || 
+                               message.includes('GENERATE JSON') ||
+                               message.includes('FIX JSON') ||
+                               message.includes('SECOND PASS') ||
+                               message.includes('Conver this to markdown');
+        const useFileForLongMessage = isJobProcessing || message.length > 1000;
         let command;
         
         if (useFileForLongMessage) {
@@ -164,7 +169,7 @@ function askOllamaSync(message, model = 'llama3:latest', workingDir = null) {
             .replace(/\n\s*\n\s*\n+/g, '\n\n') // Collapse multiple newlines to double newlines
             .trim();
             
-        console.log(`🦙 [${new Date().toISOString()}] Ollama completed: ${cleanResult.substring(0, 100)}...`);
+        console.log(`🦙 [${new Date().toISOString()}] Ollama completed: ${cleanResult.substring(0, 10000)}...`);
         return cleanResult;
     } catch (error) {
         console.error(`🦙 [${new Date().toISOString()}] Ollama error: ${error.message}`);
@@ -195,8 +200,13 @@ function askOllamaAsync(message, model = 'llama3:latest', workingDir = null) {
             
             // For job processing, always use temp files to preserve formatting
             // For other messages, use temp files if over 8000 chars
-            const isJobProcessing = message.includes('complete description of this job listing');
-            const useFileForLongMessage = isJobProcessing || message.length > 8000;
+            const isJobProcessing = message.includes('complete description of this job listing') || 
+                                   message.includes('job listing parser') || 
+                                   message.includes('GENERATE JSON') ||
+                                   message.includes('FIX JSON') ||
+                                   message.includes('SECOND PASS') ||
+                                   message.includes('Conver this to markdown');
+            const useFileForLongMessage = isJobProcessing || message.length > 1000;
             let command;
             let tempFile = null;
             

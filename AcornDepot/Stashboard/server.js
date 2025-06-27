@@ -68,8 +68,7 @@ app.get('/api/events-status', (req, res) => {
 app.get('/api/hoard', (req, res) => {
     try {
         const hoard = getHoard();
-        const jobListings = Object.values(hoard);
-        res.json({ success: true, jobs: jobListings, count: jobListings.length });
+        res.json({ success: true, jobs: hoard.jobListings, count: hoard.jobListings.length });
     } catch (error) {
         console.error(`🥜 Error fetching hoard: ${error.message}`);
         res.status(500).json({ success: false, error: error.message });

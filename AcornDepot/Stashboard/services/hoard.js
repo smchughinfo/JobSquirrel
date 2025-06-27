@@ -6,13 +6,13 @@ const hoardPath = getHoardPath();
 
 function addNutNote(nutNote) {  
     let map = getHoard();
-    map[getIdentifier(nutNote)] = nutNote;
+    map.jobListings.push(nutNote);
     saveHoard(map);
 }
 
 function getHoard() {
     if(!fs.existsSync(hoardPath)) {
-        fs.writeFileSync(hoardPath, JSON.stringify({}));
+        fs.writeFileSync(hoardPath, JSON.stringify({jobListings:[]}));
     }
     return JSON.parse(fs.readFileSync(hoardPath));
 }
