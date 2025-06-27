@@ -15,15 +15,15 @@ const jsonExample = `
 }`;
 
 function processRawJobListing(rawJobListing) {
-    const url = getInnerText(rawJobListing, "[data-job-squirrel-reference='url']");
     const jobListingText = getInnerText(rawJobListing);
 
     // all the job pages i can find have multiples jobs on the same page. but i generated a few job listings with just one job and this still worked just fine.
     const firstPass = askOllamaAndLog("FIRST PASS", `This is the innerText of a job site seach page. It contains a list of jobs but only one of them is shown in detail. Remove all information from the jobs that are not shown in detail and return the full text of the job that is shown in detail. Dont start your response with "Here are the results you requested" or anything like that. Just output the job listing:\n\n\n\n${jobListingText}`);
     let json = askOllamaAndLog("GENERATE JSON", generateJSONPrompt(firstPass));
     json = askOllamaAndLog("FIX JSON", `Can you fix any formatting errors with this JSON (don't edit any of the values). If there are formatting errors just return it as it. Don't start your response with "Here are your results in the requested format" or anything like that. Just output JSON:\n\n${json}`);
-
-    addNutNote(JSON.parse(json));
+    json = JSON.parse(json);
+    json.url = getInnerText(rawJobListing, "[data-job-squirrel-reference='url']");
+    addNutNote(json);
 }
 
 function askOllamaAndLog(logName, prompt) {
