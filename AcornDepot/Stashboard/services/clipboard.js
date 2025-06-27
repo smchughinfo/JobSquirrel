@@ -116,63 +116,6 @@ class ClipboardMonitor extends EventEmitter {
         };
     }
 
-    setClipboard(text) {
-        return new Promise((resolve, reject) => {
-            if (typeof text !== 'string') {
-                reject(new Error('Clipboard content must be a string'));
-                return;
-            }
-
-            this.chatter(`Setting clipboard content (${text.length} chars)`);
-
-            // Escape text for PowerShell by using Base64 encoding
-            const encodedText = Buffer.from(text, 'utf8').toString('base64');
-            
-            const script = `
-                Add-Type -AssemblyName System.Windows.Forms
-                try {
-                    $decodedText = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('${encodedText}'))
-                    [System.Windows.Forms.Clipboard]::SetText($decodedText)
-                    Write-Output "SUCCESS"
-                } catch {
-                    Write-Error $_.Exception.Message
-                }
-            `;
-
-            const setProcess = spawn('powershell', ['-Command', script], {
-                stdio: ['ignore', 'pipe', 'pipe'],
-                windowsHide: true
-            });
-
-            let output = '';
-            let errorOutput = '';
-
-            setProcess.stdout.on('data', (data) => {
-                output += data.toString();
-            });
-
-            setProcess.stderr.on('data', (data) => {
-                errorOutput += data.toString();
-            });
-
-            setProcess.on('close', (code) => {
-                if (code === 0 && output.trim() === 'SUCCESS') {
-                    this.chatter('Clipboard set successfully');
-                    resolve(true);
-                } else {
-                    const error = errorOutput || `Process exited with code ${code}`;
-                    this.chatter(`Failed to set clipboard: ${error}`);
-                    reject(new Error(error));
-                }
-            });
-
-            setProcess.on('error', (error) => {
-                this.chatter(`Error setting clipboard: ${error.message}`);
-                reject(error);
-            });
-        });
-    }
-
     clearJobSquirrelMessageFromClipboard() {
         return new Promise((resolve, reject) => {
             this.chatter('Checking clipboard for JobSquirrel messages...');
