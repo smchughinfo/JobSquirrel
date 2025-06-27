@@ -1,15 +1,15 @@
 const { EventEmitter } = require('events');
 const { spawn } = require('child_process');
-const { processJobListing: processRawJobListing } = require('./jobListingProcessor');
 
 class ClipboardMonitor extends EventEmitter {
-    constructor() {
+    constructor(jobQueue = null) {
         super();
         this.isRunning = false;
         this.process = null;
         this.buffer = '';
         this.chatter = (message) => console.log(`📋 Clipboard: ${message}`);
         this.lastMessage = "";
+        this.jobQueue = jobQueue;
     }
 
     startMonitoring() {
@@ -208,8 +208,19 @@ class ClipboardMonitor extends EventEmitter {
     routeMessage(message) {
         if (message.startsWith("JobSquirrelBrowserExtensionMessage")) {
             const payload = message.split("JobSquirrelBrowserExtensionMessage:")[1];
-            processRawJobListing(payload);
-            clearJobSquirrelMessageFromClipboard();
+            
+            if (this.jobQueue) {
+                try {
+                    const jobId = this.jobQueue.addJob(payload);
+                    this.chatter(`Job queued with ID: ${jobId}`);
+                } catch (error) {
+                    this.chatter(`Failed to queue job: ${error.message}`);
+                }
+            } else {
+                this.chatter(`No job queue configured - job data discarded`);
+            }
+            
+            this.clearJobSquirrelMessageFromClipboard();
         }
     }
 }
