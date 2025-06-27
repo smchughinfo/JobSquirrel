@@ -29,6 +29,9 @@ app.get('/', (req, res) => {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 const clipboardMonitor = new ClipboardMonitor();
+
+clipboardMonitor.clearJobSquirrelMessageFromClipboard(); // clipboard gets weird. if app stops during processing it doesn't clear the clipboard and may not notice when we copy the same text (click the browser extension). so clear the clipboard on server start so the clipboard logic will run when we paste the same text into the clipboard that was already there.
+
 clipboardMonitor.on('clipboardChange', (text) => {
     console.log(`📋 Clipboard changed: ${text.substring(0, 100)}${text.length > 100 ? '...' : ''}`);
 });

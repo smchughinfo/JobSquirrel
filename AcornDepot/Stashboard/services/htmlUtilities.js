@@ -2,7 +2,7 @@ const path = require("path");
 const fs = require("fs");
 const cheerio = require("cheerio");
 
-function getInnerText(html, selector, removeStyleAndScripts = true) {  
+function getInnerText(html, selector = "jobSquirrel", removeStyleAndScripts = true) {  
     const htmlContent = "<jobSquirrel>" + html + "</jobSquirrel>";
     const $ = cheerio.load(htmlContent);
 
@@ -11,7 +11,7 @@ function getInnerText(html, selector, removeStyleAndScripts = true) {
         $('script').remove();
     }
 
-    const element = $(selector ?? "jobSquirrel");
+    const element = $(selector);
     return element.text().trim();
 }
 

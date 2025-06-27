@@ -18,8 +18,8 @@ function getAcornDepotDirectory(wsl) {
 }
 
 function getHoardPath(wsl) {
-    let rootDir = getJobSquirrelRootDirectory();
-    let hoardPath = path.join(rootDir, "public", "hoard.json");
+    let adDir = getAcornDepotDirectory();
+    let hoardPath = path.join(adDir, "Stashboard", "public", "hoard.json");
     if(wsl) {
         hoardPath = convertPathToWSL(hoardPath);
     }
