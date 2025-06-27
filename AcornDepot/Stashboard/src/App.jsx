@@ -2,6 +2,7 @@ import React from 'react'
 import Header from './components/Header'
 import ClipboardMonitor from './components/ClipboardMonitor'
 import EventMonitor from './components/EventMonitor'
+import JobListings from './components/JobListings'
 import { useEventStream } from './hooks/useEventStream'
 import './App.css'
 
@@ -13,6 +14,7 @@ function App() {
       <Header />
       <main>
         <div className="container">
+          <JobListings lastEvent={lastEvent} />
           <EventMonitor isConnected={isConnected} lastEvent={lastEvent} />
           <ClipboardMonitor />
         </div>

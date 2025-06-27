@@ -22,6 +22,7 @@ function EventMonitor({ isConnected, lastEvent }) {
       case 'llm-processing-started': return '🧠';
       case 'llm-processing-completed': return '🧠✅';
       case 'clipboard-changed': return '📋';
+      case 'hoard-updated': return '🥜✨';
       case 'system-status': return '🐿️';
       case 'connected': return '🔌';
       default: return '📡';
@@ -36,6 +37,7 @@ function EventMonitor({ isConnected, lastEvent }) {
       case 'job-queued': return '#17a2b8';
       case 'llm-processing-started': return '#6f42c1';
       case 'llm-processing-completed': return '#28a745';
+      case 'hoard-updated': return '#fd7e14';
       case 'connected': return '#28a745';
       default: return '#6c757d';
     }

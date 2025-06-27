@@ -1,8 +1,11 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const { ClipboardMonitor } = require('./services/clipboard');
 const { JobQueue } = require('./services/jobQueue');
 const { eventBroadcaster } = require('./services/eventBroadcaster');
+const { getHoard } = require('./services/hoard');
+const { getHoardPath } = require('./services/jobSquirrelPaths');
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 ////////// SETUP SERVER  /////////////////////////////////////////////////////////////////////////
@@ -59,6 +62,18 @@ app.get('/api/queue-status', (req, res) => {
 app.get('/api/events-status', (req, res) => {
     const stats = eventBroadcaster.getStats();
     res.json(stats);
+});
+
+// Hoard endpoint to serve current job listings
+app.get('/api/hoard', (req, res) => {
+    try {
+        const hoard = getHoard();
+        const jobListings = Object.values(hoard);
+        res.json({ success: true, jobs: jobListings, count: jobListings.length });
+    } catch (error) {
+        console.error(`🥜 Error fetching hoard: ${error.message}`);
+        res.status(500).json({ success: false, error: error.message });
+    }
 });
 
 // Test endpoint for debugging WSL commands (kept from original)
@@ -119,6 +134,36 @@ clipboardMonitor.on('clipboardChange', (text) => {
     eventBroadcaster.clipboardChanged(preview);
 });
 clipboardMonitor.startMonitoring();
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+////////// HOARD FILE WATCHING ///////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+const hoardPath = getHoardPath();
+
+// Set up file watching for hoard.json
+try {
+    // Ensure hoard.json exists by calling getHoard()
+    getHoard();
+    
+    console.log(`🥜 Watching hoard file: ${hoardPath}`);
+    
+    let watchTimeout;
+    fs.watch(hoardPath, (eventType, filename) => {
+        if (eventType === 'change') {
+            // Debounce rapid file changes
+            clearTimeout(watchTimeout);
+            watchTimeout = setTimeout(() => {
+                console.log(`🥜 Hoard file changed, broadcasting update...`);
+                eventBroadcaster.broadcast('hoard-updated', {
+                    message: 'Job hoard updated - new listings available'
+                });
+            }, 100);
+        }
+    });
+} catch (error) {
+    console.error(`🥜 Error setting up hoard file watching: ${error.message}`);
+}
 
 app.listen(PORT, () => {
     console.log(`🐿️ Stashboard running at http://localhost:${PORT}`);
