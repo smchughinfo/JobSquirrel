@@ -60,7 +60,8 @@ int i = 0;
 while(true)
 {
     Console.WriteLine("scampering...");
-    File.AppendAllText("c:/users/seanm/desktop/counter.txt", $"{i++}");
+    string counterPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "counter.txt");
+    File.AppendAllText(counterPath, $"{i++}");
     Thread.Sleep(1000);
 }
 

@@ -3,6 +3,7 @@ const fs = require("fs");
 const { askOllamaSync } = require('./llm');
 const { getInnerText } = require('./htmlUtilities');
 const { addNutNote } = require('./hoard');
+const { eventBroadcaster } = require('./eventBroadcaster');
 
 const jsonExample = `
 {
@@ -14,23 +15,59 @@ const jsonExample = `
     "location": "string - Work location (remote/hybrid/on-site/city) or 'N/A'"
 }`;
 
-function processRawJobListing(rawJobListing) {
-    const jobListingText = getInnerText(rawJobListing);
+async function processRawJobListing(rawJobListing) {
+    try {
+        const jobListingText = getInnerText(rawJobListing);
 
-    // all the job pages i can find have multiples jobs on the same page. but i generated a few job listings with just one job and this still worked just fine.
-    const firstPass = askOllamaAndLog("FIRST PASS", `This is the innerText of a job site seach page. It contains a list of jobs but only one of them is shown in detail. Remove all information from the jobs that are not shown in detail and return the full text of the job that is shown in detail. Dont start your response with "Here are the results you requested" or anything like that. Just output the job listing:\n\n\n\n${jobListingText}`);
-    let json = askOllamaAndLog("GENERATE JSON", generateJSONPrompt(firstPass));
-    json = askOllamaAndLog("FIX JSON", `Can you fix any formatting errors with this JSON (don't edit any of the values). If there are formatting errors just return it as it. Don't start your response with "Here are your results in the requested format" or anything like that. Just output JSON:\n\n${json}`);
-    json = JSON.parse(json);
-    json.url = getInnerText(rawJobListing, "[data-job-squirrel-reference='url']");
-    addNutNote(json);
+        const firstPass = await askOllamaAndLogWithImmediate("FIRST PASS", `This is the innerText of a job site seach page. It contains a list of jobs but only one of them is shown in detail. Remove all information from the jobs that are not shown in detail and return the full text of the job that is shown in detail. Dont start your response with "Here are the results you requested" or anything like that. Just output the job listing:\n\n\n\n${jobListingText}`);
+        
+        let json = await askOllamaAndLogWithImmediate("GENERATE JSON", generateJSONPrompt(firstPass));
+        json = await askOllamaAndLogWithImmediate("FIX JSON", `Can you fix any formatting errors with this JSON (don't edit any of the values). If there are formatting errors just return it as it. Don't start your response with "Here are your results in the requested format" or anything like that. Just output JSON:\n\n${json}`);
+        
+        json = JSON.parse(json);
+        json.url = getInnerText(rawJobListing, "[data-job-squirrel-reference='url']");
+        
+        console.log(`🔧 Job processed: ${json.company} - ${json.jobTitle}`);
+        addNutNote(json);
+        
+    } catch (error) {
+        console.error(`🔧 Job processing failed: ${error.message}`);
+        
+        eventBroadcaster.broadcast('job-processing-failed', {
+            error: error.message,
+            message: `Job processing failed: ${error.message}`
+        });
+        
+        throw error;
+    }
 }
 
-function askOllamaAndLog(logName, prompt) {
-    console.log(`PROCESS RAW JOB LISTING - ${logName}=...`);
-    const result = askOllamaSync(prompt);
-    console.log(`PROCESS RAW JOB LISTING - ${logName}=" + ${(result.length <= 100 ? result : result.substring(0, 100))}`);
-    return result;
+function askOllamaAndLogWithImmediate(logName, prompt) {
+    return new Promise((resolve, reject) => {
+        try {
+            eventBroadcaster.llmProcessingStarted(logName);
+            
+            setTimeout(() => {
+                try {
+                    const result = askOllamaSync(prompt);
+                    eventBroadcaster.llmProcessingCompleted(logName, result);
+                    resolve(result);
+                } catch (error) {
+                    console.error(`🧠 ${logName} failed: ${error.message}`);
+                    eventBroadcaster.broadcast('llm-processing-failed', {
+                        step: logName,
+                        error: error.message,
+                        message: `${logName} failed: ${error.message}`
+                    });
+                    reject(error);
+                }
+            }, 10);
+            
+        } catch (error) {
+            console.error(`🧠 Setup error in ${logName}: ${error.message}`);
+            reject(error);
+        }
+    });
 }
 
 function generateJSONPrompt(firstPass) {

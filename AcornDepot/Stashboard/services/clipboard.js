@@ -1,5 +1,7 @@
 const { EventEmitter } = require('events');
 const { spawn } = require('child_process');
+const os = require('os');
+const path = require('path');
 
 class ClipboardMonitor extends EventEmitter {
     constructor(jobQueue = null) {
@@ -22,9 +24,10 @@ class ClipboardMonitor extends EventEmitter {
         this.isRunning = true;
 
         // Use PowerShell to monitor clipboard on Windows with file-based approach for large content
+        const tempFilePath = path.join(os.tmpdir(), 'jobsquirrel-clipboard-temp.txt').replace(/\\/g, '/');
         const script = `
             Add-Type -AssemblyName System.Windows.Forms
-            $tempFile = "C:/Users/seanm/Desktop/clipboard-temp.txt"
+            $tempFile = "${tempFilePath}"
             
             # Initialize with current clipboard to avoid startup trigger
             try {
