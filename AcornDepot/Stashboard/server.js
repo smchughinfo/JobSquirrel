@@ -4,7 +4,7 @@ const fs = require('fs');
 const { ClipboardMonitor } = require('./services/clipboard');
 const { JobQueue } = require('./services/jobQueue');
 const { eventBroadcaster } = require('./services/eventBroadcaster');
-const { getHoard } = require('./services/hoard');
+const { getHoard, addOrUpdateNutNote, getIdentifier } = require('./services/hoard');
 const { getHoardPath } = require('./services/jobSquirrelPaths');
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -66,13 +66,15 @@ app.get('/api/events-status', (req, res) => {
 
 // Hoard endpoint to serve current job listings
 app.get('/api/hoard', (req, res) => {
-    try {
-        const hoard = getHoard();
-        res.json({ success: true, jobs: hoard.jobListings, count: hoard.jobListings.length });
-    } catch (error) {
-        console.error(`🥜 Error fetching hoard: ${error.message}`);
-        res.status(500).json({ success: false, error: error.message });
-    }
+    const hoard = getHoard();
+    res.json({ success: true, jobs: hoard.jobListings, count: hoard.jobListings.length });
+});
+
+// Update nut note endpoint (accepts full nut note object)
+app.patch('/api/nut-note', (req, res) => {
+    const nutNote = req.body;
+    addOrUpdateNutNote(nutNote);
+    res.sendStatus(200);
 });
 
 // Test endpoint for debugging WSL commands (kept from original)

@@ -3,7 +3,7 @@ const fs = require("fs");
 const { askOllamaSync } = require('./llm/ollama');
 const { askOpenAI, getJSONAsync } = require('./llm/openai');
 const { getInnerText } = require('./htmlUtilities');
-const { addNutNote, getHoard } = require('./hoard');
+const { addOrUpdateNutNote, getHoard } = require('./hoard');
 const { eventBroadcaster } = require('./eventBroadcaster');
 const { z } = require('zod');
 
@@ -45,9 +45,10 @@ async function processRawJobListing_OpenAI(rawJobListing) {
     nutNote.url = getInnerText(rawJobListing, "[data-job-squirrel-reference='url']");
     nutNote.markdown = md;
     nutNote.scrapeDate = new Date();
+    nutNote.collapsed = false; // Default to expanded state
 
     console.log(`🔧 Job processed: ${nutNote.company} - ${nutNote.jobTitle}`);
-    addNutNote(nutNote);
+    addOrUpdateNutNote(nutNote);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -81,9 +82,10 @@ async function processRawJobListing_Ollama(rawJobListing) {
         nutNote.rawJobListing = rawJobListing;
         nutNote.firstPass = firstPass;
         nutNote.markdown = markdown;
+        nutNote.collapsed = false; // Default to expanded state
 
         console.log(`🔧 Job processed: ${nutNote.company} - ${nutNote.jobTitle}`);
-        addNutNote(nutNote);
+        addOrUpdateNutNote(nutNote);
         
     } catch (error) {
         console.error(`🔧 Job processing failed: ${error.message}`);

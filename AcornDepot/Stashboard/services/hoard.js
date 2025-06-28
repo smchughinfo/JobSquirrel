@@ -4,8 +4,15 @@ const { getHoardPath } = require('./jobSquirrelPaths');
 
 const hoardPath = getHoardPath();
 
-function addNutNote(nutNote) {  
+function addOrUpdateNutNote(nutNote) {
     let map = getHoard();
+
+    let nutNoteIndex = map.jobListings.findIndex(n => n.company == nutNote.company && n.jobTitle == nutNote.jobTitle);
+    if(nutNoteIndex != -1) {
+        deleteNutNote(nutNote.company, nutNote.jobTitle);
+        map = getHoard();
+    }
+
     map.jobListings.push(nutNote);
     saveHoard(map);
 }
@@ -26,7 +33,17 @@ function getIdentifier(nutNote) {
     return nutNote.company + " - " + nutNote.jobTitle;
 }
 
+function deleteNutNote(companyName, jobTitle) {
+    let hoard = getHoard().jobListings;
+    let indexOfNutNoteToDelete = hoard.findIndex(n => n.company == companyName && n.jobTitle == jobTitle);
+    hoard.splice(indexOfNutNoteToDelete, 1);
+    saveHoard({
+        jobListings: hoard
+    });
+}
+
 module.exports = {
-    addNutNote,
+    addOrUpdateNutNote,
     getHoard,
+    getIdentifier,
 };

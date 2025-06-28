@@ -75,6 +75,59 @@ function JobListings({ lastEvent }) {
     });
   };
 
+  const toggleCollapse = async (job) => {
+    try {
+      const originalCollapsedState = job.collapsed;
+      const newCollapsedState = !job.collapsed;
+      
+      // Create updated nut note object
+      const updatedNutNote = {
+        ...job,
+        collapsed: newCollapsedState
+      };
+      
+      // Update the job locally first for immediate UI feedback
+      setJobs(prevJobs => 
+        prevJobs.map(j => 
+          j.company === job.company && j.jobTitle === job.jobTitle 
+            ? updatedNutNote
+            : j
+        )
+      );
+      
+      // Make API call to persist the entire updated nut note
+      const response = await fetch('/api/nut-note', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedNutNote)
+      });
+      
+      if (!response.ok) {
+        // If API call fails, revert the local change
+        setJobs(prevJobs => 
+          prevJobs.map(j => 
+            j.company === job.company && j.jobTitle === job.jobTitle 
+              ? { ...j, collapsed: originalCollapsedState }
+              : j
+          )
+        );
+        console.error('Failed to update nut note collapse state');
+      }
+    } catch (error) {
+      console.error('Error toggling collapse:', error);
+      // Revert local change on error
+      setJobs(prevJobs => 
+        prevJobs.map(j => 
+          j.company === job.company && j.jobTitle === job.jobTitle 
+            ? { ...j, collapsed: job.collapsed }
+            : j
+        )
+      );
+    }
+  };
+
   if (loading) {
     return (
       <div>
@@ -223,6 +276,24 @@ function JobListings({ lastEvent }) {
                     gap: '0.75rem',
                     alignItems: 'center'
                   }}>
+                    <button
+                      onClick={() => toggleCollapse(job)}
+                      style={{
+                        background: 'transparent',
+                        color: '#8B4513',
+                        border: '1px solid #8B4513',
+                        padding: '0.4rem 0.8rem',
+                        borderRadius: '5px',
+                        fontSize: '0.8rem',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                    >
+                      {job.collapsed ? '▼' : '▲'}
+                    </button>
                     {job.url && job.url !== 'N/A' && (
                       <a 
                         href={job.url}
@@ -275,8 +346,8 @@ function JobListings({ lastEvent }) {
                   </div>
                 </div>
                 
-                {/* Job summary */}
-                {job.jobSummary && job.jobSummary !== 'N/A' && (
+                {/* Job summary - hidden when collapsed */}
+                {!job.collapsed && job.jobSummary && job.jobSummary !== 'N/A' && (
                   <div style={{
                     marginTop: '.75rem',
                     marginBottom: '1.1rem',
@@ -288,8 +359,8 @@ function JobListings({ lastEvent }) {
                   </div>
                 )}
                 
-                {/* Requirements */}
-                {job.requirements && job.requirements.length > 0 && (
+                {/* Requirements - hidden when collapsed */}
+                {!job.collapsed && job.requirements && job.requirements.length > 0 && (
                   <div style={{
                     display: 'flex',
                     flexWrap: 'wrap',
