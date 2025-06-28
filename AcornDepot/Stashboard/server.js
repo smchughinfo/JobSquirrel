@@ -164,11 +164,16 @@ try {
     console.error(`🥜 Error setting up hoard file watching: ${error.message}`);
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////
+////////// START WEB SERVER //////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
 app.listen(PORT, () => {
     console.log(`🐿️ Stashboard running at http://localhost:${PORT}`);
     console.log(`📋 Clipboard monitoring started`);
     console.log(`🥜 Job queue processor started`);
     console.log(`📡 Event broadcasting ready at /api/events`);
+    console.log(`💰 Token pricer thread started`);
     
     // Send system startup event
     eventBroadcaster.systemStatus('startup', `Stashboard started on port ${PORT}`);

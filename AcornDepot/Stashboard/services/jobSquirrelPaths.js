@@ -26,6 +26,15 @@ function getHoardPath(wsl) {
     return hoardPath;
 }
 
+function getOpenAITokenPricesPath(wsl) {
+    let adDir = getAcornDepotDirectory();
+    let hoardPath = path.join(adDir, "Stashboard", "services", "openai", "openai-token-prices.json");
+    if(wsl) {
+        hoardPath = convertPathToWSL(hoardPath);
+    }
+    return hoardPath;
+}
+
 function convertPathToWSL(windowPath) {
     return windowPath.replace(/\\/g, '/').replace(/^([A-Z]):/, (match, drive) => `/mnt/${drive.toLowerCase()}`);
 }
@@ -34,5 +43,6 @@ module.exports = {
     getJobSquirrelRootDirectory,
     getAcornDepotDirectory,
     getHoardPath,
+    getOpenAITokenPricesPath,
     convertPathToWSL
 };

@@ -1,9 +1,11 @@
 const path = require("path");
 const fs = require("fs");
-const { askOllamaSync } = require('./llm');
+const { askOllamaSync } = require('./llm/ollama');
+const { getJSONAsync } = require('./llm/openai');
 const { getInnerText } = require('./htmlUtilities');
 const { addNutNote, getHoard } = require('./hoard');
 const { eventBroadcaster } = require('./eventBroadcaster');
+const { z } = require('zod');
 
 const jsonExample = `
 {
@@ -18,6 +20,42 @@ const jsonExample = `
 const clampClause = `Don't start your response with "Here are your results in the requested format" or anything like that.`;
 
 async function processRawJobListing(rawJobListing) {
+    let model = "OpenAI";
+    if(model == "OpenAI") {
+        await processRawJobListing_OpenAI(rawJobListing);
+    }
+    else if (model == "Ollama"){
+        await processRawJobListing_Ollama(rawJobListing);
+    }
+}
+
+async function processRawJobListing_OpenAI(rawJobListing) {
+
+    const schema = z.object({
+        "jobPage": z.object({
+            company: z.string().describe("The complete company name exactly as it appears, including all legal entity suffixes (LLC, Inc, Corp, Ltd, etc.), punctuation, and formatting. Use the most official and complete version found. Examples: 'Govcio LLC' not 'GovCIO', 'Apple Inc.' not 'Apple'"),
+            jobTitle: z.string().describe("The exact job title as posted, preserving all original formatting, abbreviations, punctuation, and capitalization. Do not paraphrase or shorten. Examples: 'Sr. Software Engineer' not 'Senior Software Engineer', 'Full Stack Developer/Architect' not 'Full Stack Developer'"),
+            salary: z.string().describe("Salary range/amount or 'N/A' if not specified"),
+            requirements: z.array(z.string()).describe("Array of key skills/qualifications required"),
+            jobSummary: z.string().describe("Brief 2-3 sentence description of the role"),
+            location: z.string().describe("Work location (remote/hybrid/on-site/city) or 'N/A'")  
+        })
+    });
+        rawJobListing = getInnerText(rawJobListing);
+
+                let prompt = `Extract ONLY the detailed job posting from this page. Look for the main job that shows full details (company, title, description, requirements, salary, location). Ignore job lists, navigation, ads, and related jobs.`;
+                let response = await getJSONAsync(prompt, schema, rawJobListing);
+                let nutNote = response.jobPage;
+                nutNote.url = getInnerText(rawJobListing, "[data-job-squirrel-reference='url']");
+                nutNote.rawJobListing = rawJobListing;
+                nutNote.firstPass = "";
+                nutNote.markdown = "";
+
+                console.log(`🔧 Job processed: ${nutNote.company} - ${nutNote.jobTitle}`);
+                addNutNote(nutNote);
+}
+
+async function processRawJobListing_Ollama(rawJobListing) {
     try {
         const jobListingText = getInnerText(rawJobListing);
 
@@ -25,15 +63,13 @@ async function processRawJobListing(rawJobListing) {
         const markdown = await askOllamaAndLogWithImmediate("SECOND PASS", `Conver this to markdown. ${clampClause}\n\n\n\n${firstPass}`);
         
         let json = await askOllamaAndLogWithImmediate("GENERATE JSON", generateJSONPrompt(markdown));
-        //json = await askOllamaAndLogWithImmediate("FIX JSON", `Can you fix any formatting errors with this JSON (don't edit any of the values). If there are formatting errors just return it as it. ${clampClause}. Just output JSON:\n\n${json}`);
+        json = await askOllamaAndLogWithImmediate("FIX JSON", `Can you fix any formatting errors with this JSON (don't edit any of the values). If there are formatting errors just return it as it. ${clampClause}. Just output JSON:\n\n${json}`);
 
         let nutNote = JSON.parse(json);
         nutNote.url = getInnerText(rawJobListing, "[data-job-squirrel-reference='url']");
         nutNote.rawJobListing = rawJobListing;
         nutNote.firstPass = firstPass;
         nutNote.markdown = markdown;
-
-        nutNote = bumpCompanyAndJobTitle(nutNote);
 
         console.log(`🔧 Job processed: ${nutNote.company} - ${nutNote.jobTitle}`);
         addNutNote(nutNote);
@@ -49,29 +85,6 @@ async function processRawJobListing(rawJobListing) {
         throw error;
     }
 }
-
-function bumpCompanyAndJobTitle(nutNote) {
-    let hoard = getHoard();
-    let companies = hoard.jobListings.map(n => n.company).join('|||||');
-    let jobTitles = hoard.jobListings.map(n => n.jobTitle).join('|||||');
-
-    const clampCommand = `Don't start your response with "Here are the results you requested" or anything like that. Just output the value.`;
-    
-    const normalizeCompanyPrompt = `Does this company: ${nutNote.company}\n\nExist anywhere in the following list of companies:\n${companies}\n\nIf so, which one? Return either NO or the company name from the list. Account for minor variations in the company's name when doing your evaluation. ${clampCommand}`;
-    const normalizeCompanyResponse = askOllamaSync(normalizeCompanyPrompt);
-
-    const normalizeJobTitlePrompt = `Does this job title: ${nutNote.jobTitle}\n\nExist anywhere in the following list of job titles:\n${jobTitles}\n\nIf so, which one? Return either NO or the job title from the list. Account for minor variations in the job title when doing your evaluation. ${clampCommand}`;
-    const normalizeJobTitleResponse = askOllamaSync(normalizeJobTitlePrompt);
-
-    const preExistingCompany = normalizeCompanyResponse != "NO";
-    const preExistingJobTitle = normalizeJobTitleResponse != "NO";
-    if(preExistingCompany && preExistingJobTitle) {
-        nutNote.company = normalizeCompanyResponse;
-        nutNote.jobTitle = normalizeJobTitleResponse;
-    }
-    return nutNote;
-}
-
 
 function askOllamaAndLogWithImmediate(logName, prompt, model = 'llama3:latest') {
     return new Promise((resolve, reject) => {
@@ -127,6 +140,7 @@ EXAMPLE OUTPUT:
 JOB LISTING TO PARSE:
 ${firstPass}`
 }
+
 
 module.exports = {
     processJobListing: processRawJobListing
