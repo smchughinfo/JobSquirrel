@@ -312,6 +312,7 @@ function JobListings({ lastEvent }) {
                             borderRadius: '5px',
                             fontSize: '0.9rem',
                             fontWeight: '500',
+                            cursor: 'default'
                           }}
                         >
                           {truncatedReq}
