@@ -7,18 +7,6 @@ const { addNutNote, getHoard } = require('./hoard');
 const { eventBroadcaster } = require('./eventBroadcaster');
 const { z } = require('zod');
 
-const jsonExample = `
-{
-    "company": "string - The company name",
-    "jobTitle": "string - The job title/position",
-    "salary": "string - Salary range/amount or 'N/A' if not specified",
-    "requirements": ["string", "string", "string"] - Array of key skills/qualifications required,
-    "jobSummary": "string - Brief 2-3 sentence description of the role",
-    "location": "string - Work location (remote/hybrid/on-site/city) or 'N/A'"
-}`;
-
-const clampClause = `Don't start your response with "Here are your results in the requested format" or anything like that.`;
-
 async function processRawJobListing(rawJobListing) {
     let model = "OpenAI";
     if(model == "OpenAI") {
@@ -28,6 +16,10 @@ async function processRawJobListing(rawJobListing) {
         await processRawJobListing_Ollama(rawJobListing);
     }
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+////////// OpenAI ////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
 async function processRawJobListing_OpenAI(rawJobListing) {
 
@@ -54,6 +46,22 @@ async function processRawJobListing_OpenAI(rawJobListing) {
                 console.log(`🔧 Job processed: ${nutNote.company} - ${nutNote.jobTitle}`);
                 addNutNote(nutNote);
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+/// OLLAMA (PROBABLY DEPRECATED. IT DOES WORK BUT 4o-mini IS MUCH BETTER AND FASTER AND CHEAP) ///
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+const jsonExample = `
+{
+    "company": "string - The company name",
+    "jobTitle": "string - The job title/position",
+    "salary": "string - Salary range/amount or 'N/A' if not specified",
+    "requirements": ["string", "string", "string"] - Array of key skills/qualifications required,
+    "jobSummary": "string - Brief 2-3 sentence description of the role",
+    "location": "string - Work location (remote/hybrid/on-site/city) or 'N/A'"
+}`;
+
+const clampClause = `Don't start your response with "Here are your results in the requested format" or anything like that.`;
 
 async function processRawJobListing_Ollama(rawJobListing) {
     try {
