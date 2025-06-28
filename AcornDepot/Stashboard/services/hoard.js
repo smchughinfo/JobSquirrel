@@ -46,4 +46,5 @@ module.exports = {
     addOrUpdateNutNote,
     getHoard,
     getIdentifier,
+    deleteNutNote,
 };

@@ -4,7 +4,7 @@ const fs = require('fs');
 const { ClipboardMonitor } = require('./services/clipboard');
 const { JobQueue } = require('./services/jobQueue');
 const { eventBroadcaster } = require('./services/eventBroadcaster');
-const { getHoard, addOrUpdateNutNote, getIdentifier } = require('./services/hoard');
+const { getHoard, addOrUpdateNutNote, getIdentifier, deleteNutNote } = require('./services/hoard');
 const { getHoardPath } = require('./services/jobSquirrelPaths');
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -74,6 +74,21 @@ app.get('/api/hoard', (req, res) => {
 app.patch('/api/nut-note', (req, res) => {
     const nutNote = req.body;
     addOrUpdateNutNote(nutNote);
+    res.sendStatus(200);
+});
+
+// Delete nut note endpoint
+app.delete('/api/nut-note', (req, res) => {
+    const { company, jobTitle } = req.body;
+    deleteNutNote(company, jobTitle);
+    res.sendStatus(200);
+});
+
+// Generate resume endpoint
+app.post('/api/generate-resume', (req, res) => {
+    const job = req.body;
+    console.log(`🐿️ Resume generation requested for: ${job.company} - ${job.jobTitle}`);
+    // TODO: Integrate with original JobSquirrel resume generation workflow
     res.sendStatus(200);
 });
 

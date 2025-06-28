@@ -128,6 +128,61 @@ function JobListings({ lastEvent }) {
     }
   };
 
+  const deleteJob = async (job) => {
+    try {
+      // Remove job locally first for immediate UI feedback
+      setJobs(prevJobs => 
+        prevJobs.filter(j => 
+          !(j.company === job.company && j.jobTitle === job.jobTitle)
+        )
+      );
+      
+      // Make API call to delete from server
+      const response = await fetch('/api/nut-note', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          company: job.company, 
+          jobTitle: job.jobTitle 
+        })
+      });
+      
+      if (!response.ok) {
+        // If API call fails, restore the job
+        setJobs(prevJobs => [...prevJobs, job]);
+        console.error('Failed to delete nut note');
+      }
+    } catch (error) {
+      console.error('Error deleting job:', error);
+      // Restore job on error
+      setJobs(prevJobs => [...prevJobs, job]);
+    }
+  };
+
+  const generateResume = async (job) => {
+    try {
+      console.log(`🐿️ Generating resume for: ${job.company} - ${job.jobTitle}`);
+      
+      const response = await fetch('/api/generate-resume', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(job)
+      });
+      
+      if (!response.ok) {
+        console.error('Failed to generate resume');
+      } else {
+        console.log('✅ Resume generation started');
+      }
+    } catch (error) {
+      console.error('Error generating resume:', error);
+    }
+  };
+
   if (loading) {
     return (
       <div>
@@ -293,6 +348,42 @@ function JobListings({ lastEvent }) {
                       onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                     >
                       {job.collapsed ? '▼' : '▲'}
+                    </button>
+                    <button
+                      onClick={() => deleteJob(job)}
+                      style={{
+                        background: 'transparent',
+                        color: '#8B4513',
+                        border: '1px solid #8B4513',
+                        padding: '0.4rem 0.8rem',
+                        borderRadius: '5px',
+                        fontSize: '0.8rem',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                    >
+                       ✕
+                    </button>
+                    <button
+                      onClick={() => generateResume(job)}
+                      style={{
+                        background: '#28a745',
+                        color: 'white',
+                        border: 'none',
+                        padding: '0.4rem 0.8rem',
+                        borderRadius: '5px',
+                        fontSize: '0.8rem',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#218838'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = '#28a745'}
+                    >
+                      📄 Resume
                     </button>
                     {job.url && job.url !== 'N/A' && (
                       <a 
