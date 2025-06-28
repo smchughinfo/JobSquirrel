@@ -1,7 +1,7 @@
 const path = require("path");
 const fs = require("fs");
 const { askOllamaSync } = require('./llm/ollama');
-const { getJSONAsync } = require('./llm/openai');
+const { askOpenAI, getJSONAsync } = require('./llm/openai');
 const { getInnerText } = require('./htmlUtilities');
 const { addNutNote, getHoard } = require('./hoard');
 const { eventBroadcaster } = require('./eventBroadcaster');
@@ -21,30 +21,33 @@ async function processRawJobListing(rawJobListing) {
 ////////// OpenAI ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
+const schema = z.object({
+    "jobPage": z.object({
+        company: z.string().describe("The complete company name exactly as it appears, including all legal entity suffixes (LLC, Inc, Corp, Ltd, etc.), punctuation, and formatting. Use the most official and complete version found. Examples: 'Govcio LLC' not 'GovCIO', 'Apple Inc.' not 'Apple'"),
+        jobTitle: z.string().describe("The exact job title as posted, preserving all original formatting, abbreviations, punctuation, and capitalization. Do not paraphrase or shorten. Examples: 'Sr. Software Engineer' not 'Senior Software Engineer', 'Full Stack Developer/Architect' not 'Full Stack Developer'"),
+        salary: z.string().describe("Salary range/amount or 'N/A' if not specified"),
+        requirements: z.array(z.string()).describe("Array of key skills/qualifications required"),
+        jobSummary: z.string().describe("Brief 2-3 sentence description of the role"),
+        location: z.string().describe("Work location (remote/hybrid/on-site/city) or 'N/A'")  
+    })
+});
+
 async function processRawJobListing_OpenAI(rawJobListing) {
+    rawJobListing = getInnerText(rawJobListing);
 
-    const schema = z.object({
-        "jobPage": z.object({
-            company: z.string().describe("The complete company name exactly as it appears, including all legal entity suffixes (LLC, Inc, Corp, Ltd, etc.), punctuation, and formatting. Use the most official and complete version found. Examples: 'Govcio LLC' not 'GovCIO', 'Apple Inc.' not 'Apple'"),
-            jobTitle: z.string().describe("The exact job title as posted, preserving all original formatting, abbreviations, punctuation, and capitalization. Do not paraphrase or shorten. Examples: 'Sr. Software Engineer' not 'Senior Software Engineer', 'Full Stack Developer/Architect' not 'Full Stack Developer'"),
-            salary: z.string().describe("Salary range/amount or 'N/A' if not specified"),
-            requirements: z.array(z.string()).describe("Array of key skills/qualifications required"),
-            jobSummary: z.string().describe("Brief 2-3 sentence description of the role"),
-            location: z.string().describe("Work location (remote/hybrid/on-site/city) or 'N/A'")  
-        })
-    });
-        rawJobListing = getInnerText(rawJobListing);
+    let extractPrompt = `Extract ONLY the detailed job posting from this page. Look for the main job that shows full details (company, title, description, requirements, salary, location). Ignore job lists, navigation, ads, and related jobs.`;
+    let mdPrompt = `${extractPrompt} Return your response in markdown format. Don't wrap your responde in a code block indicating that it is markdown. Just output the markdown itself.\n\n\n\n${rawJobListing}`
 
-                let prompt = `Extract ONLY the detailed job posting from this page. Look for the main job that shows full details (company, title, description, requirements, salary, location). Ignore job lists, navigation, ads, and related jobs.`;
-                let response = await getJSONAsync(prompt, schema, rawJobListing);
-                let nutNote = response.jobPage;
-                nutNote.url = getInnerText(rawJobListing, "[data-job-squirrel-reference='url']");
-                nutNote.rawJobListing = rawJobListing;
-                nutNote.firstPass = "";
-                nutNote.markdown = "";
+    let json = await getJSONAsync(extractPrompt, schema, rawJobListing);
+    let md = (await askOpenAI(mdPrompt)).output_text;
 
-                console.log(`🔧 Job processed: ${nutNote.company} - ${nutNote.jobTitle}`);
-                addNutNote(nutNote);
+    let nutNote = json.jobPage;
+    nutNote.url = getInnerText(rawJobListing, "[data-job-squirrel-reference='url']");
+    nutNote.markdown = md;
+    nutNote.scrapeDate = new Date();
+
+    console.log(`🔧 Job processed: ${nutNote.company} - ${nutNote.jobTitle}`);
+    addNutNote(nutNote);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

@@ -7,11 +7,10 @@ const openai = new OpenAI({
 });
 
 let jsonParserModel = "gpt-4o-mini";
-
-    // JobListing: `You are an expert at structured data extraction from job listings. You will be given unstructured text from a job posting and should convert it into the given JSON structure. Extract key information accurately and use 'N/A' when information is not available.`
+let completionModel = "gpt-4o-mini";
 
 async function getJSONAsync(prompt, schema, unstructuredData) {
-    let schemaName = "event";//getSingleKeyFromZodObject(schema);
+    let schemaName = getSingleKeyFromZodObject(schema);
     const response = await openai.responses.parse({
         model: jsonParserModel,
         input: [
@@ -27,6 +26,15 @@ async function getJSONAsync(prompt, schema, unstructuredData) {
     });
 
     return response.output_parsed;
+}
+
+async function askOpenAI(prompt) {
+    const client = new OpenAI();
+    const response = await client.responses.create({
+        model: completionModel,
+        input: prompt
+    });
+    return response;
 }
 
 function getSingleKeyFromZodObject(zodSchema) {
@@ -47,5 +55,6 @@ function getSingleKeyFromZodObject(zodSchema) {
 
 module.exports = {
     getJSONAsync,
-    jsonParserModel
+    askOpenAI,
+    jsonParserModel,
 };
