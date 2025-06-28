@@ -291,24 +291,24 @@ function JobListings({ lastEvent }) {
                     alignItems: 'center'
                   }}>
                     <span style={{
-                      fontSize: '1rem',
-                      color: '#666',
+                      fontSize: '1.1rem',
+                      color: 'rgb(90, 90, 90);',
                       fontWeight: '500',
                       marginRight: '0.25rem'
                     }}>
                       Skills:
                     </span>
-                    {job.requirements.slice(0, 100).map((req, reqIndex) => {
-                      const truncatedReq = req.length > 20 ? req.substring(0, 20) + '...' : req;
-                      const isTruncated = req.length > 20;
+                    {job.requirements.slice(0,33).map((req, reqIndex) => {
+                      const truncatedReq = req.length > 33 ? req.substring(0, 33) + '...' : req;
+                      const isTruncated = req.length > 33;
                       return (
                         <span 
                           key={reqIndex} 
                           title={isTruncated ? req : undefined}
                           style={{
-                            background: '#f1f3f4',
+                            background: 'rgb(232, 232, 232)',
                             color: '#5f6368',
-                            padding: '0.2rem 0.5rem',
+                            padding: '0.225rem 0.525rem',
                             borderRadius: '5px',
                             fontSize: '0.9rem',
                             fontWeight: '500',
@@ -319,13 +319,13 @@ function JobListings({ lastEvent }) {
                         </span>
                       );
                     })}
-                    {job.requirements.length > 100 && (
+                    {job.requirements.length > 33 && (
                       <span style={{
                         color: '#666',
                         fontSize: '0.9rem',
                         fontStyle: 'italic'
                       }}>
-                        +{job.requirements.length - 100} more
+                        +{job.requirements.length - 33} more
                       </span>
                     )}
                   </div>
