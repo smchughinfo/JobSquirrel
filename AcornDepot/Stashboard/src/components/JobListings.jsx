@@ -14,7 +14,13 @@ function JobListings({ lastEvent }) {
       const data = await response.json();
       
       if (data.success) {
-        setJobs(data.jobs);
+        // Sort jobs by scrapeDate in reverse chronological order (newest first)
+        const sortedJobs = data.jobs.sort((a, b) => {
+          const dateA = new Date(a.scrapeDate);
+          const dateB = new Date(b.scrapeDate);
+          return dateB - dateA; // Newest first
+        });
+        setJobs(sortedJobs);
         setError(null);
       } else {
         setError(data.error || 'Failed to fetch jobs');
