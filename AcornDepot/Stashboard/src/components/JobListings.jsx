@@ -589,7 +589,7 @@ function JobListings({ lastEvent }) {
             padding: '1rem',
             maxWidth: '98vw',
             maxHeight: '98vh',
-            width: '210mm',
+            width: '350mm',
             height: '297mm',
             display: 'flex',
             flexDirection: 'column',

@@ -12,11 +12,13 @@ function App() {
   return (
     <div className="app">
       <Header />
-      <main>
-        <div className="container">
-          <JobListings lastEvent={lastEvent} />
+      <main className="main-layout">
+        <aside className="sidebar-left">
           <EventMonitor isConnected={isConnected} lastEvent={lastEvent} />
           <ClipboardMonitor />
+        </aside>
+        <div className="main-content">
+          <JobListings lastEvent={lastEvent} />
         </div>
       </main>
     </div>
