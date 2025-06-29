@@ -3,10 +3,15 @@ const path = require('path');
 const { AskAssistant, CreateVectorStore } = require('./llm/openai');
 const { eventBroadcaster } = require('./eventBroadcaster');
 const { getResumeDataDirectory } = require('./jobSquirrelPaths');
+const { addOrUpdateNutNote } = require('./hoard');
 
 async function generateResume(nutNote) {
-    let response = await AskAssistant("tell me about the files you see", true);
-    console.log(response);
+    const CLAMP_CLAUSE = `Do not include any preamble, commentary, or code block formatting. Output only the final html content, nothing else.`;
+    const prompt = `Use the provided files to generate a tailored resume for this job description. ${CLAMP_CLAUSE}\n\n"${nutNote.markdown}".`;
+    let response = await AskAssistant(prompt, true);
+    nutNote.html = response;
+    addOrUpdateNutNote(nutNote);
+    console.log("resume generated!");
 }
 
 async function UploadResumeData() {

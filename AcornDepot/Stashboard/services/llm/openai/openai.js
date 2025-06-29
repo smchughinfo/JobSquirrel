@@ -6,7 +6,7 @@ if (!globalThis.File) {
 }
 
 const OpenAI = require('openai');
-const { Configuration } = require('openai/helpers/zod');
+const { Configuration, zodTextFormat } = require('openai/helpers/zod');
 const { z } = require('zod');
 
 const openai = new OpenAI({

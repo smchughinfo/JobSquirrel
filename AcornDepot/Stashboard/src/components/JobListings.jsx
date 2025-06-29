@@ -5,6 +5,7 @@ function JobListings({ lastEvent }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedMarkdown, setExpandedMarkdown] = useState(new Set());
+  const [resumeDialog, setResumeDialog] = useState({ open: false, html: '', jobTitle: '', company: '' });
 
   // Fetch jobs from the API
   const fetchJobs = async () => {
@@ -38,10 +39,14 @@ function JobListings({ lastEvent }) {
     fetchJobs();
   }, []);
 
-  // Listen for hoard-updated events
+  // Listen for hoard-updated events and assistant completion
   useEffect(() => {
     if (lastEvent && lastEvent.type === 'hoard-updated') {
       console.log('🥜 Hoard updated, refreshing job listings...');
+      fetchJobs();
+    }
+    if (lastEvent && lastEvent.type === 'assistant-completed') {
+      console.log('🤖 Assistant completed, refreshing job listings...');
       fetchJobs();
     }
   }, [lastEvent]);
@@ -161,6 +166,21 @@ function JobListings({ lastEvent }) {
     }
   };
 
+  const handleResumeClick = async (job) => {
+    // If resume HTML exists, show it in dialog
+    if (job.html && job.html.trim() !== '') {
+      setResumeDialog({
+        open: true,
+        html: job.html,
+        jobTitle: job.jobTitle || 'N/A',
+        company: job.company || 'N/A'
+      });
+    } else {
+      // Otherwise, generate a new resume
+      await generateResume(job);
+    }
+  };
+
   const generateResume = async (job) => {
     try {
       console.log(`🐿️ Generating resume for: ${job.company} - ${job.jobTitle}`);
@@ -181,6 +201,10 @@ function JobListings({ lastEvent }) {
     } catch (error) {
       console.error('Error generating resume:', error);
     }
+  };
+
+  const closeResumeDialog = () => {
+    setResumeDialog({ open: false, html: '', jobTitle: '', company: '' });
   };
 
   if (loading) {
@@ -368,9 +392,9 @@ function JobListings({ lastEvent }) {
                        ✕
                     </button>
                     <button
-                      onClick={() => generateResume(job)}
+                      onClick={() => handleResumeClick(job)}
                       style={{
-                        background: '#28a745',
+                        background: job.html && job.html.trim() !== '' ? '#17a2b8' : '#28a745',
                         color: 'white',
                         border: 'none',
                         padding: '0.4rem 0.8rem',
@@ -380,10 +404,22 @@ function JobListings({ lastEvent }) {
                         cursor: 'pointer',
                         transition: 'background-color 0.2s ease'
                       }}
-                      onMouseEnter={(e) => e.target.style.backgroundColor = '#218838'}
-                      onMouseLeave={(e) => e.target.style.backgroundColor = '#28a745'}
+                      onMouseEnter={(e) => {
+                        if (job.html && job.html.trim() !== '') {
+                          e.target.style.backgroundColor = '#138496';
+                        } else {
+                          e.target.style.backgroundColor = '#218838';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (job.html && job.html.trim() !== '') {
+                          e.target.style.backgroundColor = '#17a2b8';
+                        } else {
+                          e.target.style.backgroundColor = '#28a745';
+                        }
+                      }}
                     >
-                      📄 Resume
+                      {job.html && job.html.trim() !== '' ? '👁️ View Resume' : '📄 Generate Resume'}
                     </button>
                     {job.url && job.url !== 'N/A' && (
                       <a 
@@ -530,6 +566,74 @@ function JobListings({ lastEvent }) {
               )}
             </div>
           ))}
+        </div>
+      )}
+      
+      {/* Resume Dialog */}
+      {resumeDialog.open && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '10px',
+            padding: '1rem',
+            maxWidth: '98vw',
+            maxHeight: '98vh',
+            width: '210mm',
+            height: '297mm',
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '1rem',
+              paddingBottom: '1rem',
+              borderBottom: '1px solid #dee2e6'
+            }}>
+              <h3 style={{
+                margin: 0,
+                color: '#2c3e50',
+                fontSize: '1.5rem'
+              }}>
+                Resume: {resumeDialog.jobTitle} at {resumeDialog.company}
+              </h3>
+              <button
+                onClick={closeResumeDialog}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  fontSize: '1.5rem',
+                  cursor: 'pointer',
+                  color: '#666'
+                }}
+              >
+                ✕
+              </button>
+            </div>
+            <iframe
+              srcDoc={resumeDialog.html}
+              style={{
+                flex: 1,
+                border: '1px solid #dee2e6',
+                borderRadius: '5px',
+                width: '100%'
+              }}
+              title={`Resume for ${resumeDialog.jobTitle} at ${resumeDialog.company}`}
+            />
+          </div>
         </div>
       )}
     </div>

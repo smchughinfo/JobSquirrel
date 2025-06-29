@@ -171,12 +171,16 @@ clipboardMonitor.startMonitoring();
 const hoardPath = getHoardPath();
 const resumeDataVectorStoreIdPath = getResumeDataVectorStoreIdPath();
 
+// Track hoard count for change detection
+let previousHoardCount = 0;
+
 // Set up file watching for hoard.json
 try {
     // Ensure hoard.json exists by calling getHoard()
-    getHoard();
+    const initialHoard = getHoard();
+    previousHoardCount = initialHoard.jobListings.length;
     
-    console.log(`🥜 Watching hoard file: ${hoardPath}`);
+    console.log(`🥜 Watching hoard file: ${hoardPath} (initial count: ${previousHoardCount})`);
     
     let watchTimeout;
     fs.watch(hoardPath, (eventType, filename) => {
@@ -184,10 +188,23 @@ try {
             // Debounce rapid file changes
             clearTimeout(watchTimeout);
             watchTimeout = setTimeout(() => {
-                console.log(`🥜 Hoard file changed, broadcasting update...`);
-                eventBroadcaster.broadcast('hoard-updated', {
-                    message: 'Job hoard updated - new listings available'
-                });
+                try {
+                    const currentHoard = getHoard();
+                    const currentCount = currentHoard.jobListings.length;
+                    
+                    if (currentCount > previousHoardCount) {
+                        console.log(`🥜 Hoard count increased from ${previousHoardCount} to ${currentCount}, broadcasting update...`);
+                        eventBroadcaster.broadcast('hoard-updated', {
+                            message: 'Job hoard updated - new listings available'
+                        });
+                    } else {
+                        console.log(`🥜 Hoard file changed but count unchanged (${currentCount}), skipping broadcast`);
+                    }
+                    
+                    previousHoardCount = currentCount;
+                } catch (error) {
+                    console.error(`🥜 Error reading hoard for count check: ${error.message}`);
+                }
             }, 100);
         }
     });
@@ -201,7 +218,7 @@ function broadcastResumeDataStatus() {
         if (fs.existsSync(resumeDataVectorStoreIdPath)) {
             const stats = fs.statSync(resumeDataVectorStoreIdPath);
             eventBroadcaster.broadcast('resume-data-upload-status', {
-                message: 'Resume data vector store status',
+                message: 'Resume data vector store file changed',
                 lastModified: stats.mtime.toISOString()
             });
         }
