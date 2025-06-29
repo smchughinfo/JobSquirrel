@@ -1,5 +1,6 @@
 const fs = require('fs');
 const { getResumeDataVectorStoreIdPath } = require('../../jobSquirrelPaths');
+const { eventBroadcaster } = require('../../eventBroadcaster');
 
 if (!globalThis.File) {
     globalThis.File = require('node:buffer').File;
@@ -16,23 +17,24 @@ class Assistant {
     }
 
     async AskAssistant(prompt, useVectorStore = false) {
-        // RAISE EVENT
+        eventBroadcaster.broadcast('assistant-started', { message: 'Starting assistant query', prompt: prompt.substring(0, 100) + '...' });
         await this.clearAssistantData();
-        // RAISE EVENT
+        eventBroadcaster.broadcast('assistant-cleanup', { message: 'Cleared existing assistant data' });
         let assistant = await this.createAssistant(useVectorStore);
+        eventBroadcaster.broadcast('assistant-created', { message: 'Assistant created successfully' });
         let response = await this.messageAssistant(assistant, prompt);
         await this.clearAssistantData();
-        // RAISE EVENT
+        eventBroadcaster.broadcast('assistant-completed', { message: 'Assistant query completed successfully' });
         return response;
     }
 
     async CreateVectorStore(filePathArray) {
-        // RAISE EVENT
+        eventBroadcaster.broadcast('vector-store-started', { message: `Starting vector store creation with ${filePathArray.length} files` });
         await this.clearUploadsData();
-        // RAISE EVENT
+        eventBroadcaster.broadcast('vector-store-cleanup', { message: 'Cleared existing upload data' });
         let vectorStoreId = await this.createVectorStore(filePathArray);
         fs.writeFileSync(getResumeDataVectorStoreIdPath(), vectorStoreId);
-        // RAISE EVENT
+        eventBroadcaster.broadcast('vector-store-completed', { message: 'Vector store created and saved successfully', vectorStoreId });
         return vectorStoreId;
     }
 
@@ -61,14 +63,17 @@ class Assistant {
     }
 
     async messageAssistant(assistant, prompt) {
+        eventBroadcaster.broadcast('assistant-thread-creating', { message: 'Creating conversation thread' });
         let threadId = await this.createThread(assistant);
         await this.openai.beta.threads.messages.create(threadId, {
             role: "user",
             content: prompt
         });
-
+        eventBroadcaster.broadcast('assistant-processing', { message: 'Assistant is processing your request...' });
         let run = await this.openai.beta.threads.runs.createAndPoll(threadId, { assistant_id: assistant.id, });
+        eventBroadcaster.broadcast('assistant-retrieving', { message: 'Retrieving assistant response' });
         const messages = await this.openai.beta.threads.messages.list(run.thread_id);
+        eventBroadcaster.broadcast('assistant-response-ready', { message: 'Assistant response received' });
         const lastMessage = messages.data.reverse().find(m => m.role === "assistant").content[0].text.value;
         return lastMessage;
     }
