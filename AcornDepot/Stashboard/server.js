@@ -6,6 +6,7 @@ const { JobQueue } = require('./services/jobQueue');
 const { eventBroadcaster } = require('./services/eventBroadcaster');
 const { getHoard, addOrUpdateNutNote, getIdentifier, deleteNutNote } = require('./services/hoard');
 const { getHoardPath } = require('./services/jobSquirrelPaths');
+const { generateResume } = require('./services/resumeGenerator');
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 ////////// SETUP SERVER  /////////////////////////////////////////////////////////////////////////
@@ -86,9 +87,8 @@ app.delete('/api/nut-note', (req, res) => {
 
 // Generate resume endpoint
 app.post('/api/generate-resume', (req, res) => {
-    const job = req.body;
-    console.log(`🐿️ Resume generation requested for: ${job.company} - ${job.jobTitle}`);
-    // TODO: Integrate with original JobSquirrel resume generation workflow
+    const nutNote = req.body;
+    generateResume(nutNote)
     res.sendStatus(200);
 });
 
@@ -180,6 +180,20 @@ try {
 } catch (error) {
     console.error(`🥜 Error setting up hoard file watching: ${error.message}`);
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+////////// GLOBAL ERROR HANDLING //////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+    console.error('🔥 UNCAUGHT EXCEPTION:', error);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('🔥 UNHANDLED REJECTION at:', promise, 'reason:', reason);
+});*/
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 ////////// START WEB SERVER //////////////////////////////////////////////////////////////////////

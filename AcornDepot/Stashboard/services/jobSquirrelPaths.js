@@ -17,6 +17,15 @@ function getAcornDepotDirectory(wsl) {
     return adDir;
 }
 
+function getResumeDataDirectory(wsl) {
+    let rootDir = getJobSquirrelRootDirectory();
+    let adDir = path.join(rootDir, "ResumeData");
+    if(wsl) {
+        adDir = convertPathToWSL(adDir);
+    }
+    return adDir;
+}
+
 function getHoardPath(wsl) {
     let adDir = getAcornDepotDirectory();
     let hoardPath = path.join(adDir, "Stashboard", "hoard.json");
@@ -44,5 +53,6 @@ module.exports = {
     getAcornDepotDirectory,
     getHoardPath,
     getOpenAITokenPricesPath,
+    getResumeDataDirectory,
     convertPathToWSL
 };
