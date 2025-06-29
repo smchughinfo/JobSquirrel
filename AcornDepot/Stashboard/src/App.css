@@ -37,6 +37,41 @@ header {
     gap: 1rem;
 }
 
+.upload-resume-button {
+    background: linear-gradient(135deg, #fd7e14, #ff9142);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(253, 126, 20, 0.3);
+}
+
+.upload-resume-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(253, 126, 20, 0.4);
+}
+
+.upload-resume-button:active {
+    transform: translateY(0);
+}
+
+.upload-resume-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.upload-status {
+    font-size: 0.8rem;
+    opacity: 0.8;
+    margin-top: 0.25rem;
+    text-align: center;
+}
+
 .container {
     max-width: 1200px;
     margin: 2rem auto;

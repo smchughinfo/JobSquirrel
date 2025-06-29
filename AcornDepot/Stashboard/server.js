@@ -5,7 +5,7 @@ const { ClipboardMonitor } = require('./services/clipboard');
 const { JobQueue } = require('./services/jobQueue');
 const { eventBroadcaster } = require('./services/eventBroadcaster');
 const { getHoard, addOrUpdateNutNote, getIdentifier, deleteNutNote } = require('./services/hoard');
-const { getHoardPath } = require('./services/jobSquirrelPaths');
+const { getHoardPath, getResumeDataVectorStoreIdPath } = require('./services/jobSquirrelPaths');
 const { generateResume, UploadResumeData } = require('./services/resumeGenerator');
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -51,6 +51,9 @@ app.get('/api/events', (req, res) => {
 
     // Send current system status
     eventBroadcaster.systemStatus('connected', 'Client connected to event stream');
+    
+    // Send initial resume data status to new client
+    setTimeout(() => broadcastResumeDataStatus(), 100);
 });
 
 // Job Queue Status endpoint
@@ -162,10 +165,11 @@ clipboardMonitor.on('clipboardChange', (text) => {
 clipboardMonitor.startMonitoring();
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-////////// HOARD FILE WATCHING ///////////////////////////////////////////////////////////////////
+////////// FILE WATCHING //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 const hoardPath = getHoardPath();
+const resumeDataVectorStoreIdPath = getResumeDataVectorStoreIdPath();
 
 // Set up file watching for hoard.json
 try {
@@ -189,6 +193,41 @@ try {
     });
 } catch (error) {
     console.error(`🥜 Error setting up hoard file watching: ${error.message}`);
+}
+
+// Set up file watching for resume-data-vector-store-id.txt
+function broadcastResumeDataStatus() {
+    try {
+        if (fs.existsSync(resumeDataVectorStoreIdPath)) {
+            const stats = fs.statSync(resumeDataVectorStoreIdPath);
+            eventBroadcaster.broadcast('resume-data-upload-status', {
+                message: 'Resume data vector store status',
+                lastModified: stats.mtime.toISOString()
+            });
+        }
+    } catch (error) {
+        console.error(`📁 Error getting resume data status: ${error.message}`);
+    }
+}
+
+try {
+    console.log(`📁 Watching resume data vector store file: ${resumeDataVectorStoreIdPath}`);
+    
+    // Send initial status
+    broadcastResumeDataStatus();
+    
+    let resumeWatchTimeout;
+    fs.watch(path.dirname(resumeDataVectorStoreIdPath), (eventType, filename) => {
+        if (filename === path.basename(resumeDataVectorStoreIdPath) && eventType === 'change') {
+            clearTimeout(resumeWatchTimeout);
+            resumeWatchTimeout = setTimeout(() => {
+                console.log(`📁 Resume data vector store file changed, broadcasting status...`);
+                broadcastResumeDataStatus();
+            }, 100);
+        }
+    });
+} catch (error) {
+    console.error(`📁 Error setting up resume data vector store file watching: ${error.message}`);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
