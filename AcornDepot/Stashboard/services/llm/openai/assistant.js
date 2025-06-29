@@ -1,4 +1,5 @@
 const fs = require('fs');
+const { getResumeDataVectorStoreIdPath } = require('../../jobSquirrelPaths');
 
 if (!globalThis.File) {
     globalThis.File = require('node:buffer').File;
@@ -14,18 +15,31 @@ class Assistant {
         this.assistantModel = "gpt-4-turbo";
     }
 
-    async AskAssistant(prompt, files = null) {
+    async AskAssistant(prompt, useVectorStore = false) {
+        // RAISE EVENT
         await this.clearAssistantData();
-        let assistant = await this.createAssistant(files);
+        // RAISE EVENT
+        let assistant = await this.createAssistant(useVectorStore);
         let response = await this.messageAssistant(assistant, prompt);
         await this.clearAssistantData();
+        // RAISE EVENT
         return response;
     }
 
-    async createAssistant(files) {
+    async CreateVectorStore(filePathArray) {
+        // RAISE EVENT
+        await this.clearUploadsData();
+        // RAISE EVENT
+        let vectorStoreId = await this.createVectorStore(filePathArray);
+        fs.writeFileSync(getResumeDataVectorStoreIdPath(), vectorStoreId);
+        // RAISE EVENT
+        return vectorStoreId;
+    }
+
+    async createAssistant(useVectorStore) {
         let vectorStoreId = null;
-        if (files) {
-            vectorStoreId = await this.createVectorStore(files);
+        if (useVectorStore) {
+            vectorStoreId = fs.readFileSync(getResumeDataVectorStoreIdPath(), 'utf8').trim();
         }
 
         let options = {
@@ -88,9 +102,9 @@ class Assistant {
         return file.id;
     }
 
-    async createVectorStore(files) {
+    async createVectorStore(filePathArray) {
         const vectorStoreName = "vs_job_squirrel";
-        let fileIds = await this.uploadAssistantFiles(files);
+        let fileIds = await this.uploadAssistantFiles(filePathArray);
         const vectorStore = await this.openai.vectorStores.create({ name: vectorStoreName });
         await this.openai.vectorStores.fileBatches.createAndPoll(vectorStore.id, { file_ids: fileIds });
         await this.waitForVectorStoreReady(vectorStore.id);
@@ -110,6 +124,10 @@ class Assistant {
 
     async clearAssistantData() {
         await this.deleteAllAssistants();
+    }
+    
+    async clearUploadsData() {
+        //await this.deleteAllVectorStores();
         await this.deleteAllUploadedFiles();
     }
 
@@ -135,6 +153,25 @@ class Assistant {
             for (const assistant of assistants) {
                 await this.openai.beta.assistants.delete(assistant.id);
             }
+            if (!response.has_more) break;
+            cursor = response.last_id;
+        }
+    }
+
+    async deleteAllVectorStores() {
+        let cursor = null;
+        let totalVectorStoreCount = await countAllVectorStores();
+        while (true) {
+            const response = await this.openai.vectorStores.list({ after: cursor });
+            const stores = response.data;
+
+            let storesDeleted = 0;
+
+            await Promise.all(stores.map(async (store) => {
+                await this.openai.vectorStores.delete(store.id);
+                console.log(`Deleting vector store: ${store.name} (id: ${store.id})`);
+            }));
+
             if (!response.has_more) break;
             cursor = response.last_id;
         }

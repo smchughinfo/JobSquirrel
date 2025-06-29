@@ -44,6 +44,15 @@ function getOpenAITokenPricesPath(wsl) {
     return hoardPath;
 }
 
+function getResumeDataVectorStoreIdPath(wsl) {
+    let adDir = getAcornDepotDirectory();
+    let vectorStoreIdPath = path.join(adDir, "Stashboard", "resume-data-vector-store-id.txt");
+    if(wsl) {
+        vectorStoreIdPath = convertPathToWSL(vectorStoreIdPath);
+    }
+    return vectorStoreIdPath;
+}
+
 function convertPathToWSL(windowPath) {
     return windowPath.replace(/\\/g, '/').replace(/^([A-Z]):/, (match, drive) => `/mnt/${drive.toLowerCase()}`);
 }
@@ -54,5 +63,6 @@ module.exports = {
     getHoardPath,
     getOpenAITokenPricesPath,
     getResumeDataDirectory,
+    getResumeDataVectorStoreIdPath,
     convertPathToWSL
 };

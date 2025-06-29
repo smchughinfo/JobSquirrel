@@ -6,7 +6,7 @@ const { JobQueue } = require('./services/jobQueue');
 const { eventBroadcaster } = require('./services/eventBroadcaster');
 const { getHoard, addOrUpdateNutNote, getIdentifier, deleteNutNote } = require('./services/hoard');
 const { getHoardPath } = require('./services/jobSquirrelPaths');
-const { generateResume } = require('./services/resumeGenerator');
+const { generateResume, UploadResumeData } = require('./services/resumeGenerator');
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 ////////// SETUP SERVER  /////////////////////////////////////////////////////////////////////////
@@ -90,6 +90,16 @@ app.post('/api/generate-resume', (req, res) => {
     const nutNote = req.body;
     generateResume(nutNote)
     res.sendStatus(200);
+});
+
+// Upload resume data endpoint
+app.post('/api/upload-resume-data', async (req, res) => {
+    try {
+        const vectorStoreId = await UploadResumeData();
+        res.json({ success: true, vectorStoreId });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
 });
 
 // Test endpoint for debugging WSL commands (kept from original)

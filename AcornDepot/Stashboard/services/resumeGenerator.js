@@ -1,13 +1,18 @@
 const fs = require('fs');
 const path = require('path');
-const { AskAssistant } = require('./llm/openai');
+const { AskAssistant, CreateVectorStore } = require('./llm/openai');
 const { eventBroadcaster } = require('./eventBroadcaster');
 const { getResumeDataDirectory } = require('./jobSquirrelPaths');
 
 async function generateResume(nutNote) {
-    let resumeDataFiles = getResumeDataFiles();
-    let response = await AskAssistant("tell me about the files you see", resumeDataFiles);
+    let response = await AskAssistant("tell me about the files you see", true);
     console.log(response);
+}
+
+async function UploadResumeData() {
+    let resumeDataFiles = getResumeDataFiles();
+    let vectorStoreId = await CreateVectorStore(resumeDataFiles);
+    return vectorStoreId;
 }
 
 function getResumeDataFiles() {
@@ -18,5 +23,6 @@ function getResumeDataFiles() {
 }
 
 module.exports = {
-    generateResume
+    generateResume,
+    UploadResumeData
 };
