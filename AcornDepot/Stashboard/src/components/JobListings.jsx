@@ -5,7 +5,7 @@ function JobListings({ lastEvent }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedMarkdown, setExpandedMarkdown] = useState(new Set());
-  const [resumeDialog, setResumeDialog] = useState({ open: false, htmlArray: [], activeTab: 0, jobTitle: '', company: '', job: null });
+  const [resumeDialog, setResumeDialog] = useState({ open: false, htmlArray: [], pdfArray: [], activeTab: 0, activeType: 'html', jobTitle: '', company: '', job: null });
 
   // Fetch jobs from the API
   const fetchJobs = async () => {
@@ -191,7 +191,9 @@ function JobListings({ lastEvent }) {
       setResumeDialog({
         open: true,
         htmlArray: job.html,
+        pdfArray: [], // Initialize as empty array
         activeTab: job.html.length - 1, // Default to newest resume
+        activeType: 'html', // Default to HTML
         jobTitle: job.jobTitle || 'N/A',
         company: job.company || 'N/A',
         job: job
@@ -225,7 +227,7 @@ function JobListings({ lastEvent }) {
   };
 
   const closeResumeDialog = () => {
-    setResumeDialog({ open: false, htmlArray: [], activeTab: 0, jobTitle: '', company: '', job: null });
+    setResumeDialog({ open: false, htmlArray: [], pdfArray: [], activeTab: 0, activeType: 'html', jobTitle: '', company: '', job: null });
   };
 
   const handleRegenerateResume = async () => {
@@ -235,8 +237,46 @@ function JobListings({ lastEvent }) {
     }
   };
 
-  const setActiveTab = (tabIndex) => {
-    setResumeDialog(prev => ({ ...prev, activeTab: tabIndex }));
+  const setActiveTab = (tabIndex, type = null) => {
+    setResumeDialog(prev => ({ 
+      ...prev, 
+      activeTab: tabIndex, 
+      activeType: type || prev.activeType 
+    }));
+  };
+
+  const handleGeneratePDF = async () => {
+    if (resumeDialog.job && resumeDialog.htmlArray[resumeDialog.activeTab]) {
+      try {
+        const response = await fetch('/api/generate-pdf', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            html: resumeDialog.htmlArray[resumeDialog.activeTab],
+            company: resumeDialog.company,
+            jobTitle: resumeDialog.jobTitle
+          })
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          // Add PDF to dialog state and switch to it
+          setResumeDialog(prev => ({
+            ...prev,
+            pdfArray: [...prev.pdfArray, result.pdfPath],
+            activeTab: prev.pdfArray.length,
+            activeType: 'pdf'
+          }));
+          console.log('✅ PDF generated successfully:', result.pdfPath);
+        } else {
+          console.error('Failed to generate PDF');
+        }
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+      }
+    }
   };
 
   if (loading) {
@@ -662,6 +702,24 @@ function JobListings({ lastEvent }) {
                   🔄 Regenerate
                 </button>
                 <button
+                  onClick={handleGeneratePDF}
+                  style={{
+                    background: '#dc3545',
+                    color: 'white',
+                    border: 'none',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '5px',
+                    fontSize: '0.9rem',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = '#c82333'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = '#dc3545'}
+                >
+                  📄 Generate PDF
+                </button>
+                <button
                   onClick={closeResumeDialog}
                   style={{
                     background: 'transparent',
@@ -677,22 +735,23 @@ function JobListings({ lastEvent }) {
             </div>
             
             {/* Tab navigation */}
-            {resumeDialog.htmlArray.length > 1 && (
+            {(resumeDialog.htmlArray.length > 1 || (resumeDialog.pdfArray && resumeDialog.pdfArray.length > 0)) && (
               <div style={{
                 display: 'flex',
                 borderBottom: '1px solid #dee2e6',
                 marginBottom: '1rem',
                 gap: '0.25rem'
               }}>
+                {/* HTML Resume tabs */}
                 {resumeDialog.htmlArray.map((_, index) => (
                   <button
-                    key={index}
-                    onClick={() => setActiveTab(index)}
+                    key={`html-${index}`}
+                    onClick={() => setActiveTab(index, 'html')}
                     style={{
-                      background: resumeDialog.activeTab === index ? '#8B4513' : 'transparent',
-                      color: resumeDialog.activeTab === index ? 'white' : '#8B4513',
+                      background: (resumeDialog.activeTab === index && resumeDialog.activeType === 'html') ? '#8B4513' : 'transparent',
+                      color: (resumeDialog.activeTab === index && resumeDialog.activeType === 'html') ? 'white' : '#8B4513',
                       border: '1px solid #8B4513',
-                      borderBottom: resumeDialog.activeTab === index ? '1px solid #8B4513' : '1px solid #dee2e6',
+                      borderBottom: (resumeDialog.activeTab === index && resumeDialog.activeType === 'html') ? '1px solid #8B4513' : '1px solid #dee2e6',
                       borderBottomLeftRadius: '0',
                       borderBottomRightRadius: '0',
                       borderTopLeftRadius: '5px',
@@ -705,12 +764,12 @@ function JobListings({ lastEvent }) {
                       marginBottom: '-1px'
                     }}
                     onMouseEnter={(e) => {
-                      if (resumeDialog.activeTab !== index) {
+                      if (!(resumeDialog.activeTab === index && resumeDialog.activeType === 'html')) {
                         e.target.style.backgroundColor = '#f8f9fa';
                       }
                     }}
                     onMouseLeave={(e) => {
-                      if (resumeDialog.activeTab !== index) {
+                      if (!(resumeDialog.activeTab === index && resumeDialog.activeType === 'html')) {
                         e.target.style.backgroundColor = 'transparent';
                       }
                     }}
@@ -718,18 +777,68 @@ function JobListings({ lastEvent }) {
                     Resume {index + 1}
                   </button>
                 ))}
+                
+                {/* PDF Resume tabs */}
+                {(resumeDialog.pdfArray || []).map((_, index) => (
+                  <button
+                    key={`pdf-${index}`}
+                    onClick={() => setActiveTab(index, 'pdf')}
+                    style={{
+                      background: (resumeDialog.activeTab === index && resumeDialog.activeType === 'pdf') ? '#dc3545' : 'transparent',
+                      color: (resumeDialog.activeTab === index && resumeDialog.activeType === 'pdf') ? 'white' : '#dc3545',
+                      border: '1px solid #dc3545',
+                      borderBottom: (resumeDialog.activeTab === index && resumeDialog.activeType === 'pdf') ? '1px solid #dc3545' : '1px solid #dee2e6',
+                      borderBottomLeftRadius: '0',
+                      borderBottomRightRadius: '0',
+                      borderTopLeftRadius: '5px',
+                      borderTopRightRadius: '5px',
+                      padding: '0.5rem 1rem',
+                      fontSize: '0.9rem',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      marginBottom: '-1px'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!(resumeDialog.activeTab === index && resumeDialog.activeType === 'pdf')) {
+                        e.target.style.backgroundColor = '#f8f9fa';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!(resumeDialog.activeTab === index && resumeDialog.activeType === 'pdf')) {
+                        e.target.style.backgroundColor = 'transparent';
+                      }
+                    }}
+                  >
+                    📄 Resume {index + 1}
+                  </button>
+                ))}
               </div>
             )}
-            <iframe
-              srcDoc={resumeDialog.htmlArray[resumeDialog.activeTab] || ''}
-              style={{
-                flex: 1,
-                border: '1px solid #dee2e6',
-                borderRadius: '5px',
-                width: '100%'
-              }}
-              title={`Resume ${resumeDialog.activeTab + 1} for ${resumeDialog.jobTitle} at ${resumeDialog.company}`}
-            />
+            {resumeDialog.activeType === 'html' ? (
+              <iframe
+                srcDoc={resumeDialog.htmlArray[resumeDialog.activeTab] || ''}
+                style={{
+                  flex: 1,
+                  border: '1px solid #dee2e6',
+                  borderRadius: '5px',
+                  width: '100%'
+                }}
+                title={`Resume ${resumeDialog.activeTab + 1} for ${resumeDialog.jobTitle} at ${resumeDialog.company}`}
+              />
+            ) : (
+              <embed
+                src={(resumeDialog.pdfArray && resumeDialog.pdfArray[resumeDialog.activeTab]) || ''}
+                type="application/pdf"
+                style={{
+                  flex: 1,
+                  border: '1px solid #dee2e6',
+                  borderRadius: '5px',
+                  width: '100%'
+                }}
+                title={`PDF Resume ${resumeDialog.activeTab + 1} for ${resumeDialog.jobTitle} at ${resumeDialog.company}`}
+              />
+            )}
           </div>
         </div>
       )}

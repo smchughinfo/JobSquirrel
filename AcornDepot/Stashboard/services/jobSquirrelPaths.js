@@ -62,6 +62,15 @@ function getResumePersonalInformation(wsl) {
     return adDir;
 }
 
+function getTempHtmlToPDFPath(wsl) {
+    let rootDir = getJobSquirrelRootDirectory();
+    let adDir = path.join(rootDir, "tmp-html-to-pdf.html");
+    if(wsl) {
+        adDir = convertPathToWSL(adDir);
+    }
+    return adDir;
+}
+
 function convertPathToWSL(windowPath) {
     return windowPath.replace(/\\/g, '/').replace(/^([A-Z]):/, (match, drive) => `/mnt/${drive.toLowerCase()}`);
 }
@@ -74,5 +83,6 @@ module.exports = {
     getResumeDataVectorStoreIdPath,
     getCustomeResumeInstructions,
     getResumePersonalInformation,
+    getTempHtmlToPDFPath,
     convertPathToWSL
 };

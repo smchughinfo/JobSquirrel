@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const puppeteer = require('puppeteer');
 const { ClipboardMonitor } = require('./services/clipboard');
 const { JobQueue } = require('./services/jobQueue');
 const { eventBroadcaster } = require('./services/eventBroadcaster');
@@ -18,6 +19,11 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Serve GeneratedResumes directory for PDF access
+const { getJobSquirrelRootDirectory } = require('./services/jobSquirrelPaths');
+const generatedResumesPath = path.join(getJobSquirrelRootDirectory(), 'GeneratedResumes');
+app.use('/GeneratedResumes', express.static(generatedResumesPath));
 
 // Basic route
 app.get('/', (req, res) => {
@@ -93,6 +99,90 @@ app.post('/api/generate-resume', async (req, res) => {
     const nutNote = req.body;
     await generateResume(nutNote);
     res.sendStatus(200);
+});
+
+// Generate PDF endpoint
+app.post('/api/generate-pdf', async (req, res) => {
+    try {
+        const { html, company, jobTitle } = req.body;
+        
+        if (!html || !company || !jobTitle) {
+            return res.status(400).json({ error: 'Missing required parameters: html, company, jobTitle' });
+        }
+        
+        const { getTempHtmlToPDFPath, getJobSquirrelRootDirectory } = require('./services/jobSquirrelPaths');
+        const fs = require('fs');
+        const path = require('path');
+        
+        // Save HTML to temp file
+        const tempHtmlPath = getTempHtmlToPDFPath();
+        fs.writeFileSync(tempHtmlPath, html);
+        
+        // Generate PDF filename and path
+        const filename = `Sean McHugh - Resume For ${jobTitle} - ${company}.pdf`;
+        const rootDir = getJobSquirrelRootDirectory();
+        const pdfPath = path.join(rootDir, 'GeneratedResumes', filename);
+        
+        // Ensure GeneratedResumes directory exists
+        const generatedResumesDir = path.join(rootDir, 'GeneratedResumes');
+        if (!fs.existsSync(generatedResumesDir)) {
+            fs.mkdirSync(generatedResumesDir, { recursive: true });
+        }
+        
+        // Generate PDF using the pdf service
+        
+        async function htmlToPdf(htmlContent, outputPath, marginInches = 0) {
+            const browser = await puppeteer.launch();
+            const page = await browser.newPage();
+        
+            await page.setContent(htmlContent);
+            
+            // Inject the CSS for page margins
+            await page.addStyleTag({
+                content: `
+                    @page { 
+                        margin-top: 0.5in; 
+                        margin-bottom: 0.5in; 
+                        ${marginInches > 0 ? `margin-left: ${marginInches}in;` : ""}
+                        ${marginInches > 0 ? `margin-right: ${marginInches}in;` : ""}
+                    } 
+                    @page :first { 
+                        margin-top: 0; 
+                        margin-bottom: 0.5in; 
+                        ${marginInches > 0 ? `margin-left: ${marginInches}in;` : ""}
+                        ${marginInches > 0 ? `margin-right: ${marginInches}in;` : ""}
+                    }
+                `
+            });
+        
+            await page.pdf({
+                path: outputPath,
+                format: 'A4',
+                printBackground: true,
+                displayHeaderFooter: false
+            });
+        
+            await browser.close();
+        }
+        
+        await htmlToPdf(html, pdfPath, 0);
+        
+        // Return the PDF path (relative for client access)
+        const relativePdfPath = `/GeneratedResumes/${filename}`;
+        
+        res.json({ 
+            success: true, 
+            pdfPath: relativePdfPath,
+            filename: filename
+        });
+        
+    } catch (error) {
+        console.error('❌ PDF generation failed:', error.message);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
 });
 
 // Test Claude streaming endpoint
