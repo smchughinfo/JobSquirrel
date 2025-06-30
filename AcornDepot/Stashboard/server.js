@@ -5,7 +5,7 @@ const puppeteer = require('puppeteer');
 const { ClipboardMonitor } = require('./services/clipboard');
 const { JobQueue } = require('./services/jobQueue');
 const { eventBroadcaster } = require('./services/eventBroadcaster');
-const { getHoard, addOrUpdateNutNote, getIdentifier, deleteNutNote } = require('./services/hoard');
+const { getHoard, addOrUpdateNutNote, getIdentifier, deleteNutNote, deleteNuteNoteByIndex } = require('./services/hoard');
 const { getHoardPath, getResumeDataVectorStoreIdPath } = require('./services/jobSquirrelPaths');
 const { generateResume, remixResumeAnthropic, UploadResumeData } = require('./services/resumeGenerator');
 const { htmlToPdf } = require('./services/pdf');
@@ -18,8 +18,9 @@ const { htmlToPdf } = require('./services/pdf');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(express.json());
+// Middleware with maximum payload size
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Serve GeneratedResumes directory for PDF access
@@ -94,6 +95,35 @@ app.delete('/api/nut-note', (req, res) => {
     const { company, jobTitle } = req.body;
     deleteNutNote(company, jobTitle);
     res.sendStatus(200);
+});
+
+// Delete specific resume version endpoint
+app.delete('/api/resume-version', (req, res) => {
+    try {
+        const { nutNote, resumeIndex } = req.body;
+        
+        if (!nutNote || resumeIndex === undefined) {
+            return res.status(400).json({ 
+                error: 'Missing required parameters: nutNote, resumeIndex' 
+            });
+        }
+        
+        console.log(`🗑️ Deleting resume version ${resumeIndex + 1} for ${nutNote.company} - ${nutNote.jobTitle}`);
+        
+        deleteNuteNoteByIndex(nutNote, resumeIndex);
+        
+        res.json({ 
+            success: true, 
+            message: `Resume version ${resumeIndex + 1} deleted successfully`
+        });
+        
+    } catch (error) {
+        console.error('❌ Resume version deletion failed:', error.message);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
 });
 
 // Generate resume endpoint

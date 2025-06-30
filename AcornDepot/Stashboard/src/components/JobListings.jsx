@@ -7,6 +7,7 @@ function JobListings({ lastEvent }) {
   const [expandedMarkdown, setExpandedMarkdown] = useState(new Set());
   const [resumeDialog, setResumeDialog] = useState({ open: false, htmlArray: [], pdfPath: null, coverLetter: null, activeTab: 0, activeType: 'html', jobTitle: '', company: '', job: null });
   const [remixDialog, setRemixDialog] = useState({ open: false, changes: '', loading: false });
+  const [deleteConfirmDialog, setDeleteConfirmDialog] = useState({ open: false, resumeIndex: null });
   const [marginInches, setMarginInches] = useState(0);
 
   // Fetch jobs from the API
@@ -321,6 +322,67 @@ function JobListings({ lastEvent }) {
         }
       } catch (error) {
         console.error('Error generating PDF:', error);
+      }
+    }
+  };
+
+  const handleDeleteResumeClick = (resumeIndex) => {
+    setDeleteConfirmDialog({ open: true, resumeIndex });
+  };
+
+  const closeDeleteConfirmDialog = () => {
+    setDeleteConfirmDialog({ open: false, resumeIndex: null });
+  };
+
+  const handleDeleteResumeConfirm = async () => {
+    if (deleteConfirmDialog.resumeIndex !== null && resumeDialog.job) {
+      try {
+        console.log(`🗑️ Deleting resume version ${deleteConfirmDialog.resumeIndex + 1} for ${resumeDialog.job.company} - ${resumeDialog.job.jobTitle}`);
+        
+        const response = await fetch('/api/resume-version', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            nutNote: resumeDialog.job,
+            resumeIndex: deleteConfirmDialog.resumeIndex
+          })
+        });
+        
+        if (response.ok) {
+          console.log('✅ Resume version deleted successfully');
+          
+          // Update local state
+          const newHtmlArray = [...resumeDialog.htmlArray];
+          newHtmlArray.splice(deleteConfirmDialog.resumeIndex, 1);
+          
+          // Adjust active tab if necessary
+          let newActiveTab = resumeDialog.activeTab;
+          if (deleteConfirmDialog.resumeIndex <= resumeDialog.activeTab && resumeDialog.activeTab > 0) {
+            newActiveTab = resumeDialog.activeTab - 1;
+          } else if (deleteConfirmDialog.resumeIndex === resumeDialog.activeTab && newHtmlArray.length > 0) {
+            newActiveTab = Math.min(resumeDialog.activeTab, newHtmlArray.length - 1);
+          }
+          
+          // If no resumes left, close the dialog
+          if (newHtmlArray.length === 0) {
+            closeResumeDialog();
+          } else {
+            setResumeDialog(prev => ({
+              ...prev,
+              htmlArray: newHtmlArray,
+              activeTab: newActiveTab
+            }));
+          }
+          
+          closeDeleteConfirmDialog();
+        } else {
+          const error = await response.json();
+          console.error('Failed to delete resume version:', error.error);
+        }
+      } catch (error) {
+        console.error('Error deleting resume version:', error);
       }
     }
   };
@@ -841,24 +903,20 @@ function JobListings({ lastEvent }) {
               }}>
                 {/* HTML Resume tabs */}
                 {resumeDialog.htmlArray.map((_, index) => (
-                  <button
+                  <div
                     key={`html-${index}`}
-                    onClick={() => setActiveTab(index, 'html')}
                     style={{
+                      display: 'flex',
+                      alignItems: 'center',
                       background: (resumeDialog.activeTab === index && resumeDialog.activeType === 'html') ? '#8B4513' : 'transparent',
-                      color: (resumeDialog.activeTab === index && resumeDialog.activeType === 'html') ? 'white' : '#8B4513',
                       border: '1px solid #8B4513',
                       borderBottom: (resumeDialog.activeTab === index && resumeDialog.activeType === 'html') ? '1px solid #8B4513' : '1px solid #dee2e6',
                       borderBottomLeftRadius: '0',
                       borderBottomRightRadius: '0',
                       borderTopLeftRadius: '5px',
                       borderTopRightRadius: '5px',
-                      padding: '0.5rem 1rem',
-                      fontSize: '0.9rem',
-                      fontWeight: '500',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      marginBottom: '-1px'
+                      marginBottom: '-1px',
+                      transition: 'all 0.2s ease'
                     }}
                     onMouseEnter={(e) => {
                       if (!(resumeDialog.activeTab === index && resumeDialog.activeType === 'html')) {
@@ -871,8 +929,51 @@ function JobListings({ lastEvent }) {
                       }
                     }}
                   >
-                    Resume {index + 1}
-                  </button>
+                    <button
+                      onClick={() => setActiveTab(index, 'html')}
+                      style={{
+                        background: 'transparent',
+                        color: (resumeDialog.activeTab === index && resumeDialog.activeType === 'html') ? 'white' : '#8B4513',
+                        border: 'none',
+                        padding: '0.5rem 0.75rem',
+                        fontSize: '0.9rem',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        flex: 1
+                      }}
+                    >
+                      Resume {index + 1}
+                    </button>
+                    {resumeDialog.htmlArray.length > 1 && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteResumeClick(index);
+                        }}
+                        style={{
+                          background: 'transparent',
+                          color: (resumeDialog.activeTab === index && resumeDialog.activeType === 'html') ? 'white' : '#8B4513',
+                          border: 'none',
+                          padding: '0.25rem 0.5rem',
+                          fontSize: '0.8rem',
+                          cursor: 'pointer',
+                          borderRadius: '3px',
+                          marginLeft: '0.25rem',
+                          marginRight: '0.25rem',
+                          transition: 'background-color 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = (resumeDialog.activeTab === index && resumeDialog.activeType === 'html') ? 'rgba(255,255,255,0.2)' : 'rgba(139,69,19,0.1)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = 'transparent';
+                        }}
+                        title="Delete this resume version"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
                 ))}
                 
                 {/* PDF Resume tab (single PDF) */}
@@ -1138,6 +1239,92 @@ function JobListings({ lastEvent }) {
                 }}
               >
                 {remixDialog.loading ? '🔄 Processing...' : '🎨 Submit Remix'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Delete Confirmation Dialog */}
+      {deleteConfirmDialog.open && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1200
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '10px',
+            padding: '2rem',
+            width: '400px',
+            maxWidth: '90vw',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+            textAlign: 'center'
+          }}>
+            <h3 style={{
+              margin: '0 0 1rem 0',
+              color: '#2c3e50',
+              fontSize: '1.3rem'
+            }}>
+              🗑️ Delete Resume Version
+            </h3>
+            
+            <p style={{
+              margin: '0 0 2rem 0',
+              color: '#666',
+              fontSize: '1rem',
+              lineHeight: '1.5'
+            }}>
+              Are you sure you want to delete Resume {deleteConfirmDialog.resumeIndex + 1}? This action cannot be undone.
+            </p>
+            
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '1rem'
+            }}>
+              <button
+                onClick={closeDeleteConfirmDialog}
+                style={{
+                  background: '#6c757d',
+                  color: 'white',
+                  border: 'none',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '5px',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s ease'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#5a6268'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#6c757d'}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteResumeConfirm}
+                style={{
+                  background: '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '5px',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s ease'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#c82333'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#dc3545'}
+              >
+                🗑️ Delete
               </button>
             </div>
           </div>

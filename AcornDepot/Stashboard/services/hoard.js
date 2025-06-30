@@ -42,9 +42,39 @@ function deleteNutNote(companyName, jobTitle) {
     });
 }
 
+function deleteNuteNoteByIndex(nutNote, resumeIndex) {
+    let hoard = getHoard();
+    let jobIndex = hoard.jobListings.findIndex(n => n.company == nutNote.company && n.jobTitle == nutNote.jobTitle);
+    
+    if (jobIndex === -1) {
+        throw new Error(`Job not found: ${nutNote.company} - ${nutNote.jobTitle}`);
+    }
+    
+    let job = hoard.jobListings[jobIndex];
+    
+    if (!job.html || !Array.isArray(job.html)) {
+        throw new Error(`No resume versions found for job: ${nutNote.company} - ${nutNote.jobTitle}`);
+    }
+    
+    if (resumeIndex < 0 || resumeIndex >= job.html.length) {
+        throw new Error(`Invalid resume index ${resumeIndex}. Job has ${job.html.length} resume version(s)`);
+    }
+    
+    // Remove the specific resume version
+    job.html.splice(resumeIndex, 1);
+    
+    // If no resume versions left, remove the html property entirely
+    if (job.html.length === 0) {
+        delete job.html;
+    }
+    
+    saveHoard(hoard);
+}
+
 module.exports = {
     addOrUpdateNutNote,
     getHoard,
     getIdentifier,
     deleteNutNote,
+    deleteNuteNoteByIndex,
 };
