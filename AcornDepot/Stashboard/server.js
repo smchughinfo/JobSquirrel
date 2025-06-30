@@ -8,6 +8,8 @@ const { eventBroadcaster } = require('./services/eventBroadcaster');
 const { getHoard, addOrUpdateNutNote, getIdentifier, deleteNutNote } = require('./services/hoard');
 const { getHoardPath, getResumeDataVectorStoreIdPath } = require('./services/jobSquirrelPaths');
 const { generateResume, UploadResumeData } = require('./services/resumeGenerator');
+const { htmlToPdf } = require('./services/pdf');
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 ////////// SETUP SERVER  /////////////////////////////////////////////////////////////////////////
@@ -104,22 +106,18 @@ app.post('/api/generate-resume', async (req, res) => {
 // Generate PDF endpoint
 app.post('/api/generate-pdf', async (req, res) => {
     try {
-        const { html, company, jobTitle } = req.body;
+        const { nutNote, resumeHtml, marginInches } = req.body;
         
-        if (!html || !company || !jobTitle) {
-            return res.status(400).json({ error: 'Missing required parameters: html, company, jobTitle' });
+        if (!nutNote || !resumeHtml) {
+            return res.status(400).json({ error: 'Missing required parameters: nutNote, resumeHtml' });
         }
         
-        const { getTempHtmlToPDFPath, getJobSquirrelRootDirectory } = require('./services/jobSquirrelPaths');
+        const { getJobSquirrelRootDirectory } = require('./services/jobSquirrelPaths');
         const fs = require('fs');
         const path = require('path');
         
-        // Save HTML to temp file
-        const tempHtmlPath = getTempHtmlToPDFPath();
-        fs.writeFileSync(tempHtmlPath, html);
-        
         // Generate PDF filename and path
-        const filename = `Sean McHugh - Resume For ${jobTitle} - ${company}.pdf`;
+        const filename = `Sean McHugh - Resume For ${nutNote.jobTitle} - ${nutNote.company}.pdf`;
         const rootDir = getJobSquirrelRootDirectory();
         const pdfPath = path.join(rootDir, 'GeneratedResumes', filename);
         
@@ -130,45 +128,35 @@ app.post('/api/generate-pdf', async (req, res) => {
         }
         
         // Generate PDF using the pdf service
-        
-        async function htmlToPdf(htmlContent, outputPath, marginInches = 0) {
-            const browser = await puppeteer.launch();
-            const page = await browser.newPage();
-        
-            await page.setContent(htmlContent);
-            
-            // Inject the CSS for page margins
-            await page.addStyleTag({
-                content: `
-                    @page { 
-                        margin-top: 0.5in; 
-                        margin-bottom: 0.5in; 
-                        ${marginInches > 0 ? `margin-left: ${marginInches}in;` : ""}
-                        ${marginInches > 0 ? `margin-right: ${marginInches}in;` : ""}
-                    } 
-                    @page :first { 
-                        margin-top: 0; 
-                        margin-bottom: 0.5in; 
-                        ${marginInches > 0 ? `margin-left: ${marginInches}in;` : ""}
-                        ${marginInches > 0 ? `margin-right: ${marginInches}in;` : ""}
-                    }
-                `
-            });
-        
-            await page.pdf({
-                path: outputPath,
-                format: 'A4',
-                printBackground: true,
-                displayHeaderFooter: false
-            });
-        
-            await browser.close();
-        }
-        
-        await htmlToPdf(html, pdfPath, 0);
+        await htmlToPdf(resumeHtml, pdfPath, parseFloat(marginInches) || 0);
         
         // Return the PDF path (relative for client access)
         const relativePdfPath = `/GeneratedResumes/${filename}`;
+        
+        // Update the job record with the PDF path
+        try {
+            const hoard = getHoard();
+            const job = hoard.jobListings.find(job => getIdentifier(job) === getIdentifier(nutNote));
+            if (job) {
+                job.pdfPath = relativePdfPath;
+                // Save the updated hoard
+                const hoardPath = getHoardPath();
+                fs.writeFileSync(hoardPath, JSON.stringify(hoard, null, 2));
+                console.log(`🥜 Updated job ${getIdentifier(nutNote)} with PDF path: ${relativePdfPath}`);
+                
+                // Broadcast hoard update event
+                eventBroadcaster.broadcast('hoard-updated', {
+                    type: 'pdf-generated',
+                    content: `PDF generated for ${nutNote.company} - ${nutNote.jobTitle}`,
+                    pdfPath: relativePdfPath
+                });
+            } else {
+                console.warn(`⚠️ Could not find job with identifier: ${getIdentifier(nutNote)}`);
+            }
+        } catch (updateError) {
+            console.warn('⚠️ Failed to update job with PDF path:', updateError.message);
+            // Don't fail the request if job update fails
+        }
         
         res.json({ 
             success: true, 

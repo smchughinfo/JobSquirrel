@@ -79,16 +79,18 @@ async function AskClaude(message, workingDir = null) {
                                     } else if (jsonData.type === 'assistant' && jsonData.message && jsonData.message.content) {
                                         const content = jsonData.message.content[0]?.text;
                                         if (content) {
-                                            console.log('🤖 Claude response received:');
+                                            console.log('🤖 Claude response received:', content.substring(0, 100) + '...');
                                             // Split into lines for better console display
-                                            content.split('\\n').forEach(responseLine => {
-                                                console.log('🤖 ', responseLine);
-                                                
-                                                // Broadcast each line individually
-                                                eventBroadcaster.broadcast('claude-stream', {
-                                                    type: 'response-line',
-                                                    content: responseLine
-                                                });
+                                            content.split('\n').forEach(responseLine => {
+                                                if (responseLine.trim()) {
+                                                    console.log('🤖 ', responseLine);
+                                                    
+                                                    // Broadcast each line individually
+                                                    eventBroadcaster.broadcast('claude-stream', {
+                                                        type: 'response-line',
+                                                        content: responseLine
+                                                    });
+                                                }
                                             });
                                             
                                             finalResult = content;
@@ -102,7 +104,10 @@ async function AskClaude(message, workingDir = null) {
                                         
                                     } else if (jsonData.type === 'result') {
                                         console.log(`✅ Claude finished - ${jsonData.duration_ms}ms - $${jsonData.total_cost_usd.toFixed(6)}`);
+                                        console.log(`🔍 Final result check - current finalResult length: ${finalResult ? finalResult.length : 0}, jsonData.result available: ${!!jsonData.result}`);
+                                        
                                         if (jsonData.result && !finalResult) {
+                                            console.log('📝 Using jsonData.result as finalResult');
                                             finalResult = jsonData.result;
                                         }
                                         
@@ -225,11 +230,13 @@ async function AskClaude(message, workingDir = null) {
                     readNewContent();
                     
                     if (code !== 0) {
+                        console.error(`❌ Claude process failed with exit code ${code}`);
                         cleanup();
                         reject(new Error(`Claude process failed with code ${code}`));
                         return;
                     }
                     
+                    console.log(`🔍 Process completed but no result received. finalResult length: ${finalResult ? finalResult.length : 0}`);
                     cleanup();
                     resolve(finalResult || 'No result received');
                 }

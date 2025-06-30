@@ -6,14 +6,15 @@ const { eventBroadcaster } = require('./eventBroadcaster');
 const { getResumeDataDirectory, getResumePersonalInformation } = require('./jobSquirrelPaths');
 const { addOrUpdateNutNote } = require('./hoard');
 
-const CLAMP_CLAUSE = `Do not include any preamble, commentary, or code block formatting. Output only the final html content, nothing else.`;
+const RESUME_CLAMP_CLAUSE = `Do not include any preamble, commentary, or code block formatting. Output only the final html content, nothing else.`;
+const COVER_LATTER_CLAMP_CLAUDE = `Do not include any preamble, commentary, or code block formatting. Output only the cover letter itself, nothing else.`;
 
 async function generateResume(nutNote) {
     await generateResumeAnthropic(nutNote);
 }
 
 async function generateResumeOpenAI(nutNote) {
-    const prompt = `Use the provided files to generate a tailored resume for this job description. Output your result as html. ${CLAMP_CLAUSE}\n\n"${nutNote.markdown}".`;
+    const prompt = `Use the provided files to generate a tailored resume for this job description. Output your result as html. ${RESUME_CLAMP_CLAUSE}\n\n"${nutNote.markdown}".`;
     let response = await AskAssistant(prompt, true);
     nutNote.html = response;
     addOrUpdateNutNote(nutNote);
@@ -25,12 +26,12 @@ async function generateResumeAnthropic(nutNote) {
     fs.writeFileSync("c:/users/seanm/desktop/jobsquirrel" + jobListingPath, nutNote.markdown);
 
     let resumeCustomInstructionsPath = getResumeDataDirectory(true);
-    let resumePersonalInformation = getResumePersonalInformation(true);
+    let resumePersonalInformationPath = getResumePersonalInformation(true);
 
     let prompt = `Use the provided files in /ResumeData to generate a tailored resume for the job listing in ${jobListingPath}.`;
     prompt += ` Make sure to follow all instructions in '${resumeCustomInstructionsPath}'.`;
-    prompt += ` Use '${resumePersonalInformation}' as your canonical source for contact information.`;
-    prompt += ` ${CLAMP_CLAUSE}`;
+    prompt += ` Use '${resumePersonalInformationPath}' as your canonical source for contact information.`;
+    prompt += ` ${RESUME_CLAMP_CLAUSE}`;
 
     let response = await AskClaude(prompt);
     response = response.substring(response.indexOf("<"));
@@ -44,6 +45,8 @@ async function generateResumeAnthropic(nutNote) {
         nutNote.html = [nutNote.html];
     }
     
+    nutNote.coverLetter = await generateCoverLetterAnthropic(jobListingPath, resumePersonalInformationPath);
+
     // Append new resume to array
     nutNote.html.push(response);
     
@@ -51,6 +54,19 @@ async function generateResumeAnthropic(nutNote) {
     console.log("resume generated!");
 }
 
+async function generateCoverLetterAnthropic(jobListingPath) {
+    let resumeCustomInstructionsPath = getResumeDataDirectory(true);
+    let resumePersonalInformationPath = getResumePersonalInformation(true);
+
+    let prompt = `Use the provided files in /ResumeData to generate a tailored cover letter for the job listing in ${jobListingPath}.`;
+    prompt += ` Make sure to follow all instructions in '${resumeCustomInstructionsPath}' that are relevent for writing a cover letter.`;
+    prompt += ` Use '${resumePersonalInformationPath}' as your canonical source for contact information.`;
+    prompt += ` Output your response in plain text.`;
+    prompt += ` ${COVER_LATTER_CLAMP_CLAUDE}`;
+
+    let response = await AskClaude(prompt);
+    return response;
+}
 
 async function UploadResumeData() {
     let resumeDataFiles = getResumeDataFiles();
