@@ -5,10 +5,8 @@ const { spawn } = require('child_process');
 const { getJobSquirrelRootDirectory, convertPathToWSL } = require('../jobSquirrelPaths');
 const { eventBroadcaster } = require('../eventBroadcaster');
 
-async function AskClaude(message, workingDir = null) {
-    if (!workingDir || typeof workingDir !== 'string') {
-        workingDir = getJobSquirrelRootDirectory();
-    }
+async function AskClaude(message, sessionId) {
+    let workingDir = getJobSquirrelRootDirectory();
     
     // Log to console and broadcast event
     console.log('🤖 Starting Claude with file-watching streaming...');
@@ -176,7 +174,8 @@ async function AskClaude(message, workingDir = null) {
                 content: `🖥️ Windows detected, using WSL wrapper\n🔄 WSL working dir: ${wslWorkingDir}\n🔄 WSL output file: ${wslOutputFile}`
             });
             
-            const wslCommand = `cd ${wslWorkingDir} && claude --print --verbose --output-format stream-json --dangerously-skip-permissions '${message}' > ${wslOutputFile}`;
+            const resumeFlag = sessionId ? `--resume ${sessionId}` : '';
+            const wslCommand = `cd ${wslWorkingDir} && claude --print --verbose --output-format stream-json --dangerously-skip-permissions ${resumeFlag} '${message}' > ${wslOutputFile}`;
             console.log('🔧 Full WSL command:', wslCommand);
             
             eventBroadcaster.broadcast('claude-stream', {
@@ -207,9 +206,10 @@ async function AskClaude(message, workingDir = null) {
                 content: '🐧 Linux/WSL detected, running Claude directly'
             });
             
+            const resumeFlag = sessionId ? `--resume ${sessionId}` : '';
             claudeProcess = spawn('/bin/bash', [
                 '-c',
-                `cd ${workingDir} && claude --print --verbose --output-format stream-json --dangerously-skip-permissions '${message}' > ${outputFile}`
+                `cd ${workingDir} && claude --print --verbose --output-format stream-json --dangerously-skip-permissions ${resumeFlag} '${message}' > ${outputFile}`
             ], {
                 stdio: 'inherit'
             });

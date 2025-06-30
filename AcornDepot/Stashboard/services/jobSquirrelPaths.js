@@ -44,7 +44,7 @@ function getResumeDataVectorStoreIdPath(wsl) {
     return vectorStoreIdPath;
 }
 
-function getCustomeResumeInstructions(wsl) {
+function getCustomResumeInstructions(wsl) {
     let rootDir = getJobSquirrelRootDirectory();
     let adDir = path.join(rootDir, "custom-resume-instructions.txt");
     if(wsl) {
@@ -89,6 +89,24 @@ function getRemixResumePath(wsl) {
     return hoardPath;
 }
 
+function getSaveSessionIdPath(wsl) {
+    let rootDir = getJobSquirrelRootDirectory();
+    let saveSessionIdPath = path.join(rootDir, "save-session-id-instructions.txt");
+    if(wsl) {
+        saveSessionIdPath = convertPathToWSL(saveSessionIdPath);
+    }
+    return saveSessionIdPath;
+}
+
+function getSessionIdPath(wsl) {
+    let rootDir = getJobSquirrelRootDirectory();
+    let sessionIdPath = path.join(rootDir, "session-id.txt");
+    if(wsl) {
+        sessionIdPath = convertPathToWSL(sessionIdPath);
+    }
+    return sessionIdPath;
+}
+
 function getRemixResumeInstructionsPath(wsl) {
     let adDir = getAcornDepotDirectory();
     let hoardPath = path.join(adDir, "Stashboard", "remix-resume-instructions.txt");
@@ -97,6 +115,25 @@ function getRemixResumeInstructionsPath(wsl) {
     }
     return hoardPath;
 }
+
+function getWorkingResumePath(wsl) {
+    let adDir = getAcornDepotDirectory();
+    let hoardPath = path.join(adDir, "Stashboard", "working-resume.html");
+    if(wsl) {
+        hoardPath = convertPathToWSL(hoardPath);
+    }
+    return hoardPath;
+}
+
+function getResumeChangesPath(wsl) {
+    let adDir = getAcornDepotDirectory();
+    let hoardPath = path.join(adDir, "Stashboard", "resume-changes.md");
+    if(wsl) {
+        hoardPath = convertPathToWSL(hoardPath);
+    }
+    return hoardPath;
+}
+
 
 function convertPathToWSL(windowPath) {
     return windowPath.replace(/\\/g, '/').replace(/^([A-Z]):/, (match, drive) => `/mnt/${drive.toLowerCase()}`);
@@ -108,11 +145,15 @@ module.exports = {
     getHoardPath,
     getResumeDataDirectory,
     getResumeDataVectorStoreIdPath,
-    getCustomeResumeInstructions,
+    getCustomResumeInstructions,
     getResumePersonalInformation,
     getTempHtmlToPDFPath,
     getJobListingMDPath,
     getRemixResumePath,
     getRemixResumeInstructionsPath,
+    getSaveSessionIdPath,
+    getSessionIdPath,
+    getWorkingResumePath,
+    getResumeChangesPath,
     convertPathToWSL
 };
