@@ -5,7 +5,7 @@ function JobListings({ lastEvent }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedMarkdown, setExpandedMarkdown] = useState(new Set());
-  const [resumeDialog, setResumeDialog] = useState({ open: false, html: '', jobTitle: '', company: '' });
+  const [resumeDialog, setResumeDialog] = useState({ open: false, htmlArray: [], activeTab: 0, jobTitle: '', company: '', job: null });
 
   // Fetch jobs from the API
   const fetchJobs = async () => {
@@ -50,6 +50,25 @@ function JobListings({ lastEvent }) {
       fetchJobs();
     }
   }, [lastEvent]);
+
+  // Update resume dialog when jobs refresh and dialog is open
+  useEffect(() => {
+    if (resumeDialog.open && resumeDialog.job) {
+      const updatedJob = jobs.find(j => 
+        j.company === resumeDialog.job.company && 
+        j.jobTitle === resumeDialog.job.jobTitle
+      );
+      if (updatedJob && updatedJob.html && Array.isArray(updatedJob.html)) {
+        setResumeDialog(prev => ({
+          ...prev,
+          htmlArray: updatedJob.html,
+          job: updatedJob,
+          // If new resume was added, switch to it
+          activeTab: updatedJob.html.length > prev.htmlArray.length ? updatedJob.html.length - 1 : prev.activeTab
+        }));
+      }
+    }
+  }, [jobs, resumeDialog.open, resumeDialog.job]);
 
   const formatSalary = (salary) => {
     if (!salary || salary === 'N/A') return 'Salary not specified';
@@ -167,13 +186,15 @@ function JobListings({ lastEvent }) {
   };
 
   const handleResumeClick = async (job) => {
-    // If resume HTML exists, show it in dialog
-    if (job.html && job.html.trim() !== '') {
+    // Check if resume HTML exists (array format)
+    if (job.html && Array.isArray(job.html) && job.html.length > 0) {
       setResumeDialog({
         open: true,
-        html: job.html,
+        htmlArray: job.html,
+        activeTab: job.html.length - 1, // Default to newest resume
         jobTitle: job.jobTitle || 'N/A',
-        company: job.company || 'N/A'
+        company: job.company || 'N/A',
+        job: job
       });
     } else {
       // Otherwise, generate a new resume
@@ -204,7 +225,18 @@ function JobListings({ lastEvent }) {
   };
 
   const closeResumeDialog = () => {
-    setResumeDialog({ open: false, html: '', jobTitle: '', company: '' });
+    setResumeDialog({ open: false, htmlArray: [], activeTab: 0, jobTitle: '', company: '', job: null });
+  };
+
+  const handleRegenerateResume = async () => {
+    if (resumeDialog.job) {
+      await generateResume(resumeDialog.job);
+      // Dialog will be updated when hoard refreshes
+    }
+  };
+
+  const setActiveTab = (tabIndex) => {
+    setResumeDialog(prev => ({ ...prev, activeTab: tabIndex }));
   };
 
   if (loading) {
@@ -394,7 +426,7 @@ function JobListings({ lastEvent }) {
                     <button
                       onClick={() => handleResumeClick(job)}
                       style={{
-                        background: job.html && job.html.trim() !== '' ? '#17a2b8' : '#28a745',
+                        background: (job.html && Array.isArray(job.html) && job.html.length > 0) ? '#17a2b8' : '#28a745',
                         color: 'white',
                         border: 'none',
                         padding: '0.4rem 0.8rem',
@@ -405,21 +437,21 @@ function JobListings({ lastEvent }) {
                         transition: 'background-color 0.2s ease'
                       }}
                       onMouseEnter={(e) => {
-                        if (job.html && job.html.trim() !== '') {
+                        if (job.html && Array.isArray(job.html) && job.html.length > 0) {
                           e.target.style.backgroundColor = '#138496';
                         } else {
                           e.target.style.backgroundColor = '#218838';
                         }
                       }}
                       onMouseLeave={(e) => {
-                        if (job.html && job.html.trim() !== '') {
+                        if (job.html && Array.isArray(job.html) && job.html.length > 0) {
                           e.target.style.backgroundColor = '#17a2b8';
                         } else {
                           e.target.style.backgroundColor = '#28a745';
                         }
                       }}
                     >
-                      {job.html && job.html.trim() !== '' ? '👁️ View Resume' : '📄 Generate Resume'}
+                      {(job.html && Array.isArray(job.html) && job.html.length > 0) ? `👁️ View Resume (${job.html.length})` : '📄 Generate Resume'}
                     </button>
                     {job.url && job.url !== 'N/A' && (
                       <a 
@@ -610,28 +642,93 @@ function JobListings({ lastEvent }) {
               }}>
                 Resume: {resumeDialog.jobTitle} at {resumeDialog.company}
               </h3>
-              <button
-                onClick={closeResumeDialog}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  fontSize: '1.5rem',
-                  cursor: 'pointer',
-                  color: '#666'
-                }}
-              >
-                ✕
-              </button>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <button
+                  onClick={handleRegenerateResume}
+                  style={{
+                    background: '#28a745',
+                    color: 'white',
+                    border: 'none',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '5px',
+                    fontSize: '0.9rem',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = '#218838'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = '#28a745'}
+                >
+                  🔄 Regenerate
+                </button>
+                <button
+                  onClick={closeResumeDialog}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    fontSize: '1.5rem',
+                    cursor: 'pointer',
+                    color: '#666'
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
             </div>
+            
+            {/* Tab navigation */}
+            {resumeDialog.htmlArray.length > 1 && (
+              <div style={{
+                display: 'flex',
+                borderBottom: '1px solid #dee2e6',
+                marginBottom: '1rem',
+                gap: '0.25rem'
+              }}>
+                {resumeDialog.htmlArray.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setActiveTab(index)}
+                    style={{
+                      background: resumeDialog.activeTab === index ? '#8B4513' : 'transparent',
+                      color: resumeDialog.activeTab === index ? 'white' : '#8B4513',
+                      border: '1px solid #8B4513',
+                      borderBottom: resumeDialog.activeTab === index ? '1px solid #8B4513' : '1px solid #dee2e6',
+                      borderBottomLeftRadius: '0',
+                      borderBottomRightRadius: '0',
+                      borderTopLeftRadius: '5px',
+                      borderTopRightRadius: '5px',
+                      padding: '0.5rem 1rem',
+                      fontSize: '0.9rem',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      marginBottom: '-1px'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (resumeDialog.activeTab !== index) {
+                        e.target.style.backgroundColor = '#f8f9fa';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (resumeDialog.activeTab !== index) {
+                        e.target.style.backgroundColor = 'transparent';
+                      }
+                    }}
+                  >
+                    Resume {index + 1}
+                  </button>
+                ))}
+              </div>
+            )}
             <iframe
-              srcDoc={resumeDialog.html}
+              srcDoc={resumeDialog.htmlArray[resumeDialog.activeTab] || ''}
               style={{
                 flex: 1,
                 border: '1px solid #dee2e6',
                 borderRadius: '5px',
                 width: '100%'
               }}
-              title={`Resume for ${resumeDialog.jobTitle} at ${resumeDialog.company}`}
+              title={`Resume ${resumeDialog.activeTab + 1} for ${resumeDialog.jobTitle} at ${resumeDialog.company}`}
             />
           </div>
         </div>

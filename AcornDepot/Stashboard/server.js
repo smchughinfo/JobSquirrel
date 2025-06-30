@@ -234,13 +234,17 @@ try {
                     const currentHoard = getHoard();
                     const currentCount = currentHoard.jobListings.length;
                     
-                    if (currentCount > previousHoardCount) {
-                        console.log(`🥜 Hoard count increased from ${previousHoardCount} to ${currentCount}, broadcasting update...`);
+                    if (currentCount !== previousHoardCount) {
+                        console.log(`🥜 Hoard count changed from ${previousHoardCount} to ${currentCount}, broadcasting update...`);
                         eventBroadcaster.broadcast('hoard-updated', {
                             message: 'Job hoard updated - new listings available'
                         });
                     } else {
-                        console.log(`🥜 Hoard file changed but count unchanged (${currentCount}), skipping broadcast`);
+                        // Count unchanged, but file modified - likely an existing job was updated
+                        console.log(`🥜 Hoard file changed but count unchanged (${currentCount}), broadcasting update for modified jobs...`);
+                        eventBroadcaster.broadcast('hoard-updated', {
+                            message: 'Job hoard updated - existing listings modified'
+                        });
                     }
                     
                     previousHoardCount = currentCount;

@@ -35,15 +35,6 @@ function getHoardPath(wsl) {
     return hoardPath;
 }
 
-function getOpenAITokenPricesPath(wsl) {
-    let adDir = getAcornDepotDirectory();
-    let hoardPath = path.join(adDir, "Stashboard", "services", "openai", "openai-token-prices.json");
-    if(wsl) {
-        hoardPath = convertPathToWSL(hoardPath);
-    }
-    return hoardPath;
-}
-
 function getResumeDataVectorStoreIdPath(wsl) {
     let adDir = getAcornDepotDirectory();
     let vectorStoreIdPath = path.join(adDir, "Stashboard", "resume-data-vector-store-id.txt");
@@ -51,6 +42,24 @@ function getResumeDataVectorStoreIdPath(wsl) {
         vectorStoreIdPath = convertPathToWSL(vectorStoreIdPath);
     }
     return vectorStoreIdPath;
+}
+
+function getCustomeResumeInstructions(wsl) {
+    let rootDir = getJobSquirrelRootDirectory();
+    let adDir = path.join(rootDir, "custom-resume-instructions.txt");
+    if(wsl) {
+        adDir = convertPathToWSL(adDir);
+    }
+    return adDir;
+}
+
+function getResumePersonalInformation(wsl) {
+    let rootDir = getJobSquirrelRootDirectory();
+    let adDir = path.join(rootDir, "personal-information.txt");
+    if(wsl) {
+        adDir = convertPathToWSL(adDir);
+    }
+    return adDir;
 }
 
 function convertPathToWSL(windowPath) {
@@ -61,8 +70,9 @@ module.exports = {
     getJobSquirrelRootDirectory,
     getAcornDepotDirectory,
     getHoardPath,
-    getOpenAITokenPricesPath,
     getResumeDataDirectory,
     getResumeDataVectorStoreIdPath,
+    getCustomeResumeInstructions,
+    getResumePersonalInformation,
     convertPathToWSL
 };
