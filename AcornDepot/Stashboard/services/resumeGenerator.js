@@ -33,7 +33,9 @@ async function generateResumeAnthropic(nutNote) {
     prompt += ` ${CLAMP_CLAUSE}`;
 
     let response = await AskClaude(prompt);
-    
+    response = response.substring(response.indexOf("<"));
+    response = response.substring(0, response.lastIndexOf(">") + 1);
+
     // Initialize html as array if it doesn't exist or append to existing array
     if (!nutNote.html) {
         nutNote.html = [];
