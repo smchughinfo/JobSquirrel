@@ -95,6 +95,53 @@ app.post('/api/generate-resume', (req, res) => {
     res.sendStatus(200);
 });
 
+// Test Claude streaming endpoint
+app.post('/api/test-claude-stream', async (req, res) => {
+    try {
+        const { message } = req.body;
+        
+        if (!message) {
+            return res.status(400).json({ error: 'Message is required' });
+        }
+        
+        console.log('🧪 Testing Claude streaming with message:', message);
+        
+        // Import AskClaude function
+        const { AskClaude } = require('./services/llm/anthropic');
+        
+        // Call AskClaude with streaming callback
+        const result = await AskClaude(message, null, (streamData) => {
+            // Broadcast streaming updates to all connected clients
+            eventBroadcaster.broadcast('claude-stream', {
+                message: `Claude ${streamData.type}: ${streamData.type === 'response' ? streamData.content?.substring(0, 50) + '...' : streamData.session || streamData.message || 'update'}`,
+                ...streamData
+            });
+        });
+        
+        res.json({ 
+            success: true, 
+            result,
+            message: 'Claude streaming test completed successfully'
+        });
+        
+    } catch (error) {
+        console.error('❌ Claude streaming test failed:', error.message);
+        
+        // Broadcast error to clients
+        eventBroadcaster.broadcast('claude-stream', {
+            type: 'error',
+            message: `Claude streaming failed: ${error.message}`,
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+        
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+});
+
 // Upload resume data endpoint
 app.post('/api/upload-resume-data', async (req, res) => {
     try {
@@ -218,7 +265,7 @@ function broadcastResumeDataStatus() {
         if (fs.existsSync(resumeDataVectorStoreIdPath)) {
             const stats = fs.statSync(resumeDataVectorStoreIdPath);
             eventBroadcaster.broadcast('resume-data-upload-status', {
-                message: 'Resume data vector store file changed',
+                message: 'Retriving latest vector data store id',
                 lastModified: stats.mtime.toISOString()
             });
         }

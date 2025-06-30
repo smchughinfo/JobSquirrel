@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { AskAssistant, CreateVectorStore } = require('./llm/openai');
-const { askClaudeAsync } = require('./llm/anthropic');
+const { AskClaude } = require('./llm/anthropic');
 const { eventBroadcaster } = require('./eventBroadcaster');
 const { getResumeDataDirectory } = require('./jobSquirrelPaths');
 const { addOrUpdateNutNote } = require('./hoard');
@@ -24,7 +24,7 @@ async function generateResumeAnthropic(nutNote) {
     let jobListingPath = "/AcornDepot/Stashboard/job-listing.md";
     fs.writeFileSync("c:/users/seanm/desktop/jobsquirrel" + jobListingPath, nutNote.markdown);
     const prompt = `Use the provided files in /ResumeData to generate a tailored resume for the job listing in ${jobListingPath}. ${CLAMP_CLAUSE}`;
-    let response = await askClaude(prompt, true);
+    let response = await AskClaude(prompt, true);
     nutNote.html = response;
     addOrUpdateNutNote(nutNote);
     console.log("resume generated!");

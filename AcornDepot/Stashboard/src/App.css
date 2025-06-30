@@ -72,6 +72,35 @@ header {
     text-align: center;
 }
 
+/* Claude streaming test button */
+.claude-stream-button {
+    background: linear-gradient(135deg, #4a90e2, #6ba3f5);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
+}
+
+.claude-stream-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+}
+
+.claude-stream-button:active {
+    transform: translateY(0);
+}
+
+.claude-stream-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
 .main-layout {
     display: flex;
     gap: 2rem;
