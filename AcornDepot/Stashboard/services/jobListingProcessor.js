@@ -1,6 +1,6 @@
 const path = require("path");
 const fs = require("fs");
-const { askOllamaSync } = require('./llm/ollama');
+const { AskOllama } = require('./llm/ollama');
 const { askOpenAI, getJSONAsync } = require('./llm/openai');
 const { getInnerText } = require('./htmlUtilities');
 const { addOrUpdateNutNote, getHoard } = require('./hoard');
@@ -8,7 +8,7 @@ const { eventBroadcaster } = require('./eventBroadcaster');
 const { z } = require('zod');
 
 async function processRawJobListing(rawJobListing) {
-    let model = "OpenAI";
+    let model = "Ollama";
     if(model == "OpenAI") {
         await processRawJobListing_OpenAI(rawJobListing);
     }
@@ -66,17 +66,18 @@ const jsonExample = `
     "location": "string - Work location (remote/hybrid/on-site/city) or 'N/A'"
 }`;
 
-const clampClause = `Don't start your response with "Here are your results in the requested format" or anything like that.`;
+//const CLAMP_CLAUSE = `Don't start your response with "Here are your results in the requested format" or anything like that.`;
+const CLAMP_CLAUSE = `Do not include any preamble, commentary, or code block formatting. Output only the final content, nothing else.`;
 
 async function processRawJobListing_Ollama(rawJobListing) {
     try {
         const jobListingText = getInnerText(rawJobListing);
 
-        const firstPass = await askOllamaAndLogWithImmediate("FIRST PASS", `Extract ONLY the detailed job posting from this page. Look for the main job that shows full details (company, title, description, requirements, salary, location). Ignore job lists, navigation, ads, and related jobs. Return ONLY the complete text of the one detailed job posting:\n\n\n\n${jobListingText}`);
-        const markdown = await askOllamaAndLogWithImmediate("SECOND PASS", `Conver this to markdown. ${clampClause}\n\n\n\n${firstPass}`);
+        const firstPass = await AskOllama(`Extract ONLY the detailed job posting from this page. Look for the main job that shows full details (company, title, description, requirements, salary, location). Ignore job lists, navigation, ads, and related jobs. Return ONLY the complete text of the one detailed job posting:\n\n\n\n${jobListingText}`, true);
+        const markdown = await AskOllama(`Conver this to markdown. ${CLAMP_CLAUSE}\n\n\n\n${firstPass}`, true);
         
-        let json = await askOllamaAndLogWithImmediate("GENERATE JSON", generateJSONPrompt(markdown));
-        json = await askOllamaAndLogWithImmediate("FIX JSON", `Can you fix any formatting errors with this JSON (don't edit any of the values). If there are formatting errors just return it as it. ${clampClause}. Just output JSON:\n\n${json}`);
+        let json = await AskOllama(generateJSONPrompt(markdown), true);
+        json = await AskOllama(`Can you fix any formatting errors with this JSON (don't edit any of the values). If there are formatting errors just return it as it. ${CLAMP_CLAUSE}. Just output JSON:\n\n${json}`, true);
 
         let nutNote = JSON.parse(json);
         nutNote.url = getInnerText(rawJobListing, "[data-job-squirrel-reference='url']");
@@ -84,6 +85,8 @@ async function processRawJobListing_Ollama(rawJobListing) {
         nutNote.firstPass = firstPass;
         nutNote.markdown = markdown;
         nutNote.collapsed = false; // Default to expanded state
+        nutNote.scrapeDate = new Date();
+        nutNote.html = "";
 
         console.log(`🔧 Job processed: ${nutNote.company} - ${nutNote.jobTitle}`);
         addOrUpdateNutNote(nutNote);
@@ -98,34 +101,6 @@ async function processRawJobListing_Ollama(rawJobListing) {
         
         throw error;
     }
-}
-
-function askOllamaAndLogWithImmediate(logName, prompt, model = 'llama3:latest') {
-    return new Promise((resolve, reject) => {
-        try {
-            eventBroadcaster.llmProcessingStarted(logName);
-            
-            setTimeout(() => {
-                try {
-                    const result = askOllamaSync(prompt, model);
-                    eventBroadcaster.llmProcessingCompleted(logName, result);
-                    resolve(result);
-                } catch (error) {
-                    console.error(`🧠 ${logName} failed: ${error.message}`);
-                    eventBroadcaster.broadcast('llm-processing-failed', {
-                        step: logName,
-                        error: error.message,
-                        message: `${logName} failed: ${error.message}`
-                    });
-                    reject(error);
-                }
-            }, 10);
-            
-        } catch (error) {
-            console.error(`🧠 Setup error in ${logName}: ${error.message}`);
-            reject(error);
-        }
-    });
 }
 
 function generateJSONPrompt(firstPass) {

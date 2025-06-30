@@ -13,7 +13,7 @@ async function generateResume(nutNote) {
 }
 
 async function generateResumeOpenAI(nutNote) {
-    const prompt = `Use the provided files to generate a tailored resume for this job description. ${CLAMP_CLAUSE}\n\n"${nutNote.markdown}".`;
+    const prompt = `Use the provided files to generate a tailored resume for this job description. Output your result as html. ${CLAMP_CLAUSE}\n\n"${nutNote.markdown}".`;
     let response = await AskAssistant(prompt, true);
     nutNote.html = response;
     addOrUpdateNutNote(nutNote);

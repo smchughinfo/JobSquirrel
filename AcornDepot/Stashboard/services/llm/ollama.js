@@ -3,6 +3,9 @@ const fs = require('fs');
 const os = require('os');
 const { execSync, exec } = require('child_process');
 const { getJobSquirrelRootDirectory, convertPathToWSL } = require('../jobSquirrelPaths');
+const { eventBroadcaster } = require('../eventBroadcaster');
+
+let model = "yasserrmd/Llama-4-Scout-17B-16E-Instruct:latest"
 
 function getOllamaExecutablePath() {
     const homeDir = os.homedir();
@@ -10,11 +13,8 @@ function getOllamaExecutablePath() {
     return convertPathToWSL(windowsOllamaPath);
 }
 
-function askOllamaSync(message, model = 'llama3:latest', workingDir = null) {
-    if (!workingDir) {
-        workingDir = getJobSquirrelRootDirectory();
-    }
-    
+function askOllamaSync(message) {
+    const workingDir = getJobSquirrelRootDirectory();
     const isInWSL = process.platform === 'linux' && process.env.WSL_DISTRO_NAME;
     
     const isJobProcessing = message.includes('complete description of this job listing') || 
@@ -79,7 +79,7 @@ function askOllamaSync(message, model = 'llama3:latest', workingDir = null) {
     return cleanResult;
 }
 
-function askOllamaAsync(message, model = 'llama3:latest', workingDir = null) {
+function askOllamaAsync(message, workingDir = null) {
     return new Promise((resolve, reject) => {
         if (!workingDir) {
             workingDir = getJobSquirrelRootDirectory();
@@ -156,7 +156,44 @@ function askOllamaAsync(message, model = 'llama3:latest', workingDir = null) {
     });
 }
 
+function askOllamaAndLog(prompt) {
+    const logName = "Ollama_Log";
+    return new Promise((resolve, reject) => {
+        try {
+            eventBroadcaster.llmProcessingStarted(logName);
+            
+            setTimeout(() => {
+                try {
+                    const result = askOllamaSync(prompt);
+                    eventBroadcaster.llmProcessingCompleted(logName, result);
+                    resolve(result);
+                } catch (error) {
+                    console.error(`🧠 ${logName} failed: ${error.message}`);
+                    eventBroadcaster.broadcast('llm-processing-failed', {
+                        step: logName,
+                        error: error.message,
+                        message: `${logName} failed: ${error.message}`
+                    });
+                    reject(error);
+                }
+            }, 10);
+            
+        } catch (error) {
+            console.error(`🧠 Setup error in ${logName}: ${error.message}`);
+            reject(error);
+        }
+    });
+}
+
+async function AskOllama(prompt, log = true) {
+    if(log) {
+        return await askOllamaAndLog(prompt);
+    }
+    else {
+        return await askOllamaAsync(prompt);
+    }
+}
+
 module.exports = {
-    askOllamaSync,
-    askOllamaAsync,
+    AskOllama,
 };
