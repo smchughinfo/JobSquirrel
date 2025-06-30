@@ -25,6 +25,11 @@ function EventMonitor({ isConnected, lastEvent }) {
       case 'hoard-updated': return '🥜✨';
       case 'system-status': return '🐿️';
       case 'connected': return '🔌';
+      case 'system': return '🔧';
+      case 'response': return '🤖';
+      case 'response-line': return '💬';
+      case 'complete': return '✅';
+      case 'error': return '❌';
       default: return '📡';
     }
   };
@@ -104,7 +109,7 @@ function EventMonitor({ isConnected, lastEvent }) {
                     fontWeight: index === 0 ? 'bold' : 'normal',
                     color: '#333'
                   }}>
-                    {event.message}
+                    {event.message || event.content || 'No content'}
                   </div>
                   {event.preview && (
                     <div style={{

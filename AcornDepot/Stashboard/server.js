@@ -7,7 +7,7 @@ const { JobQueue } = require('./services/jobQueue');
 const { eventBroadcaster } = require('./services/eventBroadcaster');
 const { getHoard, addOrUpdateNutNote, getIdentifier, deleteNutNote } = require('./services/hoard');
 const { getHoardPath, getResumeDataVectorStoreIdPath } = require('./services/jobSquirrelPaths');
-const { generateResume, UploadResumeData } = require('./services/resumeGenerator');
+const { generateResume, remixResumeAnthropic, UploadResumeData } = require('./services/resumeGenerator');
 const { htmlToPdf } = require('./services/pdf');
 
 
@@ -101,6 +101,38 @@ app.post('/api/generate-resume', async (req, res) => {
     const nutNote = req.body;
     await generateResume(nutNote);
     res.sendStatus(200);
+});
+
+// Remix resume endpoint
+app.post('/api/remix-resume', async (req, res) => {
+    try {
+        const { nutNote, activeResumeIndex, currentResumeHtml, requestedChanges } = req.body;
+        
+        if (!nutNote || currentResumeHtml === undefined || !requestedChanges || activeResumeIndex === undefined) {
+            return res.status(400).json({ 
+                error: 'Missing required parameters: nutNote, activeResumeIndex, currentResumeHtml, requestedChanges' 
+            });
+        }
+        
+        console.log(`🎨 Starting resume remix for ${nutNote.company} - ${nutNote.jobTitle}`);
+        console.log(`📝 Changes requested: ${requestedChanges}`);
+        console.log(`📊 Remixing resume version ${activeResumeIndex + 1}`);
+        
+        // Call the actual remix function
+        await remixResumeAnthropic(nutNote, requestedChanges, activeResumeIndex);
+        
+        res.json({ 
+            success: true, 
+            message: 'Resume remix completed successfully'
+        });
+        
+    } catch (error) {
+        console.error('❌ Resume remix failed:', error.message);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
 });
 
 // Generate PDF endpoint
@@ -312,12 +344,19 @@ try {
                     const currentHoard = getHoard();
                     const currentCount = currentHoard.jobListings.length;
                     
-                    if (currentCount !== previousHoardCount) {
+                    if (currentCount > previousHoardCount) {
                         console.log(`🥜 Hoard count changed from ${previousHoardCount} to ${currentCount}, broadcasting update...`);
                         eventBroadcaster.broadcast('hoard-updated', {
                             message: 'Job hoard updated - new listings available'
                         });
-                    } else {
+                    } 
+                    else if (currentCount < previousHoardCount) {
+                        console.log(`🥜 Hoard count changed from ${previousHoardCount} to ${currentCount}, broadcasting update...`);
+                        eventBroadcaster.broadcast('hoard-updated', {
+                            message: 'Job hoard updated - listing removed'
+                        });
+                    } 
+                    else {
                         // Count unchanged, but file modified - likely an existing job was updated
                         console.log(`🥜 Hoard file changed but count unchanged (${currentCount}), broadcasting update for modified jobs...`);
                         eventBroadcaster.broadcast('hoard-updated', {

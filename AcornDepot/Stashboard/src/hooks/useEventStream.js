@@ -42,6 +42,9 @@ export function useEventStream(url = '/api/events') {
                 data.id = crypto.randomUUID();
                 data.timestamp = new Date().toISOString();
 
+                // Let all events through for now
+                // TODO: Add specific filtering for overly verbose messages if needed
+
                 console.log(`📡 Event received:`, data);
                 eventQueue.push(data);
                 processQueue();

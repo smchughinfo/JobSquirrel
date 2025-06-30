@@ -32,7 +32,7 @@ function App() {
       <main className="main-layout">
         <aside className="sidebar-left">
           <EventMonitor isConnected={isConnected} lastEvent={lastEvent} />
-          <ClaudeAssistant claudeEvents={claudeEvents} />
+          {/*<ClaudeAssistant claudeEvents={claudeEvents} />*/}
           <ClipboardMonitor />
         </aside>
         <div className="main-content">

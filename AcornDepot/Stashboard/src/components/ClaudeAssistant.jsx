@@ -40,13 +40,23 @@ function ClaudeAssistant({ claudeEvents }) {
         });
         setIsProcessing(true);
       } else if (event.content) {
-        // System message with content
-        addOutput({
-          type: 'system',
-          content: event.content,
-          timestamp,
-          isStreaming: false
-        });
+        // Filter out verbose system messages that clutter the UI
+        const content = event.content;
+        const shouldDisplay = !content.includes('Output file:') && 
+                             !content.includes('Full WSL command:') && 
+                             !content.includes('process started, PID:') &&
+                             !content.includes('WSL working dir:') &&
+                             !content.includes('WSL output file:') &&
+                             !content.includes('Cleaned up output file');
+        
+        if (shouldDisplay) {
+          addOutput({
+            type: 'system',
+            content: content,
+            timestamp,
+            isStreaming: false
+          });
+        }
       }
       
     } else if (event.type === 'response') {

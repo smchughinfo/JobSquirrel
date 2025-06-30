@@ -71,6 +71,33 @@ function getTempHtmlToPDFPath(wsl) {
     return adDir;
 }
 
+function getJobListingMDPath(wsl) {
+    let adDir = getAcornDepotDirectory();
+    let hoardPath = path.join(adDir, "Stashboard", "job-listing.md");
+    if(wsl) {
+        hoardPath = convertPathToWSL(hoardPath);
+    }
+    return hoardPath;
+}
+
+function getRemixResumePath(wsl) {
+    let adDir = getAcornDepotDirectory();
+    let hoardPath = path.join(adDir, "Stashboard", "remix-resume.html");
+    if(wsl) {
+        hoardPath = convertPathToWSL(hoardPath);
+    }
+    return hoardPath;
+}
+
+function getRemixResumeInstructionsPath(wsl) {
+    let adDir = getAcornDepotDirectory();
+    let hoardPath = path.join(adDir, "Stashboard", "remix-resume-instructions.txt");
+    if(wsl) {
+        hoardPath = convertPathToWSL(hoardPath);
+    }
+    return hoardPath;
+}
+
 function convertPathToWSL(windowPath) {
     return windowPath.replace(/\\/g, '/').replace(/^([A-Z]):/, (match, drive) => `/mnt/${drive.toLowerCase()}`);
 }
@@ -84,5 +111,8 @@ module.exports = {
     getCustomeResumeInstructions,
     getResumePersonalInformation,
     getTempHtmlToPDFPath,
+    getJobListingMDPath,
+    getRemixResumePath,
+    getRemixResumeInstructionsPath,
     convertPathToWSL
 };

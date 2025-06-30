@@ -3,7 +3,7 @@ const path = require('path');
 const { AskAssistant, CreateVectorStore } = require('./llm/openai');
 const { AskClaude } = require('./llm/anthropic');
 const { eventBroadcaster } = require('./eventBroadcaster');
-const { getResumeDataDirectory, getResumePersonalInformation } = require('./jobSquirrelPaths');
+const { getResumeDataDirectory, getResumePersonalInformation, getJobListingMDPath, getRemixResumePath, getRemixResumeInstructionsPath } = require('./jobSquirrelPaths');
 const { addOrUpdateNutNote } = require('./hoard');
 
 const RESUME_CLAMP_CLAUSE = `Do not include any preamble, commentary, or code block formatting. Output only the final html content, nothing else.`;
@@ -22,13 +22,14 @@ async function generateResumeOpenAI(nutNote) {
 }
 
 async function generateResumeAnthropic(nutNote) {
-    let jobListingPath = "/AcornDepot/Stashboard/job-listing.md";
-    fs.writeFileSync("c:/users/seanm/desktop/jobsquirrel" + jobListingPath, nutNote.markdown);
+    let jobListingPath = getJobListingMDPath();
+    let jobListingPathWSL = getJobListingMDPath(true);
+    fs.writeFileSync(jobListingPath, nutNote.markdown);
 
     let resumeCustomInstructionsPath = getResumeDataDirectory(true);
     let resumePersonalInformationPath = getResumePersonalInformation(true);
 
-    let prompt = `Use the provided files in /ResumeData to generate a tailored resume for the job listing in ${jobListingPath}.`;
+    let prompt = `Use the provided files in /ResumeData to generate a tailored resume for the job listing in ${jobListingPathWSL}.`;
     prompt += ` Make sure to follow all instructions in '${resumeCustomInstructionsPath}'.`;
     prompt += ` Use '${resumePersonalInformationPath}' as your canonical source for contact information.`;
     prompt += ` ${RESUME_CLAMP_CLAUSE}`;
@@ -45,13 +46,15 @@ async function generateResumeAnthropic(nutNote) {
         nutNote.html = [nutNote.html];
     }
     
-    nutNote.coverLetter = await generateCoverLetterAnthropic(jobListingPath, resumePersonalInformationPath);
-
-    // Append new resume to array
+    // save the resume now so it's avaialale in the ui while we are waiting on the cover letter
     nutNote.html.push(response);
-    
     addOrUpdateNutNote(nutNote);
     console.log("resume generated!");
+
+    // now do the cover letter
+    nutNote.coverLetter = await generateCoverLetterAnthropic(jobListingPath, resumePersonalInformationPath);
+    addOrUpdateNutNote(nutNote);
+    console.log("cover letter generated!");
 }
 
 async function generateCoverLetterAnthropic(jobListingPath) {
@@ -66,6 +69,46 @@ async function generateCoverLetterAnthropic(jobListingPath) {
 
     let response = await AskClaude(prompt);
     return response;
+}
+
+async function remixResumeAnthropic(nutNote, remixInstructions, remixIndex) {
+    let jobListingPath = getJobListingMDPath();
+    let jobListingPathWSL = getJobListingMDPath(true);
+    fs.writeFileSync(jobListingPath, nutNote.markdown);
+
+    let remixResumePath = getRemixResumePath();
+    let remixResumePathWSL = getRemixResumePath(true);
+    fs.writeFileSync(remixResumePath, nutNote.html[remixIndex]);
+
+    let remixInstructionPath = getRemixResumeInstructionsPath();
+    let remixInstructionPathWSL = getRemixResumeInstructionsPath(true);
+    fs.writeFileSync(remixInstructionPath, remixInstructions);
+
+    let resumeCustomInstructionsPath = getResumeDataDirectory(true);
+    let resumePersonalInformationPath = getResumePersonalInformation(true);
+
+    let prompt = `Remix this resume '${remixResumePathWSL}' according to these instructions: '${remixInstructionPathWSL}' for this job listing '${jobListingPathWSL}'`;
+    prompt += ` Use the files in /ResumeData as your source of information about the job candidate.`;
+    prompt += ` Make sure to follow all instructions in '${resumeCustomInstructionsPath}'.`;
+    prompt += ` Use '${resumePersonalInformationPath}' as your canonical source for contact information.`;
+    prompt += ` ${RESUME_CLAMP_CLAUSE}`;
+
+    let response = await AskClaude(prompt);
+    response = response.substring(response.indexOf("<"));
+    response = response.substring(0, response.lastIndexOf(">") + 1);
+
+    // Initialize html as array if it doesn't exist or append to existing array
+    if (!nutNote.html) {
+        nutNote.html = [];
+    } else if (!Array.isArray(nutNote.html)) {
+        // Convert string to array (shouldn't happen per user's note, but safety check)
+        nutNote.html = [nutNote.html];
+    }
+    
+    // save the remixed resume
+    nutNote.html.push(response);
+    addOrUpdateNutNote(nutNote);
+    console.log("resume remixed!");
 }
 
 async function UploadResumeData() {
@@ -83,5 +126,6 @@ function getResumeDataFiles() {
 
 module.exports = {
     generateResume,
-    UploadResumeData
+    remixResumeAnthropic,
+    UploadResumeData 
 };

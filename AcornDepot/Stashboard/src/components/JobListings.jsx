@@ -6,6 +6,7 @@ function JobListings({ lastEvent }) {
   const [error, setError] = useState(null);
   const [expandedMarkdown, setExpandedMarkdown] = useState(new Set());
   const [resumeDialog, setResumeDialog] = useState({ open: false, htmlArray: [], pdfPath: null, coverLetter: null, activeTab: 0, activeType: 'html', jobTitle: '', company: '', job: null });
+  const [remixDialog, setRemixDialog] = useState({ open: false, changes: '', loading: false });
   const [marginInches, setMarginInches] = useState(0);
 
   // Fetch jobs from the API
@@ -233,6 +234,47 @@ function JobListings({ lastEvent }) {
   const closeResumeDialog = () => {
     setResumeDialog({ open: false, htmlArray: [], pdfPath: null, coverLetter: null, activeTab: 0, activeType: 'html', jobTitle: '', company: '', job: null });
     setMarginInches(0);
+  };
+
+  const handleRemixClick = () => {
+    setRemixDialog({ open: true, changes: '', loading: false });
+  };
+
+  const closeRemixDialog = () => {
+    setRemixDialog({ open: false, changes: '', loading: false });
+  };
+
+  const handleRemixSubmit = async () => {
+    if (!remixDialog.changes.trim() || !resumeDialog.job) return;
+    
+    setRemixDialog(prev => ({ ...prev, loading: true }));
+    
+    try {
+      const response = await fetch('/api/remix-resume', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nutNote: resumeDialog.job,
+          activeResumeIndex: resumeDialog.activeTab,
+          currentResumeHtml: resumeDialog.htmlArray[resumeDialog.activeTab],
+          requestedChanges: remixDialog.changes
+        })
+      });
+      
+      if (response.ok) {
+        console.log('✅ Resume remix started');
+        closeRemixDialog();
+        // Dialog will be updated when hoard refreshes with new resume version
+      } else {
+        console.error('Failed to start resume remix');
+      }
+    } catch (error) {
+      console.error('Error starting resume remix:', error);
+    } finally {
+      setRemixDialog(prev => ({ ...prev, loading: false }));
+    }
   };
 
   const handleRegenerateResume = async () => {
@@ -703,7 +745,25 @@ function JobListings({ lastEvent }) {
                   onMouseEnter={(e) => e.target.style.backgroundColor = '#218838'}
                   onMouseLeave={(e) => e.target.style.backgroundColor = '#28a745'}
                 >
-                  🔄 Regenerate
+                  🔄 Generate
+                </button>
+                <button
+                  onClick={handleRemixClick}
+                  style={{
+                    background: '#6f42c1',
+                    color: 'white',
+                    border: 'none',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '5px',
+                    fontSize: '0.9rem',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = '#5a2d8c'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = '#6f42c1'}
+                >
+                  🎨 Remix
                 </button>
                 <div style={{ 
                   display: 'flex', 
@@ -937,6 +997,149 @@ function JobListings({ lastEvent }) {
                 </pre>
               </div>
             )}
+          </div>
+        </div>
+      )}
+      
+      {/* Remix Dialog */}
+      {remixDialog.open && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1100
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '10px',
+            padding: '2rem',
+            width: '500px',
+            maxWidth: '90vw',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '1.5rem',
+              paddingBottom: '1rem',
+              borderBottom: '1px solid #dee2e6'
+            }}>
+              <h3 style={{
+                margin: 0,
+                color: '#2c3e50',
+                fontSize: '1.3rem'
+              }}>
+                🎨 Remix Resume
+              </h3>
+              <button
+                onClick={closeRemixDialog}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  fontSize: '1.5rem',
+                  cursor: 'pointer',
+                  color: '#666'
+                }}
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '0.5rem',
+                fontWeight: '500',
+                color: '#495057'
+              }}>
+                What changes would you like to make to this resume?
+              </label>
+              <textarea
+                value={remixDialog.changes}
+                onChange={(e) => setRemixDialog(prev => ({ ...prev, changes: e.target.value }))}
+                placeholder="Describe the changes you want to make to the resume..."
+                style={{
+                  width: '100%',
+                  height: '120px',
+                  padding: '0.75rem',
+                  border: '1px solid #ced4da',
+                  borderRadius: '5px',
+                  fontSize: '0.9rem',
+                  resize: 'vertical',
+                  fontFamily: 'inherit'
+                }}
+                disabled={remixDialog.loading}
+              />
+            </div>
+            
+            <div style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: '0.75rem'
+            }}>
+              <button
+                onClick={closeRemixDialog}
+                disabled={remixDialog.loading}
+                style={{
+                  background: '#6c757d',
+                  color: 'white',
+                  border: 'none',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '5px',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                  cursor: remixDialog.loading ? 'not-allowed' : 'pointer',
+                  opacity: remixDialog.loading ? 0.6 : 1,
+                  transition: 'background-color 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  if (!remixDialog.loading) {
+                    e.target.style.backgroundColor = '#5a6268';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!remixDialog.loading) {
+                    e.target.style.backgroundColor = '#6c757d';
+                  }
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRemixSubmit}
+                disabled={remixDialog.loading || !remixDialog.changes.trim()}
+                style={{
+                  background: remixDialog.loading || !remixDialog.changes.trim() ? '#ccc' : '#6f42c1',
+                  color: 'white',
+                  border: 'none',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '5px',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                  cursor: (remixDialog.loading || !remixDialog.changes.trim()) ? 'not-allowed' : 'pointer',
+                  transition: 'background-color 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  if (!remixDialog.loading && remixDialog.changes.trim()) {
+                    e.target.style.backgroundColor = '#5a2d8c';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!remixDialog.loading && remixDialog.changes.trim()) {
+                    e.target.style.backgroundColor = '#6f42c1';
+                  }
+                }}
+              >
+                {remixDialog.loading ? '🔄 Processing...' : '🎨 Submit Remix'}
+              </button>
+            </div>
           </div>
         </div>
       )}
