@@ -295,7 +295,7 @@ function ClaudeAssistant({ claudeEvents }) {
               <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🤖</div>
               <p>Waiting for Claude output...</p>
               <p style={{ fontSize: '0.9rem', color: '#999' }}>
-                Use the "Test Claude Stream" button to see Claude's responses here.
+                Claude output will appear here during resume generation and processing.
               </p>
             </div>
           ) : (
