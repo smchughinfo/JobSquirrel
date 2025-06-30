@@ -3,20 +3,32 @@ const path = require('path');
 const os = require('os');
 const { spawn } = require('child_process');
 const { getJobSquirrelRootDirectory, convertPathToWSL } = require('../jobSquirrelPaths');
+const { eventBroadcaster } = require('../eventBroadcaster');
 
-function AskClaude(message, workingDir = null, onStream = null) {
+async function AskClaude(message, workingDir = null) {
     if (!workingDir || typeof workingDir !== 'string') {
         workingDir = getJobSquirrelRootDirectory();
     }
     
+    // Log to console and broadcast event
     console.log('🤖 Starting Claude with file-watching streaming...');
     console.log('📍 Working directory:', workingDir);
     
-    return new Promise((resolve, reject) => {
+    eventBroadcaster.broadcast('claude-stream', {
+        type: 'system',
+        content: `🤖 Starting Claude with file-watching streaming...\n📍 Working directory: ${workingDir}`
+    });
+    
+    return await new Promise((resolve, reject) => {
         // Create unique output file - use proper temp directory for platform
         const tempDir = os.tmpdir();
         const outputFile = path.join(tempDir, `claude_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.jsonl`);
         console.log('📄 Output file:', outputFile);
+        
+        eventBroadcaster.broadcast('claude-stream', {
+            type: 'system',
+            content: `📄 Output file: ${outputFile}`
+        });
         
         // Create empty file first
         fs.writeFileSync(outputFile, '');
@@ -58,14 +70,11 @@ function AskClaude(message, workingDir = null, onStream = null) {
                                     if (jsonData.type === 'system') {
                                         console.log('🔧 Claude system init - Session:', jsonData.session_id);
                                         
-                                        // Stream to browser if callback provided
-                                        if (onStream) {
-                                            onStream({
-                                                type: 'system',
-                                                session: jsonData.session_id,
-                                                timestamp: new Date().toISOString()
-                                            });
-                                        }
+                                        // Broadcast system event
+                                        eventBroadcaster.broadcast('claude-stream', {
+                                            type: 'system',
+                                            session: jsonData.session_id
+                                        });
                                         
                                     } else if (jsonData.type === 'assistant' && jsonData.message && jsonData.message.content) {
                                         const content = jsonData.message.content[0]?.text;
@@ -74,18 +83,21 @@ function AskClaude(message, workingDir = null, onStream = null) {
                                             // Split into lines for better console display
                                             content.split('\\n').forEach(responseLine => {
                                                 console.log('🤖 ', responseLine);
+                                                
+                                                // Broadcast each line individually
+                                                eventBroadcaster.broadcast('claude-stream', {
+                                                    type: 'response-line',
+                                                    content: responseLine
+                                                });
                                             });
                                             
                                             finalResult = content;
                                             
-                                            // Stream to browser if callback provided
-                                            if (onStream) {
-                                                onStream({
-                                                    type: 'response',
-                                                    content: content,
-                                                    timestamp: new Date().toISOString()
-                                                });
-                                            }
+                                            // Broadcast response event
+                                            eventBroadcaster.broadcast('claude-stream', {
+                                                type: 'response',
+                                                content: content
+                                            });
                                         }
                                         
                                     } else if (jsonData.type === 'result') {
@@ -94,31 +106,26 @@ function AskClaude(message, workingDir = null, onStream = null) {
                                             finalResult = jsonData.result;
                                         }
                                         
-                                        // Stream completion to browser
-                                        if (onStream) {
-                                            onStream({
-                                                type: 'complete',
-                                                duration: jsonData.duration_ms,
-                                                cost: jsonData.total_cost_usd,
-                                                result: finalResult,
-                                                timestamp: new Date().toISOString()
-                                            });
-                                        }
+                                        // Broadcast completion event
+                                        eventBroadcaster.broadcast('claude-stream', {
+                                            type: 'complete',
+                                            duration: jsonData.duration_ms,
+                                            cost: jsonData.total_cost_usd,
+                                            result: finalResult
+                                        });
                                         
                                         isComplete = true;
                                         cleanup();
+                                        resolve(finalResult);
                                     }
                                 } catch (e) {
                                     // Not JSON, might be error output
                                     if (line.includes('Error:')) {
                                         console.error('❌ Claude error:', line);
-                                        if (onStream) {
-                                            onStream({
-                                                type: 'error',
-                                                message: line,
-                                                timestamp: new Date().toISOString()
-                                            });
-                                        }
+                                        eventBroadcaster.broadcast('claude-stream', {
+                                            type: 'error',
+                                            message: line
+                                        });
                                     }
                                 }
                             }
@@ -141,6 +148,11 @@ function AskClaude(message, workingDir = null, onStream = null) {
         // Start Claude process writing to file
         console.log('🚀 Starting Claude process...');
         
+        eventBroadcaster.broadcast('claude-stream', {
+            type: 'system',
+            content: '🚀 Starting Claude process...'
+        });
+        
         // Check platform and setup command accordingly
         const isWindows = process.platform === 'win32';
         
@@ -154,8 +166,18 @@ function AskClaude(message, workingDir = null, onStream = null) {
             console.log('🔄 WSL working dir:', wslWorkingDir);
             console.log('🔄 WSL output file:', wslOutputFile);
             
+            eventBroadcaster.broadcast('claude-stream', {
+                type: 'system',
+                content: `🖥️ Windows detected, using WSL wrapper\n🔄 WSL working dir: ${wslWorkingDir}\n🔄 WSL output file: ${wslOutputFile}`
+            });
+            
             const wslCommand = `cd ${wslWorkingDir} && claude --print --verbose --output-format stream-json --dangerously-skip-permissions '${message}' > ${wslOutputFile}`;
             console.log('🔧 Full WSL command:', wslCommand);
+            
+            eventBroadcaster.broadcast('claude-stream', {
+                type: 'system',
+                content: `🔧 Full WSL command: ${wslCommand}`
+            });
             
             claudeProcess = spawn('wsl', [
                 '-e', 'bash', '-c',
@@ -166,9 +188,19 @@ function AskClaude(message, workingDir = null, onStream = null) {
             });
             
             console.log('📋 Claude process started, PID:', claudeProcess.pid);
+            
+            eventBroadcaster.broadcast('claude-stream', {
+                type: 'system',
+                content: `📋 Claude process started, PID: ${claudeProcess.pid}`
+            });
         } else {
             // We're in WSL/Linux, run Claude directly
             console.log('🐧 Linux/WSL detected, running Claude directly');
+            
+            eventBroadcaster.broadcast('claude-stream', {
+                type: 'system',
+                content: '🐧 Linux/WSL detected, running Claude directly'
+            });
             
             claudeProcess = spawn('/bin/bash', [
                 '-c',
@@ -180,6 +212,11 @@ function AskClaude(message, workingDir = null, onStream = null) {
         
         claudeProcess.on('close', (code) => {
             console.log('🏁 Claude process finished with code:', code);
+            
+            eventBroadcaster.broadcast('claude-stream', {
+                type: 'system',
+                content: `🏁 Claude process finished with code: ${code}`
+            });
             
             // Give file watcher a moment to process any final content
             setTimeout(() => {
@@ -201,6 +238,11 @@ function AskClaude(message, workingDir = null, onStream = null) {
         
         claudeProcess.on('error', (err) => {
             console.error('💥 Claude process error:', err.message);
+            
+            eventBroadcaster.broadcast('claude-stream', {
+                type: 'error',
+                content: `💥 Claude process error: ${err.message}`
+            });
             cleanup();
             reject(err);
         });
@@ -217,6 +259,11 @@ function AskClaude(message, workingDir = null, onStream = null) {
                 try {
                     fs.unlinkSync(outputFile);
                     console.log('🗑️  Cleaned up output file');
+                    
+                    eventBroadcaster.broadcast('claude-stream', {
+                        type: 'system',
+                        content: '🗑️ Cleaned up output file'
+                    });
                 } catch (e) {
                     console.warn('⚠️  Could not delete output file:', e.message);
                 }
@@ -225,12 +272,17 @@ function AskClaude(message, workingDir = null, onStream = null) {
         
         // Safety timeout - shorter for debugging
         const timeout = setTimeout(() => {
-            console.log('⏰ Claude process timeout after 30s, killing...');
+            console.log('⏰ Claude process timeout after 10m, killing...');
             console.log('🔍 Process still running?', !claudeProcess.killed);
+            
+            eventBroadcaster.broadcast('claude-stream', {
+                type: 'error',
+                content: `⏰ Claude process timeout after 10m, killing...\n🔍 Process still running? ${!claudeProcess.killed}`
+            });
             claudeProcess.kill('SIGTERM');
             cleanup();
             reject(new Error('Claude process timed out after 30 seconds'));
-        }, 30000);
+        }, 1000*60*10);
         
         // Clear timeout when process ends
         claudeProcess.on('close', () => {

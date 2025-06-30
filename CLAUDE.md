@@ -378,6 +378,116 @@ TodoWrite: [{"id": "session-marker", "content": "JobSquirrel session marker", "s
 
 **Usage in directives**: Always create unique todo first, then use content matching for reliable session detection.
 
+## Real-time Claude Output Display System
+
+**AcornDepot Stashboard** features a comprehensive real-time Claude output monitoring system that provides detailed visibility into Claude's processing workflow.
+
+### Claude Output Panel Architecture
+
+**Location**: Left sidebar below EventMonitor in Stashboard web interface
+
+**Key Features**:
+- ✅ **Real-time streaming** of Claude's output during resume generation and processing
+- ✅ **Reverse chronological display** (newest events at top)
+- ✅ **Multiple event types** with distinct visual styling and icons
+- ✅ **Expandable content cards** with click-to-expand for long messages (>200 chars)
+- ✅ **Session tracking** with Claude session ID display
+- ✅ **Processing indicators** showing when Claude is active vs ready
+
+### Event Types and Visual Design
+
+**System Events** (🔧):
+- Claude initialization and configuration
+- Process startup, WSL detection, command execution
+- File operations and cleanup
+- Session management and completion status
+
+**Response Lines** (💬):
+- Individual lines from Claude's reasoning process
+- Real-time streaming as Claude generates responses
+- Compact styling for high-frequency updates
+
+**Full Responses** (🤖):
+- Complete response chunks as they're assembled
+- Primary Claude output content
+- Expandable for long HTML/content generation
+
+**Completion Info** (✅):
+- Processing duration, API costs, final status
+- Session completion and cleanup confirmation
+
+### Technical Implementation
+
+**Event Broadcasting Architecture**:
+```javascript
+// anthropic.js broadcasts events
+eventBroadcaster.broadcast('claude-stream', {
+    type: 'response-line',
+    content: responseLine
+});
+
+// useEventStream processes with queue mechanism
+const eventQueue = [];
+function processQueue() {
+    if (processing || eventQueue.length === 0) return;
+    processing = true;
+    const nextEvent = eventQueue.shift();
+    setLastEvent(nextEvent);
+    setTimeout(() => {
+        processing = false;
+        processQueue();
+    }, 10); // 10ms delay ensures React processes each event
+}
+```
+
+**Queue-based Event Processing**:
+- **Problem Solved**: React's state batching was causing rapid Claude events to be overwritten
+- **Solution**: Event queue with 10ms processing delay ensures each event triggers individual React renders
+- **Result**: Perfect capture of high-frequency streaming output
+
+**Cross-Platform Claude Integration**:
+- **Windows WSL Bridge**: Commands executed via `wsl -e bash -c "claude --args"`
+- **File-watching Architecture**: Real-time monitoring of Claude's JSON output streams
+- **Event Types**: System, response, response-line, complete, error with appropriate icons
+
+### Expandable Content Cards
+
+**Truncation Logic**:
+- Messages >200 characters automatically truncated with "..." 
+- **▼ More** / **▲ Less** click-to-expand functionality
+- Character count display for long messages
+- Maintains UI responsiveness while preserving full content access
+
+**User Experience**:
+- **Compact by default**: Prevents UI overwhelming with large responses
+- **Full detail on demand**: Click to see complete Claude output
+- **Visual hierarchy**: Icons and color coding for different event types
+- **Persistent history**: Last 20 events maintained in reverse chronological order
+
+### Integration with Broader System
+
+**Resume Generation Workflow**:
+1. User clicks "Generate Resume" 
+2. Claude Output panel shows real-time progress:
+   - 🔧 System initialization and WSL setup
+   - 💬 Individual reasoning steps as Claude processes job requirements
+   - 🤖 HTML resume generation chunks
+   - ✅ Completion with timing and cost information
+
+**Development and Debugging**:
+- **Full visibility** into Claude's decision-making process
+- **Performance monitoring** with request timing and API costs
+- **Error tracking** with detailed error message display
+- **Session management** for multi-step workflows
+
+**Event Stream Infrastructure**:
+- **Server-Sent Events (SSE)** for real-time browser updates
+- **Event broadcasting** to multiple connected clients
+- **Consistent event format** across all JobSquirrel components
+- **Robust error handling** with graceful degradation
+
+This system transforms Claude interaction from a "black box" into a transparent, observable process, providing valuable insights for both users and developers while maintaining excellent performance and user experience.
+
 ## Code Theme
 All code uses squirrel-themed language:
 - `forage()` instead of get/retrieve

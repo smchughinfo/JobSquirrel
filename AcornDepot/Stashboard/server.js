@@ -89,9 +89,9 @@ app.delete('/api/nut-note', (req, res) => {
 });
 
 // Generate resume endpoint
-app.post('/api/generate-resume', (req, res) => {
+app.post('/api/generate-resume', async (req, res) => {
     const nutNote = req.body;
-    generateResume(nutNote)
+    await generateResume(nutNote);
     res.sendStatus(200);
 });
 
@@ -109,14 +109,8 @@ app.post('/api/test-claude-stream', async (req, res) => {
         // Import AskClaude function
         const { AskClaude } = require('./services/llm/anthropic');
         
-        // Call AskClaude with streaming callback
-        const result = await AskClaude(message, null, (streamData) => {
-            // Broadcast streaming updates to all connected clients
-            eventBroadcaster.broadcast('claude-stream', {
-                message: `Claude ${streamData.type}: ${streamData.type === 'response' ? streamData.content?.substring(0, 50) + '...' : streamData.session || streamData.message || 'update'}`,
-                ...streamData
-            });
-        });
+        // Call AskClaude (events are broadcast automatically)
+        const result = await AskClaude(message, null);
         
         res.json({ 
             success: true, 
@@ -151,6 +145,7 @@ app.post('/api/upload-resume-data', async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
+
 
 // Test endpoint for debugging WSL commands (kept from original)
 app.get('/api/test-wsl', (req, res) => {

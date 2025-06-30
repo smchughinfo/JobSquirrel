@@ -8,7 +8,7 @@ const { eventBroadcaster } = require('./eventBroadcaster');
 const { z } = require('zod');
 
 async function processRawJobListing(rawJobListing) {
-    let model = "Ollama";
+    let model = "OpenAI";
     if(model == "OpenAI") {
         await processRawJobListing_OpenAI(rawJobListing);
     }
@@ -73,11 +73,11 @@ async function processRawJobListing_Ollama(rawJobListing) {
     try {
         const jobListingText = getInnerText(rawJobListing);
 
-        const firstPass = await AskOllama(`Extract ONLY the detailed job posting from this page. Look for the main job that shows full details (company, title, description, requirements, salary, location). Ignore job lists, navigation, ads, and related jobs. Return ONLY the complete text of the one detailed job posting:\n\n\n\n${jobListingText}`, true);
-        const markdown = await AskOllama(`Conver this to markdown. ${CLAMP_CLAUSE}\n\n\n\n${firstPass}`, true);
+        const firstPass = await AskOllama("First Pass", `Extract ONLY the detailed job posting from this page. Look for the main job that shows full details (company, title, description, requirements, salary, location). Ignore job lists, navigation, ads, and related jobs. Return ONLY the complete text of the one detailed job posting:\n\n\n\n${jobListingText}`, true);
+        const markdown = await AskOllama("Convert to Markdown", `Convert this to markdown. ${CLAMP_CLAUSE}\n\n\n\n${firstPass}`, true);
         
-        let json = await AskOllama(generateJSONPrompt(markdown), true);
-        json = await AskOllama(`Can you fix any formatting errors with this JSON (don't edit any of the values). If there are formatting errors just return it as it. ${CLAMP_CLAUSE}. Just output JSON:\n\n${json}`, true);
+        let json = await AskOllama("Convert to JSON", generateJSONPrompt(markdown), true);
+        json = await AskOllama("Clean JSON", `Can you fix any formatting errors with this JSON (don't edit any of the values). If there are formatting errors just return it as it. ${CLAMP_CLAUSE}. Just output JSON:\n\n${json}`, true);
 
         let nutNote = JSON.parse(json);
         nutNote.url = getInnerText(rawJobListing, "[data-job-squirrel-reference='url']");

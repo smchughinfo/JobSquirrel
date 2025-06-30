@@ -156,8 +156,7 @@ function askOllamaAsync(message, workingDir = null) {
     });
 }
 
-function askOllamaAndLog(prompt) {
-    const logName = "Ollama_Log";
+function askOllamaAndLog(logName, prompt) {
     return new Promise((resolve, reject) => {
         try {
             eventBroadcaster.llmProcessingStarted(logName);

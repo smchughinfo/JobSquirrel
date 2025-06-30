@@ -9,7 +9,7 @@ const { addOrUpdateNutNote } = require('./hoard');
 const CLAMP_CLAUSE = `Do not include any preamble, commentary, or code block formatting. Output only the final html content, nothing else.`;
 
 async function generateResume(nutNote) {
-    generateResumeAnthropic(nutNote);
+    await generateResumeAnthropic(nutNote);
 }
 
 async function generateResumeOpenAI(nutNote) {
@@ -24,7 +24,7 @@ async function generateResumeAnthropic(nutNote) {
     let jobListingPath = "/AcornDepot/Stashboard/job-listing.md";
     fs.writeFileSync("c:/users/seanm/desktop/jobsquirrel" + jobListingPath, nutNote.markdown);
     const prompt = `Use the provided files in /ResumeData to generate a tailored resume for the job listing in ${jobListingPath}. ${CLAMP_CLAUSE}`;
-    let response = await AskClaude(prompt, true);
+    let response = await AskClaude(prompt);
     nutNote.html = response;
     addOrUpdateNutNote(nutNote);
     console.log("resume generated!");

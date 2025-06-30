@@ -115,14 +115,11 @@ header {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    position: fixed;
-    left: 1rem;
-    top: 180px;
 }
 
 .main-content {
-    width: 1200px;
-    margin: 0 auto;
+    max-width: 1200px;
+    margin: 0 0 0 50px;
 }
 
 .container {
