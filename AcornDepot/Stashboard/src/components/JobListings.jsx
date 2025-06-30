@@ -5,7 +5,7 @@ function JobListings({ lastEvent }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedMarkdown, setExpandedMarkdown] = useState(new Set());
-  const [resumeDialog, setResumeDialog] = useState({ open: false, htmlArray: [], pdfPath: null, activeTab: 0, activeType: 'html', jobTitle: '', company: '', job: null });
+  const [resumeDialog, setResumeDialog] = useState({ open: false, htmlArray: [], pdfPath: null, coverLetter: null, activeTab: 0, activeType: 'html', jobTitle: '', company: '', job: null });
   const [marginInches, setMarginInches] = useState(0);
 
   // Fetch jobs from the API
@@ -64,6 +64,7 @@ function JobListings({ lastEvent }) {
           ...prev,
           htmlArray: updatedJob.html,
           pdfPath: updatedJob.pdfPath || prev.pdfPath, // Update PDF path if available
+          coverLetter: updatedJob.coverLetter || prev.coverLetter, // Update cover letter if available
           job: updatedJob,
           // If new resume was added, switch to it
           activeTab: updatedJob.html.length > prev.htmlArray.length ? updatedJob.html.length - 1 : prev.activeTab
@@ -194,6 +195,7 @@ function JobListings({ lastEvent }) {
         open: true,
         htmlArray: job.html,
         pdfPath: job.pdfPath || null, // Load existing PDF path if available
+        coverLetter: job.coverLetter || null, // Load existing cover letter if available
         activeTab: job.html.length - 1, // Default to newest resume
         activeType: job.pdfPath ? 'pdf' : 'html', // Default to PDF if available, otherwise HTML
         jobTitle: job.jobTitle || 'N/A',
@@ -229,7 +231,7 @@ function JobListings({ lastEvent }) {
   };
 
   const closeResumeDialog = () => {
-    setResumeDialog({ open: false, htmlArray: [], pdfPath: null, activeTab: 0, activeType: 'html', jobTitle: '', company: '', job: null });
+    setResumeDialog({ open: false, htmlArray: [], pdfPath: null, coverLetter: null, activeTab: 0, activeType: 'html', jobTitle: '', company: '', job: null });
     setMarginInches(0);
   };
 
@@ -770,7 +772,7 @@ function JobListings({ lastEvent }) {
             </div>
             
             {/* Tab navigation */}
-            {(resumeDialog.htmlArray.length > 1 || resumeDialog.pdfPath) && (
+            {(resumeDialog.htmlArray.length > 1 || resumeDialog.pdfPath || resumeDialog.coverLetter) && (
               <div style={{
                 display: 'flex',
                 borderBottom: '1px solid #dee2e6',
@@ -848,6 +850,42 @@ function JobListings({ lastEvent }) {
                     📄 PDF Resume
                   </button>
                 )}
+                
+                {/* Cover Letter tab */}
+                {resumeDialog.coverLetter && (
+                  <button
+                    key="coverLetter"
+                    onClick={() => setActiveTab(0, 'coverLetter')}
+                    style={{
+                      background: (resumeDialog.activeType === 'coverLetter') ? '#28a745' : 'transparent',
+                      color: (resumeDialog.activeType === 'coverLetter') ? 'white' : '#28a745',
+                      border: '1px solid #28a745',
+                      borderBottom: (resumeDialog.activeType === 'coverLetter') ? '1px solid #28a745' : '1px solid #dee2e6',
+                      borderBottomLeftRadius: '0',
+                      borderBottomRightRadius: '0',
+                      borderTopLeftRadius: '5px',
+                      borderTopRightRadius: '5px',
+                      padding: '0.5rem 1rem',
+                      fontSize: '0.9rem',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      marginBottom: '-1px'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (resumeDialog.activeType !== 'coverLetter') {
+                        e.target.style.backgroundColor = '#f8f9fa';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (resumeDialog.activeType !== 'coverLetter') {
+                        e.target.style.backgroundColor = 'transparent';
+                      }
+                    }}
+                  >
+                    💌 Cover Letter
+                  </button>
+                )}
               </div>
             )}
             {resumeDialog.activeType === 'html' ? (
@@ -861,7 +899,7 @@ function JobListings({ lastEvent }) {
                 }}
                 title={`Resume ${resumeDialog.activeTab + 1} for ${resumeDialog.jobTitle} at ${resumeDialog.company}`}
               />
-            ) : (
+            ) : resumeDialog.activeType === 'pdf' ? (
               <embed
                 src={resumeDialog.pdfPath || ''}
                 type="application/pdf"
@@ -873,6 +911,31 @@ function JobListings({ lastEvent }) {
                 }}
                 title={`PDF Resume for ${resumeDialog.jobTitle} at ${resumeDialog.company}`}
               />
+            ) : (
+              <div
+                style={{
+                  flex: 1,
+                  border: '1px solid #dee2e6',
+                  borderRadius: '5px',
+                  padding: '2rem',
+                  backgroundColor: '#fff',
+                  overflow: 'auto'
+                }}
+              >
+                <pre
+                  style={{
+                    whiteSpace: 'pre-wrap',
+                    wordWrap: 'break-word',
+                    margin: '0',
+                    fontFamily: "'Georgia', serif",
+                    fontSize: '14px',
+                    lineHeight: '1.6',
+                    color: '#333'
+                  }}
+                >
+                  {resumeDialog.coverLetter || 'No cover letter available'}
+                </pre>
+              </div>
             )}
           </div>
         </div>
