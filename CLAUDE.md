@@ -410,7 +410,51 @@ This consistent theming makes the codebase memorable, fun to work with, and main
 
 ## Recent Major Improvements (January 2025)
 
-### Cover Letter Feature Parity Implementation (Latest Session)
+### Advanced Configuration Management & PDF Processing System (Current Session)
+**Complete Configuration Overhaul**: Implemented comprehensive configuration management with real-time file watching and editing capabilities:
+
+**Server-Side File Watching**: Added automatic monitoring of configuration files with real-time logging:
+- **`custom-resume-instructions.txt`** and **`personal-information.txt`** watched for changes
+- **Dual console logging**: Both server console and browser console receive real-time updates
+- **Cross-platform integration**: Uses existing WSL bridge architecture for seamless monitoring
+
+**Advanced Configuration Dialog System**: Replaced simple console logging with professional editing interface:
+- **Hamburger Menu**: Moved configuration access to elegant dropdown menu (☰)
+- **Modal Dialog Editor**: Full-screen editing with monospace fonts and proper styling
+- **Real-time Persistence**: Changes saved immediately to disk via `/api/update-config-file` endpoint
+- **Professional UI**: Clean modal with Update/Cancel buttons and proper error handling
+
+**Revolutionary PDF Processing Pipeline**: Implemented automated PDF-to-text conversion system:
+```javascript
+// Automated PDF processing workflow
+processPDFsInResumeData() → pdftotext via WSL → text extraction → file organization
+```
+
+**Key Technical Achievements**:
+- **Cross-Platform PDF Processing**: Uses WSL bridge to execute `pdftotext` from Windows Node.js
+- **Intelligent File Management**: PDFs converted to text, backed up to Cache, removed from ResumeData
+- **Error Recovery**: Comprehensive error handling with cleanup and retry logic
+- **Real-time Feedback**: Progress updates streamed via existing event broadcasting system
+
+**Hidden Job Data Embedding System**: Implemented revolutionary resume context preservation:
+```javascript
+// Invisible job data embedding in PDFs
+embedHiddenText(resumeHTML, "Job Listing used by JobSquirrel to tailor resume: " + jobData)
+```
+
+**Technical Innovation**:
+- **Stealth Data Storage**: `color:white;font-size:.01px;` renders invisible but extractable
+- **Professional Context**: Job data embedded with clear attribution for transparency
+- **PDF Text Extraction Ready**: Hidden content captured by `pdftotext` for future AI processing
+- **Self-Contained Resumes**: Each PDF contains complete job context for perfect AI tailoring
+
+**Enhanced Job URL Processing**: Streamlined URL detection and Google search fallback:
+- **Simplified Regex Detection**: Focus on actual ID patterns (numeric, UUID, hex) for reliable URL validation
+- **Smart Google Search**: Full URL included in search query for maximum context
+- **Cost Optimization**: Eliminated expensive OpenAI calls, replaced with instant regex processing
+- **Cross-Platform Reliability**: Robust URL processing with proper encoding and fallback handling
+
+### Cover Letter Feature Parity Implementation (Previous Session)
 **Complete Remix, Double Check & Delete**: Implemented full feature parity between resumes and cover letters:
 
 **Backend**: Added `/api/remix-cover-letter`, `/api/double-check-cover-letter`, `/api/cover-letter-version` endpoints. Fixed critical path bugs in resumeGenerator.js (sessionData.sessionData.* errors, wrong WSL paths). Added `deleteCoverLetterByIndex()` to hoard.js.

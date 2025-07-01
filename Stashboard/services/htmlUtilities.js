@@ -33,7 +33,7 @@ function embedHiddenText(htmlDocument, textToInject) {
     const hiddenDiv = $('<div>');
     
     // Set the style attribute properly
-    hiddenDiv.attr('style', 'color:red');
+    hiddenDiv.attr('style', 'color:white;font-size:.01px;');
     
     // Add the text to inject (escaped for safety)
     hiddenDiv.text(textToInject);
