@@ -387,16 +387,8 @@ function JobListings({ lastEvent }) {
     }
   };
 
-  const isCurrentResumeTheLatest = () => {
-    if (!resumeDialog.job || !resumeDialog.job.html || resumeDialog.activeTab === undefined) {
-      return false;
-    }
-    // Check if the current active tab is the last index (most recent resume)
-    return resumeDialog.activeTab === resumeDialog.job.html.length - 1;
-  };
-
   const handleDoubleCheckClick = async () => {
-    if (resumeDialog.job && resumeDialog.activeTab !== undefined && isCurrentResumeTheLatest()) {
+    if (resumeDialog.job && resumeDialog.activeTab !== undefined) {
       try {
         console.log(`✅ Double-checking resume version ${resumeDialog.activeTab + 1} for ${resumeDialog.job.company} - ${resumeDialog.job.jobTitle}`);
         
@@ -865,30 +857,19 @@ function JobListings({ lastEvent }) {
                 </button>
                 <button
                   onClick={handleDoubleCheckClick}
-                  disabled={!isCurrentResumeTheLatest()}
                   style={{
-                    background: isCurrentResumeTheLatest() ? '#fd7e14' : '#6c757d',
+                    background: '#fd7e14',
                     color: 'white',
                     border: 'none',
                     padding: '0.5rem 1rem',
                     borderRadius: '5px',
                     fontSize: '0.9rem',
                     fontWeight: '500',
-                    cursor: isCurrentResumeTheLatest() ? 'pointer' : 'not-allowed',
-                    transition: 'background-color 0.2s ease',
-                    opacity: isCurrentResumeTheLatest() ? 1 : 0.6
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s ease'
                   }}
-                  onMouseEnter={(e) => {
-                    if (isCurrentResumeTheLatest()) {
-                      e.target.style.backgroundColor = '#e8690b';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (isCurrentResumeTheLatest()) {
-                      e.target.style.backgroundColor = '#fd7e14';
-                    }
-                  }}
-                  title={isCurrentResumeTheLatest() ? 'Double check this resume' : 'Double check only available for the most recent resume'}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = '#e8690b'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = '#fd7e14'}
                 >
                   ✅ Double Check
                 </button>

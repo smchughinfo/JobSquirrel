@@ -48,14 +48,14 @@ async function generateResumeAnthropic(nutNote, doubleCheck = false) {
     let prompt = `Use the files provided in /ResumeData to generate a tailored resume for the job listing in '${jobListingPathWSL}'.`;
     prompt += ` Output the resume as html to '${sessionData.workingResumePathWSL}'.`;
     prompt += ` Make sure to follow all instructions in '${resumeCustomInstructionsPath}' when generating the resume.`;
-    prompt += ` Use '${resumePersonalInformationPath}' as your canonical source for contact information.`;
+    prompt += ` Use '${resumePersonalInformationPath}' as your canonical source of contact information.`;
     prompt += ` Upon completion save your current session id to a file by following these instructions: '${sessionData.sessionIdInstructionsPathWSL}'`;
 
     await AskClaude(prompt);
     let response = fs.readFileSync(sessionData.workingResumePath).toString();
 
-    //sessionData.sessionId = fs.readFileSync(sessionData.sessionIdPath).toString();
-    nutNote.sessionData = sessionData;
+    sessionData.sessionId = fs.readFileSync(sessionData.sessionIdPath).toString();
+    nutNote.sessionData.push(sessionData);
 
     // Initialize html as array if it doesn't exist or append to existing array
     if (!nutNote.html) {
@@ -78,17 +78,26 @@ async function generateResumeAnthropic(nutNote, doubleCheck = false) {
     }
 }
 
-async function doubleCheckResume(nutNote) {
+async function doubleCheckResume(nutNote, resumeIndex) {
+    let sessionData = generateSessionData();
+
     let resumeCustomInstructionsPath = getCustomResumeInstructions(true);
     let resumePersonalInformationPath = getResumePersonalInformation(true);
-    
-    let fixPrompt = `I notice all the instructions in '${resumeCustomInstructionsPath}' were not followed.`;
-    fixPrompt += ` Can you adjust '${nutNote.sessionData.workingResumePathWSL}' accordingly. When complete summarize your changes in '${nutNote.sessionData.resumeChangesPathWSL}'.`;
-    fixPrompt += ` Again, use '/ResumeData' to backfill or correct any data and '${resumePersonalInformationPath}' as your canonical source for contact information.`;
-    await AskClaude(fixPrompt, nutNote.sessionData.sessionId);
 
-    let response = fs.readFileSync(nutNote.sessionData.workingResumePath).toString();
+    fs.writeFileSync(sessionData.workingResumePath, nutNote.html[resumeIndex]);
+
+    let fixPrompt = `The resume at '${sessionData.workingResumePathWSL}' was supposed to be generated according to this guidelines file: '${resumeCustomInstructionsPath}'.\n\n`;
+    fixPrompt += ` However the user has requested a review. Can you please double check that the resume is in compliance with the guidelines file.`;
+    fixPrompt += ` Save the new, compliant, resume to '${sessionData.doubleCheckedResumePath}'.`;
+    fixPrompt += ` Use '/ResumeData' to backfill or correct any information on the resume and '${resumePersonalInformationPath}' as your canonical source of contact information.`;
+    fixPrompt += ` Upon completion save your current session id to a file by following these instructions: '${sessionData.sessionIdInstructionsPathWSL}'`;
+
+    await AskClaude(fixPrompt);
+    let response = fs.readFileSync(sessionData.doubleCheckedResumePath).toString();
+    sessionData.sessionId = fs.readFileSync(sessionData.sessionIdPath).toString();
+
     nutNote.html.push(response);
+    nutNote.sessionData.push(sessionData);
     addOrUpdateNutNote(nutNote);
     console.log("resume double checked!");
 }

@@ -49,7 +49,8 @@ async function processRawJobListing_OpenAI(rawJobListing) {
     nutNote.html = "";
     nutNote.coverLetter = "";
     nutNote.pdfPath = "";
-
+    nutNote.sessionData = [];
+    
     console.log(`🔧 Job processed: ${nutNote.company} - ${nutNote.jobTitle}`);
     addOrUpdateNutNote(nutNote);
 }
@@ -91,6 +92,7 @@ async function processRawJobListing_Ollama(rawJobListing) {
         nutNote.html = "";
         nutNote.coverLetter = "";
         nutNote.pdfPath = "";
+        nutNote.sessionData = [];
 
         console.log(`🔧 Job processed: ${nutNote.company} - ${nutNote.jobTitle}`);
         addOrUpdateNutNote(nutNote);

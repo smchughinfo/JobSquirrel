@@ -146,7 +146,7 @@ app.post('/api/double-check-resume', async (req, res) => {
         
         console.log(`✅ Starting double-check for resume version ${resumeIndex + 1} for ${nutNote.company} - ${nutNote.jobTitle}`);
         
-        await doubleCheckResume(nutNote);
+        await doubleCheckResume(nutNote, resumeIndex);
         
         res.json({ 
             success: true, 

@@ -105,8 +105,8 @@ function getSessionIdData(wsl) {
     let sessionIdsDir =  path.join(rootDir, `SessionIdS`);
     let sessionIdPath = path.join(sessionIdsDir, `session-id-${uid}.txt`);
     let sessionIdInstructionsPath = path.join(sessionIdsDir, `save-session-id-${uid}-instructions.txt`);
-    let resumeChangespath = path.join(sessionIdsDir, `resume-changed-${uid}.md`);
     let workingResumePath = path.join(sessionIdsDir, `working-resume-${uid}.html`);
+    let doubleCheckedResumePath = path.join(sessionIdsDir, `double-checked-resume-${uid}.html`);
     let coverLetterPath = path.join(sessionIdsDir, `cover-letter-${uid}.txt`);
 
     if(wsl) {
@@ -117,11 +117,10 @@ function getSessionIdData(wsl) {
         fileUID: uid,
         sessionIdInstructionsPath: sessionIdInstructionsPath,
         sessionIdInstructionsPathWSL: convertPathToWSL(sessionIdInstructionsPath),
-        resumeChangesPath: resumeChangespath,
-        resumeChangesPathWSL: convertPathToWSL(resumeChangespath),
         workingResumePath: workingResumePath,
         workingResumePathWSL: convertPathToWSL(workingResumePath),
         coverLetterPath: coverLetterPath,
+        doubleCheckedResumePath: doubleCheckedResumePath,
         coverLetterPathWSL: convertPathToWSL(coverLetterPath)
     }
 }
