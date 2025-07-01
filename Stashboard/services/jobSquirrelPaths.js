@@ -2,7 +2,7 @@ const path = require('path');
 const { generateUUID } = require('./utilities');
 
 function getJobSquirrelRootDirectory(wsl = false) {
-    let rootDir = path.join(__dirname, "..", "..", "..");
+    let rootDir = path.join(__dirname, "..", "..");
     if(wsl) {
         rootDir = convertPathToWSL(rootDir);
     }
@@ -18,15 +18,15 @@ let getSaveSessionIdInstructionsTemplatePath = (wsl) => getJobSquirrelPath(wsl, 
 function getSessionIdData(wsl) {
     let rootDir = getJobSquirrelRootDirectory();
     let uid = generateUUID();
-    let sessionIdsDir =  path.join(rootDir, `SessionIdS`);
+    let sessionIdsDir =  path.join(rootDir, `Cache`);
     let sessionIdPath = path.join(sessionIdsDir, `session-id-${uid}.txt`);
     let sessionIdInstructionsPath = path.join(sessionIdsDir, `save-session-id-${uid}-instructions.txt`);
     let workingResumePath = path.join(sessionIdsDir, `working-resume-${uid}.html`);
     let doubleCheckedResumePath = path.join(sessionIdsDir, `double-checked-resume-${uid}.html`);
     let coverLetterPath = path.join(sessionIdsDir, `cover-letter-${uid}.txt`);
-    let jobListingPath = path.join(rootDir, "Stashboard", `job-listing-${uid}.md`);
-    let remixResumePath = path.join(rootDir, "Stashboard", `remix-resume-${uid}.html`);
-    let remixResumeInstructionsPath = path.join(rootDir, "Stashboard", `remix-resume-instructions-${uid}'.txt`);
+    let jobListingPath = path.join(sessionIdsDir, `job-listing-${uid}.md`);
+    let remixResumePath = path.join(sessionIdsDir, `remix-resume-${uid}.html`);
+    let remixResumeInstructionsPath = path.join(sessionIdsDir, `remix-resume-instructions-${uid}.txt`);
 
     if(wsl) {
         sessionIdPath = convertPathToWSL(sessionIdPath);

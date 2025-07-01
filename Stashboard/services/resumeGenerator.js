@@ -3,13 +3,17 @@ const path = require('path');
 const { AskAssistant, CreateVectorStore } = require('./llm/openai');
 const { AskClaude } = require('./llm/anthropic');
 const { eventBroadcaster } = require('./eventBroadcaster');
-const { getResumeDataDirectory, getCustomResumeInstructions, getResumePersonalInformation, getJobListingMDPath, getSaveSessionIdInstructionsTemplatePath, getSessionIdData } = require('./jobSquirrelPaths');
+const { getResumeDataDirectory, getCustomResumeInstructions, getResumePersonalInformation, getSaveSessionIdInstructionsTemplatePath, getSessionIdData } = require('./jobSquirrelPaths');
 const { addOrUpdateNutNote } = require('./hoard');
 
 const RESUME_CLAMP_CLAUSE = `Do not include any preamble, commentary, or code block formatting. Output only the final html content, nothing else.`;
 
 async function generateResume(nutNote) {
     await generateResumeAnthropic(nutNote);
+}
+
+async function generateCoverLetter(nutNote) {
+    await generateCoverLetterAnthropic(nutNote);
 }
 
 async function generateResumeOpenAI(nutNote) {
@@ -35,18 +39,16 @@ function generateSessionData() {
     return sessionIdData;
 }
 
-async function generateResumeAnthropic(nutNote, doubleCheck = false) {
-    let jobListingPath = getJobListingMDPath();
-    let jobListingPathWSL = getJobListingMDPath(true);
-    fs.writeFileSync(jobListingPath, nutNote.markdown);
+async function generateResumeAnthropic(nutNote) {
+    let sessionData = generateSessionData();
+
+    fs.writeFileSync(sessionData.jobListingPath, nutNote.markdown);
 
     let resumeCustomInstructionsPath = getCustomResumeInstructions(true);
     let resumePersonalInformationPath = getResumePersonalInformation(true);
     let resumeDataDirectory = getResumeDataDirectory(true);
 
-    let sessionData = generateSessionData();
-
-    let prompt = `Use the files provided in '${resumeDataDirectory}' to generate a tailored resume for the job listing in '${jobListingPathWSL}'.`;
+    let prompt = `Use the files provided in '${resumeDataDirectory}' to generate a tailored resume for the job listing in '${sessionData.jobListingPathWSL}'.`;
     prompt += ` Output the resume as html to '${sessionData.workingResumePathWSL}'.`;
     prompt += ` Make sure to follow all instructions in '${resumeCustomInstructionsPath}' when generating the resume.`;
     prompt += ` Use '${resumePersonalInformationPath}' as your canonical source of contact information.`;
@@ -70,13 +72,6 @@ async function generateResumeAnthropic(nutNote, doubleCheck = false) {
     nutNote.html.push(response);
     addOrUpdateNutNote(nutNote);
     console.log("resume generated!");
-
-    // now do the cover letter (only if it wasn't already created)
-    if (!nutNote.coverLetter) {
-        nutNote.coverLetter = await generateCoverLetterAnthropic(jobListingPath, resumePersonalInformationPath);
-        addOrUpdateNutNote(nutNote);
-        console.log("cover letter generated!");
-    }
 }
 
 async function doubleCheckResume(nutNote, resumeIndex) {
@@ -104,28 +99,31 @@ async function doubleCheckResume(nutNote, resumeIndex) {
     console.log("resume double checked!");
 }
 
-async function generateCoverLetterAnthropic(nutNote, jobListingPath) {
+async function generateCoverLetterAnthropic(nutNote) {
+    let sessionData = generateSessionData();
+    nutNote.sessionData.push(sessionData);
+
     let resumeCustomInstructionsPath = getCustomResumeInstructions(true);
     let resumePersonalInformationPath = getResumePersonalInformation(true);
     let resumeDataDirectory = getResumeDataDirectory(true);
 
-    let prompt = `Use the provided files in '${resumeDataDirectory}' to generate a tailored cover letter for the job listing in ${jobListingPath}.`;
+    let prompt = `Use the provided files in '${resumeDataDirectory}' to generate a tailored cover letter for the job listing in ${nutNote.jobListingPath}.`;
     prompt += ` Make sure to follow all instructions in '${resumeCustomInstructionsPath}' that are relevant for writing a cover letter.`;
     prompt += ` Use '${resumePersonalInformationPath}' as your canonical source for contact information.`;
-    prompt += ` Save the cover letter to '${nutNote.sessionData.coverLetterPathWSL}'`;
+    prompt += ` Save the cover letter to '${sessionData.coverLetterPathWSL}'`;
 
     await AskClaude(prompt);
-    let response = fs.readFileSync(nutNote.sessionData.coverLetterPath).toString();
-    return response;
+    let response = fs.readFileSync(sessionData.coverLetterPath).toString();
+    nutNote.coverLetter = response;
+    nutNote.sessionData = sessionData;
+    addOrUpdateNutNote(nutNote);
+    console.log("cover letter generated!");
 }
 
 async function remixResumeAnthropic(nutNote, remixInstructions, remixIndex) {
     let sessionData = generateSessionData();
 
-    let jobListingPath = getJobListingMDPath();
-    let jobListingPathWSL = getJobListingMDPath(true);
-    fs.writeFileSync(jobListingPath, nutNote.markdown);
-
+    fs.writeFileSync(sessionData.jobListingPath, nutNote.markdown);
     fs.writeFileSync(sessionData.remixResumePath, nutNote.html[remixIndex]);
     fs.writeFileSync(sessionData.remixInstructionPath, remixInstructions);
 
@@ -133,7 +131,7 @@ async function remixResumeAnthropic(nutNote, remixInstructions, remixIndex) {
     let resumePersonalInformationPath = getResumePersonalInformation(true);
     let resumeDataDirectory = getResumeDataDirectory(true);
 
-    let prompt = `Remix this resume '${sessionData.remixResumePathWSL}' according to these instructions: '${remixInstructionPathWSL}' for this job listing '${jobListingPathWSL}'`;
+    let prompt = `Remix this resume '${sessionData.remixResumePathWSL}' according to these instructions: '${remixInstructionPathWSL}' for this job listing '${sessionData.jobListingPathWSL}'`;
     prompt += ` Use the files in '${resumeDataDirectory}' as your source of information about the job candidate.`;
     prompt += ` Make sure to follow all instructions in '${resumeCustomInstructionsPath}'.`;
     prompt += ` Use '${resumePersonalInformationPath}' as your canonical source for contact information.`;
@@ -171,6 +169,7 @@ function getResumeDataFiles() {
 
 module.exports = {
     generateResume,
+    generateCoverLetter,
     remixResumeAnthropic,
     UploadResumeData,
     doubleCheckResume

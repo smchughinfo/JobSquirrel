@@ -415,6 +415,32 @@ function JobListings({ lastEvent }) {
     }
   };
 
+  const handleGenerateCoverLetter = async () => {
+    if (resumeDialog.job) {
+      try {
+        console.log(`💌 Generating cover letter for ${resumeDialog.job.company} - ${resumeDialog.job.jobTitle}`);
+        
+        const response = await fetch('/api/generate-cover-letter', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(resumeDialog.job)
+        });
+        
+        if (response.ok) {
+          console.log('💌 Cover letter generated successfully');
+          // The cover letter will be updated via the real-time event system
+        } else {
+          const error = await response.json();
+          console.error('Failed to generate cover letter:', error.error);
+        }
+      } catch (error) {
+        console.error('Error generating cover letter:', error);
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div>
@@ -940,7 +966,7 @@ function JobListings({ lastEvent }) {
             </div>
             
             {/* Tab navigation */}
-            {(resumeDialog.htmlArray.length > 1 || resumeDialog.pdfPath || resumeDialog.coverLetter) && (
+            {resumeDialog.htmlArray.length > 0 && (
               <div style={{
                 display: 'flex',
                 borderBottom: '1px solid #dee2e6',
@@ -1062,40 +1088,38 @@ function JobListings({ lastEvent }) {
                 )}
                 
                 {/* Cover Letter tab */}
-                {resumeDialog.coverLetter && (
-                  <button
-                    key="coverLetter"
-                    onClick={() => setActiveTab(0, 'coverLetter')}
-                    style={{
-                      background: (resumeDialog.activeType === 'coverLetter') ? '#28a745' : 'transparent',
-                      color: (resumeDialog.activeType === 'coverLetter') ? 'white' : '#28a745',
-                      border: '1px solid #28a745',
-                      borderBottom: (resumeDialog.activeType === 'coverLetter') ? '1px solid #28a745' : '1px solid #dee2e6',
-                      borderBottomLeftRadius: '0',
-                      borderBottomRightRadius: '0',
-                      borderTopLeftRadius: '5px',
-                      borderTopRightRadius: '5px',
-                      padding: '0.5rem 1rem',
-                      fontSize: '0.9rem',
-                      fontWeight: '500',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      marginBottom: '-1px'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (resumeDialog.activeType !== 'coverLetter') {
-                        e.target.style.backgroundColor = '#f8f9fa';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (resumeDialog.activeType !== 'coverLetter') {
-                        e.target.style.backgroundColor = 'transparent';
-                      }
-                    }}
-                  >
-                    💌 Cover Letter
-                  </button>
-                )}
+                <button
+                  key="coverLetter"
+                  onClick={() => setActiveTab(0, 'coverLetter')}
+                  style={{
+                    background: (resumeDialog.activeType === 'coverLetter') ? '#28a745' : 'transparent',
+                    color: (resumeDialog.activeType === 'coverLetter') ? 'white' : '#28a745',
+                    border: '1px solid #28a745',
+                    borderBottom: (resumeDialog.activeType === 'coverLetter') ? '1px solid #28a745' : '1px solid #dee2e6',
+                    borderBottomLeftRadius: '0',
+                    borderBottomRightRadius: '0',
+                    borderTopLeftRadius: '5px',
+                    borderTopRightRadius: '5px',
+                    padding: '0.5rem 1rem',
+                    fontSize: '0.9rem',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    marginBottom: '-1px'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (resumeDialog.activeType !== 'coverLetter') {
+                      e.target.style.backgroundColor = '#f8f9fa';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (resumeDialog.activeType !== 'coverLetter') {
+                      e.target.style.backgroundColor = 'transparent';
+                    }
+                  }}
+                >
+                  💌 Cover Letter
+                </button>
               </div>
             )}
             {resumeDialog.activeType === 'html' ? (
@@ -1132,19 +1156,60 @@ function JobListings({ lastEvent }) {
                   overflow: 'auto'
                 }}
               >
-                <pre
-                  style={{
-                    whiteSpace: 'pre-wrap',
-                    wordWrap: 'break-word',
-                    margin: '0',
-                    fontFamily: "'Georgia', serif",
-                    fontSize: '14px',
-                    lineHeight: '1.6',
-                    color: '#333'
-                  }}
-                >
-                  {resumeDialog.coverLetter || 'No cover letter available'}
-                </pre>
+                {resumeDialog.coverLetter ? (
+                  <pre
+                    style={{
+                      whiteSpace: 'pre-wrap',
+                      wordWrap: 'break-word',
+                      margin: '0',
+                      fontFamily: "'Georgia', serif",
+                      fontSize: '14px',
+                      lineHeight: '1.6',
+                      color: '#333'
+                    }}
+                  >
+                    {resumeDialog.coverLetter}
+                  </pre>
+                ) : (
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: '200px',
+                      textAlign: 'center'
+                    }}
+                  >
+                    <p
+                      style={{
+                        color: '#6c757d',
+                        fontSize: '16px',
+                        marginBottom: '1rem'
+                      }}
+                    >
+                      No cover letter generated yet
+                    </p>
+                    <button
+                      onClick={handleGenerateCoverLetter}
+                      style={{
+                        background: '#28a745',
+                        color: 'white',
+                        border: 'none',
+                        padding: '0.75rem 1.5rem',
+                        borderRadius: '5px',
+                        fontSize: '0.9rem',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#218838'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = '#28a745'}
+                    >
+                      💌 Generate Cover Letter
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>

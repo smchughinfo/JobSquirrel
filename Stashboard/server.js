@@ -7,7 +7,7 @@ const { JobQueue } = require('./services/jobQueue');
 const { eventBroadcaster } = require('./services/eventBroadcaster');
 const { getHoard, addOrUpdateNutNote, getIdentifier, deleteNutNote, deleteNuteNoteByIndex } = require('./services/hoard');
 const { getHoardPath, getResumeDataVectorStoreIdPath } = require('./services/jobSquirrelPaths');
-const { generateResume, remixResumeAnthropic, UploadResumeData, doubleCheckResume } = require('./services/resumeGenerator');
+const { generateResume, generateCoverLetter, remixResumeAnthropic, UploadResumeData, doubleCheckResume } = require('./services/resumeGenerator');
 const { htmlToPdf } = require('./services/pdf');
 
 
@@ -130,6 +130,13 @@ app.delete('/api/resume-version', (req, res) => {
 app.post('/api/generate-resume', async (req, res) => {
     const nutNote = req.body;
     await generateResume(nutNote);
+    res.sendStatus(200);
+});
+
+// Generate cover letter endpoint
+app.post('/api/generate-cover-letter', async (req, res) => {
+    const nutNote = req.body;
+    await generateCoverLetter(nutNote);
     res.sendStatus(200);
 });
 
