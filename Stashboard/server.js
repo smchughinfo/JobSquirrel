@@ -7,7 +7,7 @@ const { JobQueue } = require('./services/jobQueue');
 const { eventBroadcaster } = require('./services/eventBroadcaster');
 const { getHoard, addOrUpdateNutNote, getIdentifier, deleteNutNote, deleteNuteNoteByIndex, deleteCoverLetterByIndex } = require('./services/hoard');
 const { getHoardPath, getResumeDataVectorStoreIdPath } = require('./services/jobSquirrelPaths');
-const { generateResume, generateCoverLetter, remixResumeAnthropic, remixCoverLetterAnthropic, UploadResumeData, doubleCheckResume, doubleCheckCoverLetterAnthropic } = require('./services/resumeGenerator');
+const { generateResume, generateCoverLetter, remixResumeAnthropic, remixCoverLetterAnthropic, UploadResumeData, doubleCheckResume, doubleCheckCoverLetterAnthropic, processPDFsInResumeData } = require('./services/resumeGenerator');
 const { htmlToPdf } = require('./services/pdf');
 
 
@@ -557,7 +557,14 @@ clipboardMonitor.on('clipboardChange', (text) => {
 clipboardMonitor.startMonitoring();
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-////////// FILE WATCHING //////////////////////////////////////////////////////////////////////////
+////////// PROCESS PDFS //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+// this is because claude code cant read pdfs. if you aren't using claude code this may not be necessry
+processPDFsInResumeData();
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+////////// FILE WATCHING /////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 const hoardPath = getHoardPath();

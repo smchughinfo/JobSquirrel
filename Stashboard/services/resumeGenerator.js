@@ -1,9 +1,10 @@
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 const { AskAssistant, CreateVectorStore } = require('./llm/openai');
 const { AskClaude } = require('./llm/anthropic');
 const { eventBroadcaster } = require('./eventBroadcaster');
-const { getResumeDataDirectory, getCustomResumeInstructions, getResumePersonalInformation, getSaveSessionIdInstructionsTemplatePath, getSessionIdData } = require('./jobSquirrelPaths');
+const { getResumeDataDirectory, getCustomResumeInstructions, getResumePersonalInformation, getSaveSessionIdInstructionsTemplatePath, getSessionIdData, getJobSquirrelRootDirectory, convertPathToWSL } = require('./jobSquirrelPaths');
 const { addOrUpdateNutNote } = require('./hoard');
 
 const RESUME_CLAMP_CLAUSE = `Do not include any preamble, commentary, or code block formatting. Output only the final html content, nothing else.`;
@@ -219,6 +220,109 @@ function getResumeDataFiles() {
     return resumeDataFiles;
 }
 
+async function processPDFsInResumeData() {
+    const resumeDataDirectory = getResumeDataDirectory();
+    const cacheDirectory = path.join(getJobSquirrelRootDirectory(), 'Cache');
+    
+    console.log(`📄 Starting PDF processing in ResumeData directory: ${resumeDataDirectory}`);
+    
+    // Ensure cache directory exists
+    if (!fs.existsSync(cacheDirectory)) {
+        fs.mkdirSync(cacheDirectory, { recursive: true });
+        console.log(`📁 Created cache directory: ${cacheDirectory}`);
+    }
+    
+    // Ensure resume data directory exists
+    if (!fs.existsSync(resumeDataDirectory)) {
+        console.log(`⚠️ ResumeData directory does not exist: ${resumeDataDirectory}`);
+        return;
+    }
+    
+    try {
+        // Read all files in the ResumeData directory
+        const files = fs.readdirSync(resumeDataDirectory);
+        const pdfFiles = files.filter(file => file.toLowerCase().endsWith('.pdf'));
+        
+        if (pdfFiles.length === 0) {
+            console.log(`📄 No PDF files found in ResumeData directory`);
+            return;
+        }
+        
+        console.log(`📄 Found ${pdfFiles.length} PDF file(s) to process: ${pdfFiles.join(', ')}`);
+        
+        for (const pdfFile of pdfFiles) {
+            const pdfPath = path.join(resumeDataDirectory, pdfFile);
+            const baseName = path.basename(pdfFile, '.pdf');
+            const txtFileName = `${baseName}.txt`;
+            const txtPath = path.join(resumeDataDirectory, txtFileName);
+            const cachePdfPath = path.join(cacheDirectory, pdfFile);
+            
+            try {
+                console.log(`📄 Processing: ${pdfFile}`);
+                
+                // Convert PDF to text using pdftotext via WSL
+                console.log(`🔄 Converting PDF to text: ${pdfFile} → ${txtFileName}`);
+                
+                // Convert Windows paths to WSL paths for the command
+                const wslPdfPath = convertPathToWSL(pdfPath);
+                const wslTxtPath = convertPathToWSL(txtPath);
+                
+                // Execute pdftotext via WSL
+                const wslCommand = `wsl -e bash -c "pdftotext '${wslPdfPath}' '${wslTxtPath}'"`;
+                execSync(wslCommand, { encoding: 'utf8' });
+                
+                // Verify text file was created and has content
+                if (fs.existsSync(txtPath)) {
+                    const txtContent = fs.readFileSync(txtPath, 'utf8');
+                    if (txtContent.trim().length > 0) {
+                        console.log(`✅ Successfully extracted text (${txtContent.length} characters): ${txtFileName}`);
+                    } else {
+                        console.log(`⚠️ Text file created but appears empty: ${txtFileName}`);
+                    }
+                } else {
+                    throw new Error('Text file was not created');
+                }
+                
+                // Copy PDF to cache directory
+                console.log(`📁 Copying PDF to cache: ${pdfFile}`);
+                fs.copyFileSync(pdfPath, cachePdfPath);
+                console.log(`✅ PDF copied to cache: ${cachePdfPath}`);
+                
+                // Delete original PDF from ResumeData directory
+                console.log(`🗑️ Removing original PDF from ResumeData: ${pdfFile}`);
+                fs.unlinkSync(pdfPath);
+                console.log(`✅ Original PDF deleted: ${pdfPath}`);
+                
+                // Broadcast success event
+                eventBroadcaster.systemStatus('pdf-processed', `Successfully processed PDF: ${pdfFile} → ${txtFileName}`);
+                
+            } catch (error) {
+                console.error(`❌ Error processing PDF ${pdfFile}:`, error.message);
+                
+                // Cleanup on error - remove any partially created text file
+                if (fs.existsSync(txtPath)) {
+                    try {
+                        fs.unlinkSync(txtPath);
+                        console.log(`🧹 Cleaned up partial text file: ${txtPath}`);
+                    } catch (cleanupError) {
+                        console.error(`❌ Error cleaning up text file: ${cleanupError.message}`);
+                    }
+                }
+                
+                // Broadcast error event
+                eventBroadcaster.systemStatus('error', `Failed to process PDF: ${pdfFile} - ${error.message}`);
+            }
+        }
+        
+        console.log(`📄 PDF processing completed. Processed ${pdfFiles.length} file(s).`);
+        eventBroadcaster.systemStatus('pdf-processing-complete', `Finished processing ${pdfFiles.length} PDF file(s)`);
+        
+    } catch (error) {
+        console.error(`❌ Error during PDF processing:`, error.message);
+        eventBroadcaster.systemStatus('error', `PDF processing failed: ${error.message}`);
+    }
+}
+
 module.exports = {
     generateResume,
     generateCoverLetter,
@@ -226,5 +330,6 @@ module.exports = {
     remixCoverLetterAnthropic,
     doubleCheckResume,
     doubleCheckCoverLetterAnthropic,
-    UploadResumeData
+    UploadResumeData,
+    processPDFsInResumeData,
 };
