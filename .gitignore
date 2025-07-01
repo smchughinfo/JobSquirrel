@@ -12,6 +12,5 @@ save-session-id-instructions.txt
 /SessionIds
 /Cache
 /Config
-/Stashboard/queue/errors
-
+/Stashboard/queue/
 .claude

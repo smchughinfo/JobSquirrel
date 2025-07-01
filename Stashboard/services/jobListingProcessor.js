@@ -32,17 +32,58 @@ const schema = z.object({
     })
 });
 
+function getUrl(rawJobListing, company, jobTitle) {
+    let url = getInnerText(rawJobListing, "[data-job-squirrel-reference='url']");
+    
+    // Check if URL contains IDs using regex patterns
+    const hasNumericId = /\d{3,}/.test(url); // 3+ consecutive digits
+    const hasUuid = /[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i.test(url); // UUID pattern
+    const hasHexId = /[a-f0-9]{6,}/i.test(url); // 6+ character hex strings
+    const isJobUrl = /\/(job|career|posting|position)s?\//i.test(url); // Contains job-related path
+    
+    // If URL looks like it has an ID or is a proper job URL, use it
+    if ((hasNumericId || hasUuid || hasHexId || isJobUrl) && url && url !== 'N/A' && url.startsWith('http')) {
+        return url;
+    } else {
+        // Extract domain name for Google search
+        let domainName = '';
+        if (url && url !== 'N/A' && url.includes('.')) {
+            try {
+                // Extract just the domain (handle both full URLs and partial domains)
+                if (url.startsWith('http')) {
+                    const urlObj = new URL(url);
+                    domainName = urlObj.hostname;
+                } else {
+                    // Handle cases like "company.com" or "www.company.com/careers"
+                    domainName = url.split('/')[0].replace(/^www\./, '');
+                }
+            } catch (error) {
+                // If URL parsing fails, try simple regex extraction
+                const domainMatch = url.match(/(?:https?:\/\/)?(?:www\.)?([^\/\s]+)/);
+                domainName = domainMatch ? domainMatch[1] : '';
+            }
+        }
+        
+        // Create Google search query with domain (if we have one)
+        const searchTerms = domainName ? 
+            `site:${domainName} ${company} ${jobTitle} job` : 
+            `${company} ${jobTitle} job`;
+        const searchQuery = encodeURIComponent(searchTerms);
+        return `https://www.google.com/search?q=${searchQuery}`;
+    }
+}
+
 async function processRawJobListing_OpenAI(rawJobListing) {
-    rawJobListing = getInnerText(rawJobListing);
+    let jobListingInnerText = getInnerText(rawJobListing);
 
     let extractPrompt = `Extract ONLY the detailed job posting from this page. Look for the main job that shows full details (company, title, description, requirements, salary, location). Ignore job lists, navigation, ads, and related jobs.`;
-    let mdPrompt = `${extractPrompt} Return your response in markdown format. Don't wrap your responde in a code block indicating that it is markdown. Just output the markdown itself.\n\n\n\n${rawJobListing}`
+    let mdPrompt = `${extractPrompt} Return your response in markdown format. Don't wrap your responde in a code block indicating that it is markdown. Just output the markdown itself.\n\n\n\n${jobListingInnerText}`
 
-    let json = await getJSONAsync(extractPrompt, schema, rawJobListing);
+    let json = await getJSONAsync(extractPrompt, schema, jobListingInnerText);
     let md = (await askOpenAI(mdPrompt)).output_text;
 
     let nutNote = json.jobPage;
-    nutNote.url = getInnerText(rawJobListing, "[data-job-squirrel-reference='url']");
+    nutNote.url = getUrl(rawJobListing, nutNote.company, nutNote.jobTitle);
     nutNote.markdown = md;
     nutNote.scrapeDate = new Date();
     nutNote.collapsed = false; // Default to expanded state
@@ -50,7 +91,7 @@ async function processRawJobListing_OpenAI(rawJobListing) {
     nutNote.coverLetter = [];
     nutNote.pdfPath = "";
     nutNote.sessionData = [];
-    
+
     console.log(`🔧 Job processed: ${nutNote.company} - ${nutNote.jobTitle}`);
     addOrUpdateNutNote(nutNote);
 }
