@@ -3,7 +3,7 @@ const path = require('path');
 const { AskAssistant, CreateVectorStore } = require('./llm/openai');
 const { AskClaude } = require('./llm/anthropic');
 const { eventBroadcaster } = require('./eventBroadcaster');
-const { getResumeDataDirectory, getCustomResumeInstructions, getResumePersonalInformation, getJobListingMDPath, getRemixResumePath, getRemixResumeInstructionsPath, getSaveSessionIdPath, getSessionIdPath, getWorkingResumePath, getResumeChangesPath } = require('./jobSquirrelPaths');
+const { getResumeDataDirectory, getCustomResumeInstructions, getResumePersonalInformation, getJobListingMDPath, getRemixResumePath, getRemixResumeInstructionsPath, getSaveSessionIdInstructionsTemplatePath, getSessionIdData, getWorkingResumePath, getResumeChangesPath } = require('./jobSquirrelPaths');
 const { addOrUpdateNutNote } = require('./hoard');
 
 const RESUME_CLAMP_CLAUSE = `Do not include any preamble, commentary, or code block formatting. Output only the final html content, nothing else.`;
@@ -21,6 +21,20 @@ async function generateResumeOpenAI(nutNote) {
     console.log("resume generated!");
 }
 
+function generateSaveSessionData() {
+    let sessionIdsDir = path.dirname(sessionIdData.sessionIdPath);
+    if (!fs.existsSync(sessionIdsDir)) {
+        fs.mkdirSync(sessionIdsDir, { recursive: true });
+    }
+
+    let sessionIdData = getSessionIdData();
+    let templatePath = getSaveSessionIdInstructionsTemplatePath();
+    let instructions = fs.readFileSync(templatePath).toString();
+    instructions = instructions.replace("[SESSION ID PATH]", sessionIdData.sessionIdPath);
+    fs.writeFileSync(sessionIdData.sessionIdInstructionsPath, instructions);
+    return sessionIdData;
+}
+
 async function generateResumeAnthropic(nutNote, doubleCheck = false) {
     let jobListingPath = getJobListingMDPath();
     let jobListingPathWSL = getJobListingMDPath(true);
@@ -32,15 +46,41 @@ async function generateResumeAnthropic(nutNote, doubleCheck = false) {
     let workingResumePath = getWorkingResumePath();
     let workingResumePathWSL = getWorkingResumePath(true);
 
+    let sessionData = generateSaveSessionData();
+
     let prompt = `Use the files provided in /ResumeData to generate a tailored resume for the job listing in '${jobListingPathWSL}'.`;
     prompt += ` Output the resume as html to '${workingResumePathWSL}'.`;
     prompt += ` Make sure to follow all instructions in '${resumeCustomInstructionsPath}' when generating the resume.`;
     prompt += ` Use '${resumePersonalInformationPath}' as your canonical source for contact information.`;
-    prompt += ` Upon completion save your current session id to a file by following these instructions: '${getSaveSessionIdPath(true)}'`;
+    prompt += ` Upon completion save your current session id to a file by following these instructions: '${sessionData.sessionIdInstructionsPathWSL}'`;
 
     await AskClaude(prompt);
+    let response = fs.readFileSync(workingResumePath).toString();
 
-    let sessionIdPath = getSessionIdPath();
+    sessionData.sessionId = fs.readFileSync(sessionData.sessionIdPath).toString();
+    nutNote.sessionData = sessionData;
+
+    // Initialize html as array if it doesn't exist or append to existing array
+    if (!nutNote.html) {
+        nutNote.html = [];
+    } else if (!Array.isArray(nutNote.html)) {
+        // Convert string to array (shouldn't happen per user's note, but safety check)
+        nutNote.html = [nutNote.html];
+    }
+    
+    // save the resume now so it's available in the ui while we are waiting on the cover letter
+    nutNote.html.push(response);
+    addOrUpdateNutNote(nutNote);
+    console.log("resume generated!");
+
+    // now do the cover letter
+    nutNote.coverLetter = await generateCoverLetterAnthropic(jobListingPath, resumePersonalInformationPath);
+    addOrUpdateNutNote(nutNote);
+    console.log("cover letter generated!");
+}
+
+async function doubleCheckResume(nutNote) {
+    let sessionIdPath = getSessionIdData();
     if(doubleCheck) {
         let resumeChangesPath = getResumeChangesPath();
 
@@ -53,24 +93,6 @@ async function generateResumeAnthropic(nutNote, doubleCheck = false) {
 
     fs.rmSync(sessionIdPath);
     let response = fs.readFileSync(workingResumePath, 'utf8');
-
-    // Initialize html as array if it doesn't exist or append to existing array
-    if (!nutNote.html) {
-        nutNote.html = [];
-    } else if (!Array.isArray(nutNote.html)) {
-        // Convert string to array (shouldn't happen per user's note, but safety check)
-        nutNote.html = [nutNote.html];
-    }
-    
-    // save the resume now so it's avaialale in the ui while we are waiting on the cover letter
-    nutNote.html.push(response);
-    addOrUpdateNutNote(nutNote);
-    console.log("resume generated!");
-
-    // now do the cover letter
-    nutNote.coverLetter = await generateCoverLetterAnthropic(jobListingPath, resumePersonalInformationPath);
-    addOrUpdateNutNote(nutNote);
-    console.log("cover letter generated!");
 }
 
 async function generateCoverLetterAnthropic(jobListingPath) {
@@ -78,7 +100,7 @@ async function generateCoverLetterAnthropic(jobListingPath) {
     let resumePersonalInformationPath = getResumePersonalInformation(true);
 
     let prompt = `Use the provided files in /ResumeData to generate a tailored cover letter for the job listing in ${jobListingPath}.`;
-    prompt += ` Make sure to follow all instructions in '${resumeCustomInstructionsPath}' that are relevent for writing a cover letter.`;
+    prompt += ` Make sure to follow all instructions in '${resumeCustomInstructionsPath}' that are relevant for writing a cover letter.`;
     prompt += ` Use '${resumePersonalInformationPath}' as your canonical source for contact information.`;
     prompt += ` Output your response in plain text.`;
     prompt += ` ${COVER_LATTER_CLAMP_CLAUDE}`;

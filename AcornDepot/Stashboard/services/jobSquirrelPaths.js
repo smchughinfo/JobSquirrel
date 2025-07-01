@@ -1,4 +1,5 @@
 const path = require('path');
+const { generateUUID } = require('./utilities');
 
 function getJobSquirrelRootDirectory(wsl = false) {
     let rootDir = path.join(__dirname, "..", "..", "..");
@@ -89,22 +90,30 @@ function getRemixResumePath(wsl) {
     return hoardPath;
 }
 
-function getSaveSessionIdPath(wsl) {
+function getSaveSessionIdInstructionsTemplatePath(wsl) {
     let rootDir = getJobSquirrelRootDirectory();
-    let saveSessionIdPath = path.join(rootDir, "save-session-id-instructions.txt");
+    let saveSessionIdPath = path.join(rootDir, `save-session-id-instructions-template.txt`);
     if(wsl) {
         saveSessionIdPath = convertPathToWSL(saveSessionIdPath);
     }
     return saveSessionIdPath;
 }
 
-function getSessionIdPath(wsl) {
+function getSessionIdData(wsl) {
     let rootDir = getJobSquirrelRootDirectory();
-    let sessionIdPath = path.join(rootDir, "session-id.txt");
+    let uid = generateUUID();
+    let sessionIdsDir =  path.join(rootDir, `SessionIdS`);
+    let sessionIdPath = path.join(sessionIdsDir, `session-id-${uid}.txt`);
+    let sessionIdInstructionsPath = path.join(sessionIdsDir, `save-session-id-${uid}-instructions.txt`);
     if(wsl) {
         sessionIdPath = convertPathToWSL(sessionIdPath);
     }
-    return sessionIdPath;
+    return {
+        sessionIdPath: sessionIdPath,
+        fileUID: uid,
+        sessionIdInstructionsPath: sessionIdInstructionsPath,
+        sessionIdInstructionsPathWSL: convertPathToWSL(sessionIdInstructionsPath)
+    }
 }
 
 function getRemixResumeInstructionsPath(wsl) {
@@ -151,8 +160,8 @@ module.exports = {
     getJobListingMDPath,
     getRemixResumePath,
     getRemixResumeInstructionsPath,
-    getSaveSessionIdPath,
-    getSessionIdPath,
+    getSaveSessionIdInstructionsTemplatePath,
+    getSessionIdData,
     getWorkingResumePath,
     getResumeChangesPath,
     convertPathToWSL
