@@ -412,6 +412,90 @@ app.post('/api/upload-resume-data', async (req, res) => {
     }
 });
 
+// Get configuration files endpoint
+app.get('/api/config-files', (req, res) => {
+    try {
+        const customResumeInstructionsPath = path.join(getJobSquirrelRootDirectory(), 'Config', 'custom-resume-instructions.txt');
+        const personalInformationPath = path.join(getJobSquirrelRootDirectory(), 'Config', 'personal-information.txt');
+        
+        let customResumeInstructions = '';
+        let personalInformation = '';
+        
+        if (fs.existsSync(customResumeInstructionsPath)) {
+            customResumeInstructions = fs.readFileSync(customResumeInstructionsPath, 'utf8');
+        }
+        
+        if (fs.existsSync(personalInformationPath)) {
+            personalInformation = fs.readFileSync(personalInformationPath, 'utf8');
+        }
+        
+        res.json({
+            success: true,
+            customResumeInstructions,
+            personalInformation
+        });
+        
+    } catch (error) {
+        console.error('❌ Error reading config files:', error.message);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// Update configuration files endpoint
+app.post('/api/update-config-file', (req, res) => {
+    try {
+        const { fileName, content } = req.body;
+        
+        if (!fileName || content === undefined) {
+            return res.status(400).json({
+                error: 'Missing required parameters: fileName, content'
+            });
+        }
+        
+        // Determine file path based on fileName
+        let filePath;
+        if (fileName === 'custom-resume-instructions.txt') {
+            filePath = path.join(getJobSquirrelRootDirectory(), 'Config', 'custom-resume-instructions.txt');
+        } else if (fileName === 'personal-information.txt') {
+            filePath = path.join(getJobSquirrelRootDirectory(), 'Config', 'personal-information.txt');
+        } else {
+            return res.status(400).json({
+                error: 'Invalid fileName. Must be custom-resume-instructions.txt or personal-information.txt'
+            });
+        }
+        
+        // Ensure Config directory exists
+        const configDir = path.join(getJobSquirrelRootDirectory(), 'Config');
+        if (!fs.existsSync(configDir)) {
+            fs.mkdirSync(configDir, { recursive: true });
+            console.log(`📁 Created Config directory: ${configDir}`);
+        }
+        
+        // Write the file
+        fs.writeFileSync(filePath, content, 'utf8');
+        
+        console.log(`🔧 Updated configuration file: ${fileName}`);
+        console.log(`📁 File path: ${filePath}`);
+        console.log(`📝 Content length: ${content.length} characters`);
+        
+        res.json({
+            success: true,
+            message: `Configuration file ${fileName} updated successfully`,
+            filePath
+        });
+        
+    } catch (error) {
+        console.error('❌ Error updating config file:', error.message);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 
 // Test endpoint for debugging WSL commands (kept from original)
 app.get('/api/test-wsl', (req, res) => {
@@ -478,6 +562,10 @@ clipboardMonitor.startMonitoring();
 
 const hoardPath = getHoardPath();
 const resumeDataVectorStoreIdPath = getResumeDataVectorStoreIdPath();
+
+// Configuration file paths
+const customResumeInstructionsPath = path.join(getJobSquirrelRootDirectory(), 'Config', 'custom-resume-instructions.txt');
+const personalInformationPath = path.join(getJobSquirrelRootDirectory(), 'Config', 'personal-information.txt');
 
 // Track hoard count for change detection
 let previousHoardCount = 0;
@@ -564,6 +652,89 @@ try {
     });
 } catch (error) {
     console.error(`📁 Error setting up resume data vector store file watching: ${error.message}`);
+}
+
+// Function to log configuration file contents
+function logConfigFileContents(filePath, fileLabel) {
+    try {
+        if (fs.existsSync(filePath)) {
+            const content = fs.readFileSync(filePath, 'utf8');
+            console.log(`\n🔧 ${fileLabel} contents:`);
+            console.log('─'.repeat(50));
+            console.log(content);
+            console.log('─'.repeat(50));
+        } else {
+            console.log(`⚠️ ${fileLabel} not found at: ${filePath}`);
+        }
+    } catch (error) {
+        console.error(`❌ Error reading ${fileLabel}: ${error.message}`);
+    }
+}
+
+// Log initial contents of configuration files
+logConfigFileContents(customResumeInstructionsPath, 'Custom Resume Instructions');
+logConfigFileContents(personalInformationPath, 'Personal Information');
+
+// Set up file watching for custom-resume-instructions.txt
+try {
+    console.log(`🔧 Watching custom resume instructions file: ${customResumeInstructionsPath}`);
+    
+    let customInstructionsTimeout;
+    fs.watch(customResumeInstructionsPath, (eventType, filename) => {
+        if (eventType === 'change') {
+            clearTimeout(customInstructionsTimeout);
+            customInstructionsTimeout = setTimeout(() => {
+                console.log(`🔧 Custom resume instructions file changed, logging contents...`);
+                logConfigFileContents(customResumeInstructionsPath, 'Custom Resume Instructions');
+                
+                // Broadcast the change to connected clients
+                try {
+                    const content = fs.readFileSync(customResumeInstructionsPath, 'utf8');
+                    eventBroadcaster.broadcast('config-file-changed', {
+                        type: 'config-change',
+                        fileName: 'custom-resume-instructions.txt',
+                        fileLabel: 'Custom Resume Instructions',
+                        content: content
+                    });
+                } catch (broadcastError) {
+                    console.error(`🔧 Error broadcasting custom resume instructions change: ${broadcastError.message}`);
+                }
+            }, 100);
+        }
+    });
+} catch (error) {
+    console.error(`🔧 Error setting up custom resume instructions file watching: ${error.message}`);
+}
+
+// Set up file watching for personal-information.txt
+try {
+    console.log(`🔧 Watching personal information file: ${personalInformationPath}`);
+    
+    let personalInfoTimeout;
+    fs.watch(personalInformationPath, (eventType, filename) => {
+        if (eventType === 'change') {
+            clearTimeout(personalInfoTimeout);
+            personalInfoTimeout = setTimeout(() => {
+                console.log(`🔧 Personal information file changed, logging contents...`);
+                logConfigFileContents(personalInformationPath, 'Personal Information');
+                
+                // Broadcast the change to connected clients
+                try {
+                    const content = fs.readFileSync(personalInformationPath, 'utf8');
+                    eventBroadcaster.broadcast('config-file-changed', {
+                        type: 'config-change',
+                        fileName: 'personal-information.txt',
+                        fileLabel: 'Personal Information',
+                        content: content
+                    });
+                } catch (broadcastError) {
+                    console.error(`🔧 Error broadcasting personal information change: ${broadcastError.message}`);
+                }
+            }, 100);
+        }
+    });
+} catch (error) {
+    console.error(`🔧 Error setting up personal information file watching: ${error.message}`);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

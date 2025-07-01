@@ -37,32 +37,80 @@ header {
     gap: 1rem;
 }
 
-.upload-resume-button {
+/* Hamburger Menu Styles */
+.hamburger-menu {
+    position: relative;
+}
+
+.hamburger-button {
     background: linear-gradient(135deg, #fd7e14, #ff9142);
     color: white;
     border: none;
-    padding: 0.75rem 1.5rem;
+    padding: 0.75rem 1rem;
     border-radius: 8px;
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 1.2rem;
     cursor: pointer;
     transition: all 0.2s ease;
     box-shadow: 0 2px 8px rgba(253, 126, 20, 0.3);
+    min-width: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.upload-resume-button:hover {
+.hamburger-button:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(253, 126, 20, 0.4);
 }
 
-.upload-resume-button:active {
+.hamburger-button:active {
     transform: translateY(0);
 }
 
-.upload-resume-button:disabled {
+.hamburger-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    min-width: 220px;
+    margin-top: 0.5rem;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: white;
+    color: #333;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-item:hover {
+    background: rgba(253, 126, 20, 0.1);
+    color: #fd7e14;
+}
+
+.dropdown-item:disabled {
     opacity: 0.6;
     cursor: not-allowed;
-    transform: none;
+    background: white;
+    color: #999;
 }
 
 .upload-status {
@@ -70,6 +118,138 @@ header {
     opacity: 0.8;
     margin-top: 0.25rem;
     text-align: center;
+}
+
+/* Configuration Dialog Styles */
+.config-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.config-dialog {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.config-dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgba(139, 69, 19, 0.05);
+}
+
+.config-dialog-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: #333;
+    font-weight: 600;
+}
+
+.config-dialog-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #666;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.config-dialog-close:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #333;
+}
+
+.config-dialog-content {
+    flex: 1;
+    padding: 1.5rem;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.config-textarea {
+    width: 100%;
+    height: 400px;
+    min-height: 300px;
+    border: 2px solid rgba(139, 69, 19, 0.2);
+    border-radius: 8px;
+    padding: 1rem;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.config-textarea:focus {
+    border-color: rgba(139, 69, 19, 0.5);
+    box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
+}
+
+.config-dialog-actions {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.02);
+    justify-content: flex-end;
+}
+
+.config-button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 100px;
+}
+
+.config-cancel-button {
+    background: #f8f9fa;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
+}
+
+.config-cancel-button:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.config-update-button {
+    background: linear-gradient(135deg, #fd7e14, #ff9142);
+    color: white;
+    box-shadow: 0 2px 8px rgba(253, 126, 20, 0.3);
+}
+
+.config-update-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(253, 126, 20, 0.4);
+}
+
+.config-update-button:active {
+    transform: translateY(0);
 }
 
 /* Claude streaming test button */
