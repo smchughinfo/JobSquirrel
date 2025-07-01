@@ -966,12 +966,15 @@ function JobListings({ lastEvent }) {
                     }}
                     onMouseEnter={(e) => {
                       if (!(resumeDialog.activeTab === index && resumeDialog.activeType === 'html')) {
-                        e.target.style.backgroundColor = '#f8f9fa';
+                        e.currentTarget.style.backgroundColor = '#f8f9fa';
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (!(resumeDialog.activeTab === index && resumeDialog.activeType === 'html')) {
-                        e.target.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      } else {
+                        // Ensure active tab maintains brown background
+                        e.currentTarget.style.backgroundColor = '#8B4513';
                       }
                     }}
                   >
