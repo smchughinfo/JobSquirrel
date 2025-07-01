@@ -387,6 +387,34 @@ function JobListings({ lastEvent }) {
     }
   };
 
+  const handleDoubleCheckClick = async () => {
+    if (resumeDialog.job && resumeDialog.activeTab !== undefined) {
+      try {
+        console.log(`✅ Double-checking resume version ${resumeDialog.activeTab + 1} for ${resumeDialog.job.company} - ${resumeDialog.job.jobTitle}`);
+        
+        const response = await fetch('/api/double-check-resume', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            nutNote: resumeDialog.job,
+            resumeIndex: resumeDialog.activeTab
+          })
+        });
+        
+        if (response.ok) {
+          console.log('✅ Resume double-check completed successfully');
+        } else {
+          const error = await response.json();
+          console.error('Failed to double-check resume:', error.error);
+        }
+      } catch (error) {
+        console.error('Error double-checking resume:', error);
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div>
@@ -826,6 +854,24 @@ function JobListings({ lastEvent }) {
                   onMouseLeave={(e) => e.target.style.backgroundColor = '#6f42c1'}
                 >
                   🎨 Remix
+                </button>
+                <button
+                  onClick={handleDoubleCheckClick}
+                  style={{
+                    background: '#fd7e14',
+                    color: 'white',
+                    border: 'none',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '5px',
+                    fontSize: '0.9rem',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = '#e8690b'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = '#fd7e14'}
+                >
+                  ✅ Double Check
                 </button>
                 <div style={{ 
                   display: 'flex', 

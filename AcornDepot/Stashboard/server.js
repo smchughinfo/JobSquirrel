@@ -7,7 +7,7 @@ const { JobQueue } = require('./services/jobQueue');
 const { eventBroadcaster } = require('./services/eventBroadcaster');
 const { getHoard, addOrUpdateNutNote, getIdentifier, deleteNutNote, deleteNuteNoteByIndex } = require('./services/hoard');
 const { getHoardPath, getResumeDataVectorStoreIdPath } = require('./services/jobSquirrelPaths');
-const { generateResume, remixResumeAnthropic, UploadResumeData } = require('./services/resumeGenerator');
+const { generateResume, remixResumeAnthropic, UploadResumeData, doubleCheckResume } = require('./services/resumeGenerator');
 const { htmlToPdf } = require('./services/pdf');
 
 
@@ -131,6 +131,35 @@ app.post('/api/generate-resume', async (req, res) => {
     const nutNote = req.body;
     await generateResume(nutNote);
     res.sendStatus(200);
+});
+
+// Double-check resume endpoint
+app.post('/api/double-check-resume', async (req, res) => {
+    try {
+        const { nutNote, resumeIndex } = req.body;
+        
+        if (!nutNote || resumeIndex === undefined) {
+            return res.status(400).json({ 
+                error: 'Missing required parameters: nutNote, resumeIndex' 
+            });
+        }
+        
+        console.log(`✅ Starting double-check for resume version ${resumeIndex + 1} for ${nutNote.company} - ${nutNote.jobTitle}`);
+        
+        await doubleCheckResume(nutNote);
+        
+        res.json({ 
+            success: true, 
+            message: `Resume double-check completed for version ${resumeIndex + 1}`
+        });
+        
+    } catch (error) {
+        console.error('❌ Resume double-check failed:', error.message);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
 });
 
 // Remix resume endpoint
