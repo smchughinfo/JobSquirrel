@@ -5,7 +5,7 @@ const puppeteer = require('puppeteer');
 const { ClipboardMonitor } = require('./services/clipboard');
 const { JobQueue } = require('./services/jobQueue');
 const { eventBroadcaster } = require('./services/eventBroadcaster');
-const { getHoard, addOrUpdateNutNote, getIdentifier, deleteNutNote, deleteNuteNoteByIndex } = require('./services/hoard');
+const { getHoard, addOrUpdateNutNote, getIdentifier, deleteNutNote, deleteNuteNoteByIndex, deleteCoverLetterByIndex } = require('./services/hoard');
 const { getHoardPath, getResumeDataVectorStoreIdPath } = require('./services/jobSquirrelPaths');
 const { generateResume, generateCoverLetter, remixResumeAnthropic, remixCoverLetterAnthropic, UploadResumeData, doubleCheckResume, doubleCheckCoverLetterAnthropic } = require('./services/resumeGenerator');
 const { htmlToPdf } = require('./services/pdf');
@@ -119,6 +119,35 @@ app.delete('/api/resume-version', (req, res) => {
         
     } catch (error) {
         console.error('❌ Resume version deletion failed:', error.message);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+});
+
+// Delete specific cover letter version endpoint
+app.delete('/api/cover-letter-version', (req, res) => {
+    try {
+        const { nutNote, coverLetterIndex } = req.body;
+        
+        if (!nutNote || coverLetterIndex === undefined) {
+            return res.status(400).json({ 
+                error: 'Missing required parameters: nutNote, coverLetterIndex' 
+            });
+        }
+        
+        console.log(`🗑️ Deleting cover letter version ${coverLetterIndex + 1} for ${nutNote.company} - ${nutNote.jobTitle}`);
+        
+        deleteCoverLetterByIndex(nutNote, coverLetterIndex);
+        
+        res.json({ 
+            success: true, 
+            message: `Cover letter version ${coverLetterIndex + 1} deleted successfully`
+        });
+        
+    } catch (error) {
+        console.error('❌ Cover letter version deletion failed:', error.message);
         res.status(500).json({ 
             success: false, 
             error: error.message 

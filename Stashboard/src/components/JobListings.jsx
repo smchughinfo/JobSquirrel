@@ -343,15 +343,19 @@ function JobListings({ lastEvent }) {
   };
 
   const handleDeleteResumeClick = (resumeIndex) => {
-    setDeleteConfirmDialog({ open: true, resumeIndex });
+    setDeleteConfirmDialog({ open: true, resumeIndex, type: 'resume' });
+  };
+
+  const handleDeleteCoverLetterClick = (coverLetterIndex) => {
+    setDeleteConfirmDialog({ open: true, coverLetterIndex, type: 'coverLetter' });
   };
 
   const closeDeleteConfirmDialog = () => {
-    setDeleteConfirmDialog({ open: false, resumeIndex: null });
+    setDeleteConfirmDialog({ open: false, resumeIndex: null, coverLetterIndex: null, type: null });
   };
 
-  const handleDeleteResumeConfirm = async () => {
-    if (deleteConfirmDialog.resumeIndex !== null && resumeDialog.job) {
+  const handleDeleteConfirm = async () => {
+    if (deleteConfirmDialog.type === 'resume' && deleteConfirmDialog.resumeIndex !== null && resumeDialog.job) {
       try {
         console.log(`🗑️ Deleting resume version ${deleteConfirmDialog.resumeIndex + 1} for ${resumeDialog.job.company} - ${resumeDialog.job.jobTitle}`);
         
@@ -399,6 +403,50 @@ function JobListings({ lastEvent }) {
         }
       } catch (error) {
         console.error('Error deleting resume version:', error);
+      }
+    } else if (deleteConfirmDialog.type === 'coverLetter' && deleteConfirmDialog.coverLetterIndex !== null && resumeDialog.job) {
+      try {
+        console.log(`🗑️ Deleting cover letter version ${deleteConfirmDialog.coverLetterIndex + 1} for ${resumeDialog.job.company} - ${resumeDialog.job.jobTitle}`);
+        
+        const response = await fetch('/api/cover-letter-version', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            nutNote: resumeDialog.job,
+            coverLetterIndex: deleteConfirmDialog.coverLetterIndex
+          })
+        });
+        
+        if (response.ok) {
+          console.log('✅ Cover letter version deleted successfully');
+          
+          // Update local state
+          const newCoverLetterArray = [...resumeDialog.coverLetterArray];
+          newCoverLetterArray.splice(deleteConfirmDialog.coverLetterIndex, 1);
+          
+          // Adjust active tab if necessary
+          let newActiveCoverLetterTab = resumeDialog.activeCoverLetterTab;
+          if (deleteConfirmDialog.coverLetterIndex <= resumeDialog.activeCoverLetterTab && resumeDialog.activeCoverLetterTab > 0) {
+            newActiveCoverLetterTab = resumeDialog.activeCoverLetterTab - 1;
+          } else if (deleteConfirmDialog.coverLetterIndex === resumeDialog.activeCoverLetterTab && newCoverLetterArray.length > 0) {
+            newActiveCoverLetterTab = Math.min(resumeDialog.activeCoverLetterTab, newCoverLetterArray.length - 1);
+          }
+          
+          setResumeDialog(prev => ({
+            ...prev,
+            coverLetterArray: newCoverLetterArray,
+            activeCoverLetterTab: newActiveCoverLetterTab
+          }));
+          
+          closeDeleteConfirmDialog();
+        } else {
+          const error = await response.json();
+          console.error('Failed to delete cover letter version:', error.error);
+        }
+      } catch (error) {
+        console.error('Error deleting cover letter version:', error);
       }
     }
   };
@@ -1211,38 +1259,80 @@ function JobListings({ lastEvent }) {
                 {/* Cover Letter tabs */}
                 {resumeDialog.coverLetterArray && resumeDialog.coverLetterArray.length > 0 && (
                   resumeDialog.coverLetterArray.map((_, index) => (
-                    <button
+                    <div
                       key={`coverLetter-${index}`}
-                      onClick={() => setActiveTab(index, 'coverLetter')}
                       style={{
+                        display: 'flex',
+                        alignItems: 'center',
                         background: (resumeDialog.activeType === 'coverLetter' && resumeDialog.activeCoverLetterTab === index) ? '#28a745' : 'transparent',
-                        color: (resumeDialog.activeType === 'coverLetter' && resumeDialog.activeCoverLetterTab === index) ? 'white' : '#28a745',
                         border: '1px solid #28a745',
                         borderBottom: (resumeDialog.activeType === 'coverLetter' && resumeDialog.activeCoverLetterTab === index) ? '1px solid #28a745' : '1px solid #dee2e6',
                         borderBottomLeftRadius: '0',
                         borderBottomRightRadius: '0',
                         borderTopLeftRadius: '5px',
                         borderTopRightRadius: '5px',
-                        padding: '0.5rem 1rem',
-                        fontSize: '0.9rem',
-                        fontWeight: '500',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        marginBottom: '-1px'
+                        marginBottom: '-1px',
+                        transition: 'all 0.2s ease'
                       }}
                       onMouseEnter={(e) => {
                         if (!(resumeDialog.activeType === 'coverLetter' && resumeDialog.activeCoverLetterTab === index)) {
-                          e.target.style.backgroundColor = '#f8f9fa';
+                          e.currentTarget.style.backgroundColor = '#f8f9fa';
                         }
                       }}
                       onMouseLeave={(e) => {
                         if (!(resumeDialog.activeType === 'coverLetter' && resumeDialog.activeCoverLetterTab === index)) {
-                          e.target.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        } else {
+                          // Ensure active tab maintains green background
+                          e.currentTarget.style.backgroundColor = '#28a745';
                         }
                       }}
                     >
-                      💌 Cover Letter {index + 1}
-                    </button>
+                      <button
+                        onClick={() => setActiveTab(index, 'coverLetter')}
+                        style={{
+                          background: 'transparent',
+                          color: (resumeDialog.activeType === 'coverLetter' && resumeDialog.activeCoverLetterTab === index) ? 'white' : '#28a745',
+                          border: 'none',
+                          padding: '0.5rem 0.75rem',
+                          fontSize: '0.9rem',
+                          fontWeight: '500',
+                          cursor: 'pointer',
+                          flex: 1
+                        }}
+                      >
+                        💌 Cover Letter {index + 1}
+                      </button>
+                      {resumeDialog.coverLetterArray.length > 1 && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteCoverLetterClick(index);
+                          }}
+                          style={{
+                            background: 'transparent',
+                            color: (resumeDialog.activeType === 'coverLetter' && resumeDialog.activeCoverLetterTab === index) ? 'white' : '#28a745',
+                            border: 'none',
+                            padding: '0.25rem 0.5rem',
+                            fontSize: '0.8rem',
+                            cursor: 'pointer',
+                            borderRadius: '3px',
+                            marginLeft: '0.25rem',
+                            marginRight: '0.25rem',
+                            transition: 'background-color 0.2s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = (resumeDialog.activeType === 'coverLetter' && resumeDialog.activeCoverLetterTab === index) ? 'rgba(255,255,255,0.2)' : 'rgba(40,167,69,0.1)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = 'transparent';
+                          }}
+                          title="Delete this cover letter version"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
                   ))
                 )}
                 
@@ -1638,7 +1728,7 @@ function JobListings({ lastEvent }) {
               color: '#2c3e50',
               fontSize: '1.3rem'
             }}>
-              🗑️ Delete Resume Version
+              🗑️ Delete {deleteConfirmDialog.type === 'coverLetter' ? 'Cover Letter' : 'Resume'} Version
             </h3>
             
             <p style={{
@@ -1647,7 +1737,7 @@ function JobListings({ lastEvent }) {
               fontSize: '1rem',
               lineHeight: '1.5'
             }}>
-              Are you sure you want to delete Resume {deleteConfirmDialog.resumeIndex + 1}? This action cannot be undone.
+              Are you sure you want to delete {deleteConfirmDialog.type === 'coverLetter' ? `Cover Letter ${deleteConfirmDialog.coverLetterIndex + 1}` : `Resume ${deleteConfirmDialog.resumeIndex + 1}`}? This action cannot be undone.
             </p>
             
             <div style={{
@@ -1674,7 +1764,7 @@ function JobListings({ lastEvent }) {
                 Cancel
               </button>
               <button
-                onClick={handleDeleteResumeConfirm}
+                onClick={handleDeleteConfirm}
                 style={{
                   background: '#dc3545',
                   color: 'white',

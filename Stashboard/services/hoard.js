@@ -71,10 +71,40 @@ function deleteNuteNoteByIndex(nutNote, resumeIndex) {
     saveHoard(hoard);
 }
 
+function deleteCoverLetterByIndex(nutNote, coverLetterIndex) {
+    let hoard = getHoard();
+    let jobIndex = hoard.jobListings.findIndex(n => n.company == nutNote.company && n.jobTitle == nutNote.jobTitle);
+    
+    if (jobIndex === -1) {
+        throw new Error(`Job not found: ${nutNote.company} - ${nutNote.jobTitle}`);
+    }
+    
+    let job = hoard.jobListings[jobIndex];
+    
+    if (!job.coverLetter || !Array.isArray(job.coverLetter)) {
+        throw new Error(`No cover letter versions found for job: ${nutNote.company} - ${nutNote.jobTitle}`);
+    }
+    
+    if (coverLetterIndex < 0 || coverLetterIndex >= job.coverLetter.length) {
+        throw new Error(`Invalid cover letter index ${coverLetterIndex}. Job has ${job.coverLetter.length} cover letter version(s)`);
+    }
+    
+    // Remove the specific cover letter version
+    job.coverLetter.splice(coverLetterIndex, 1);
+    
+    // If no cover letter versions left, remove the coverLetter property entirely
+    if (job.coverLetter.length === 0) {
+        delete job.coverLetter;
+    }
+    
+    saveHoard(hoard);
+}
+
 module.exports = {
     addOrUpdateNutNote,
     getHoard,
     getIdentifier,
     deleteNutNote,
     deleteNuteNoteByIndex,
+    deleteCoverLetterByIndex,
 };
