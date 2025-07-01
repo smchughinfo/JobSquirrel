@@ -46,7 +46,7 @@ async function processRawJobListing_OpenAI(rawJobListing) {
     nutNote.markdown = md;
     nutNote.scrapeDate = new Date();
     nutNote.collapsed = false; // Default to expanded state
-    nutNote.html = "";
+    nutNote.html = [];
     nutNote.coverLetter = [];
     nutNote.pdfPath = "";
     nutNote.sessionData = [];

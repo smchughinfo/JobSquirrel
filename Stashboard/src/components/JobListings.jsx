@@ -251,6 +251,18 @@ function JobListings({ lastEvent }) {
   const handleRemixSubmit = async () => {
     if (!remixDialog.changes.trim() || !resumeDialog.job) return;
     
+    if (resumeDialog.activeType === 'html') {
+      // Call the resume remix handler
+      await handleRemixResumeSubmit();
+    } else if (resumeDialog.activeType === 'coverLetter') {
+      // Call the cover letter remix handler
+      await handleRemixCoverLetterSubmit();
+    }
+  };
+
+  const handleRemixResumeSubmit = async () => {
+    if (!remixDialog.changes.trim() || !resumeDialog.job) return;
+    
     setRemixDialog(prev => ({ ...prev, loading: true }));
     
     try {
@@ -441,6 +453,71 @@ function JobListings({ lastEvent }) {
         }
       } catch (error) {
         console.error('Error generating cover letter:', error);
+      }
+    }
+  };
+
+  const handleRemixCoverLetterClick = () => {
+    setRemixDialog({ open: true, changes: '', loading: false });
+  };
+
+  const handleRemixCoverLetterSubmit = async () => {
+    if (!remixDialog.changes.trim() || !resumeDialog.job) return;
+    
+    setRemixDialog(prev => ({ ...prev, loading: true }));
+    
+    try {
+      const response = await fetch('/api/remix-cover-letter', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nutNote: resumeDialog.job,
+          activeCoverLetterIndex: resumeDialog.activeCoverLetterTab,
+          currentCoverLetterHtml: resumeDialog.coverLetterArray[resumeDialog.activeCoverLetterTab],
+          requestedChanges: remixDialog.changes
+        })
+      });
+      
+      if (response.ok) {
+        console.log('✅ Cover letter remix started');
+        closeRemixDialog();
+        // Dialog will be updated when hoard refreshes with new cover letter version
+      } else {
+        console.error('Failed to start cover letter remix');
+      }
+    } catch (error) {
+      console.error('Error starting cover letter remix:', error);
+    } finally {
+      setRemixDialog(prev => ({ ...prev, loading: false }));
+    }
+  };
+
+  const handleDoubleCheckCoverLetterClick = async () => {
+    if (resumeDialog.job && resumeDialog.activeCoverLetterTab !== undefined) {
+      try {
+        console.log(`✅ Double-checking cover letter version ${resumeDialog.activeCoverLetterTab + 1} for ${resumeDialog.job.company} - ${resumeDialog.job.jobTitle}`);
+        
+        const response = await fetch('/api/double-check-cover-letter', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            nutNote: resumeDialog.job,
+            coverLetterIndex: resumeDialog.activeCoverLetterTab
+          })
+        });
+        
+        if (response.ok) {
+          console.log('✅ Cover letter double-check completed successfully');
+        } else {
+          const error = await response.json();
+          console.error('Failed to double-check cover letter:', error.error);
+        }
+      } catch (error) {
+        console.error('Error double-checking cover letter:', error);
       }
     }
   };
@@ -849,42 +926,86 @@ function JobListings({ lastEvent }) {
                 Resume: {resumeDialog.jobTitle} at {resumeDialog.company}
               </h3>
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                <button
-                  onClick={handleRemixClick}
-                  style={{
-                    background: '#6f42c1',
-                    color: 'white',
-                    border: 'none',
-                    padding: '0.5rem 1rem',
-                    borderRadius: '5px',
-                    fontSize: '0.9rem',
-                    fontWeight: '500',
-                    cursor: 'pointer',
-                    transition: 'background-color 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#5a2d8c'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = '#6f42c1'}
-                >
-                  🎨 Remix
-                </button>
-                <button
-                  onClick={handleDoubleCheckClick}
-                  style={{
-                    background: '#fd7e14',
-                    color: 'white',
-                    border: 'none',
-                    padding: '0.5rem 1rem',
-                    borderRadius: '5px',
-                    fontSize: '0.9rem',
-                    fontWeight: '500',
-                    cursor: 'pointer',
-                    transition: 'background-color 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#e8690b'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = '#fd7e14'}
-                >
-                  ✅ Double Check
-                </button>
+                {resumeDialog.activeType === 'html' && (
+                  <>
+                    <button
+                      onClick={handleRemixClick}
+                      style={{
+                        background: '#6f42c1',
+                        color: 'white',
+                        border: 'none',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '5px',
+                        fontSize: '0.9rem',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#5a2d8c'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = '#6f42c1'}
+                    >
+                      🎨 Remix
+                    </button>
+                    <button
+                      onClick={handleDoubleCheckClick}
+                      style={{
+                        background: '#fd7e14',
+                        color: 'white',
+                        border: 'none',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '5px',
+                        fontSize: '0.9rem',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#e8690b'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = '#fd7e14'}
+                    >
+                      ✅ Double Check
+                    </button>
+                  </>
+                )}
+                {resumeDialog.activeType === 'coverLetter' && (
+                  <>
+                    <button
+                      onClick={handleRemixCoverLetterClick}
+                      style={{
+                        background: '#6f42c1',
+                        color: 'white',
+                        border: 'none',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '5px',
+                        fontSize: '0.9rem',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#5a2d8c'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = '#6f42c1'}
+                    >
+                      🎨 Remix
+                    </button>
+                    <button
+                      onClick={handleDoubleCheckCoverLetterClick}
+                      style={{
+                        background: '#fd7e14',
+                        color: 'white',
+                        border: 'none',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '5px',
+                        fontSize: '0.9rem',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#e8690b'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = '#fd7e14'}
+                    >
+                      ✅ Double Check
+                    </button>
+                  </>
+                )}
                 <div style={{ 
                   display: 'flex', 
                   alignItems: 'center', 
@@ -892,7 +1013,8 @@ function JobListings({ lastEvent }) {
                   padding: '0.25rem 0.5rem',
                   border: '1px solid #dee2e6',
                   borderRadius: '5px',
-                  backgroundColor: '#f8f9fa'
+                  backgroundColor: '#f8f9fa',
+                  opacity: resumeDialog.activeType === 'html' ? 1 : 0.5
                 }}>
                   <label style={{ 
                     fontSize: '0.8rem', 
@@ -909,29 +1031,42 @@ function JobListings({ lastEvent }) {
                     step="0.1"
                     min="0"
                     max="2"
+                    disabled={resumeDialog.activeType !== 'html'}
                     style={{
                       width: '60px',
                       padding: '0.25rem',
                       border: '1px solid #ced4da',
                       borderRadius: '3px',
-                      fontSize: '0.8rem'
+                      fontSize: '0.8rem',
+                      backgroundColor: resumeDialog.activeType === 'html' ? '#fff' : '#e9ecef',
+                      cursor: resumeDialog.activeType === 'html' ? 'text' : 'not-allowed'
                     }}
                   />
                   <button
-                    onClick={handleGeneratePDF}
+                    onClick={resumeDialog.activeType === 'html' ? handleGeneratePDF : undefined}
+                    disabled={resumeDialog.activeType !== 'html'}
                     style={{
-                      background: '#dc3545',
+                      background: resumeDialog.activeType === 'html' ? '#dc3545' : '#6c757d',
                       color: 'white',
                       border: 'none',
                       padding: '0.4rem 0.8rem',
                       borderRadius: '3px',
                       fontSize: '0.8rem',
                       fontWeight: '500',
-                      cursor: 'pointer',
+                      cursor: resumeDialog.activeType === 'html' ? 'pointer' : 'not-allowed',
                       transition: 'background-color 0.2s ease'
                     }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = '#c82333'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = '#dc3545'}
+                    onMouseEnter={(e) => {
+                      if (resumeDialog.activeType === 'html') {
+                        e.target.style.backgroundColor = '#c82333';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (resumeDialog.activeType === 'html') {
+                        e.target.style.backgroundColor = '#dc3545';
+                      }
+                    }}
+                    title={resumeDialog.activeType === 'html' ? 'Generate PDF from current resume' : 'PDF generation only available for resume tabs'}
                   >
                     📄 PDF
                   </button>
@@ -1367,7 +1502,7 @@ function JobListings({ lastEvent }) {
                 color: '#2c3e50',
                 fontSize: '1.3rem'
               }}>
-                🎨 Remix Resume
+                🎨 Remix {resumeDialog.activeType === 'coverLetter' ? 'Cover Letter' : 'Resume'}
               </h3>
               <button
                 onClick={closeRemixDialog}
@@ -1390,12 +1525,12 @@ function JobListings({ lastEvent }) {
                 fontWeight: '500',
                 color: '#495057'
               }}>
-                What changes would you like to make to this resume?
+                What changes would you like to make to this {resumeDialog.activeType === 'coverLetter' ? 'cover letter' : 'resume'}?
               </label>
               <textarea
                 value={remixDialog.changes}
                 onChange={(e) => setRemixDialog(prev => ({ ...prev, changes: e.target.value }))}
-                placeholder="Describe the changes you want to make to the resume..."
+                placeholder={`Describe the changes you want to make to the ${resumeDialog.activeType === 'coverLetter' ? 'cover letter' : 'resume'}...`}
                 style={{
                   width: '100%',
                   height: '120px',

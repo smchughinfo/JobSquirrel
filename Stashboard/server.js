@@ -7,7 +7,7 @@ const { JobQueue } = require('./services/jobQueue');
 const { eventBroadcaster } = require('./services/eventBroadcaster');
 const { getHoard, addOrUpdateNutNote, getIdentifier, deleteNutNote, deleteNuteNoteByIndex } = require('./services/hoard');
 const { getHoardPath, getResumeDataVectorStoreIdPath } = require('./services/jobSquirrelPaths');
-const { generateResume, generateCoverLetter, remixResumeAnthropic, UploadResumeData, doubleCheckResume } = require('./services/resumeGenerator');
+const { generateResume, generateCoverLetter, remixResumeAnthropic, remixCoverLetterAnthropic, UploadResumeData, doubleCheckResume, doubleCheckCoverLetterAnthropic } = require('./services/resumeGenerator');
 const { htmlToPdf } = require('./services/pdf');
 
 
@@ -194,6 +194,67 @@ app.post('/api/remix-resume', async (req, res) => {
         
     } catch (error) {
         console.error('❌ Resume remix failed:', error.message);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+});
+
+// Remix cover letter endpoint
+app.post('/api/remix-cover-letter', async (req, res) => {
+    try {
+        const { nutNote, activeCoverLetterIndex, currentCoverLetterHtml, requestedChanges } = req.body;
+        
+        if (!nutNote || currentCoverLetterHtml === undefined || !requestedChanges || activeCoverLetterIndex === undefined) {
+            return res.status(400).json({ 
+                error: 'Missing required parameters: nutNote, activeCoverLetterIndex, currentCoverLetterHtml, requestedChanges' 
+            });
+        }
+        
+        console.log(`🎨 Starting cover letter remix for ${nutNote.company} - ${nutNote.jobTitle}`);
+        console.log(`📝 Changes requested: ${requestedChanges}`);
+        console.log(`📊 Remixing cover letter version ${activeCoverLetterIndex + 1}`);
+        
+        // Call the actual remix function
+        await remixCoverLetterAnthropic(nutNote, requestedChanges, activeCoverLetterIndex);
+        
+        res.json({ 
+            success: true, 
+            message: 'Cover letter remix completed successfully'
+        });
+        
+    } catch (error) {
+        console.error('❌ Cover letter remix failed:', error.message);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+});
+
+// Double-check cover letter endpoint
+app.post('/api/double-check-cover-letter', async (req, res) => {
+    try {
+        const { nutNote, coverLetterIndex } = req.body;
+        
+        if (!nutNote || coverLetterIndex === undefined) {
+            return res.status(400).json({ 
+                error: 'Missing required parameters: nutNote, coverLetterIndex' 
+            });
+        }
+        
+        console.log(`✅ Starting double-check for cover letter version ${coverLetterIndex + 1} for ${nutNote.company} - ${nutNote.jobTitle}`);
+        
+        await doubleCheckCoverLetterAnthropic(nutNote, coverLetterIndex);
+        
+        res.json({ 
+            success: true, 
+            message: `Cover letter double-check completed for version ${coverLetterIndex + 1}`
+        });
+        
+    } catch (error) {
+        console.error('❌ Cover letter double-check failed:', error.message);
         res.status(500).json({ 
             success: false, 
             error: error.message 

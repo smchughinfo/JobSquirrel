@@ -85,7 +85,7 @@ async function doubleCheckResume(nutNote, resumeIndex) {
 
     let fixPrompt = `The resume at '${sessionData.workingResumePathWSL}' was supposed to be generated according to this guidelines file: '${resumeCustomInstructionsPath}'.\n\n`;
     fixPrompt += ` However the user has requested a review. Can you please double check that the resume is in compliance with the guidelines file.`;
-    fixPrompt += ` Save the new, compliant, resume to '${sessionData.doubleCheckedResumePath}'.`;
+    fixPrompt += ` Save the new, compliant, resume to '${sessionData.doubleCheckedResumePathWSL}'.`;
     fixPrompt += ` Use '${resumeDataDirectory}' to backfill or correct any information on the resume and '${resumePersonalInformationPath}' as your canonical source of contact information.`;
     fixPrompt += ` Upon completion save your current session id to a file by following these instructions: '${sessionData.sessionIdInstructionsPathWSL}'`;
 
@@ -101,32 +101,81 @@ async function doubleCheckResume(nutNote, resumeIndex) {
 
 async function generateCoverLetterAnthropic(nutNote) {
     let sessionData = generateSessionData();
-    nutNote.sessionData.push(sessionData);
+
+    fs.writeFileSync(sessionData.jobListingPath, nutNote.markdown);
 
     let resumeCustomInstructionsPath = getCustomResumeInstructions(true);
     let resumePersonalInformationPath = getResumePersonalInformation(true);
     let resumeDataDirectory = getResumeDataDirectory(true);
 
-    let prompt = `Use the provided files in '${resumeDataDirectory}' to generate a tailored cover letter for the job listing in ${nutNote.jobListingPath}.`;
+    let prompt = `Use the provided files in '${resumeDataDirectory}' to generate a tailored cover letter for the job listing in '${sessionData.jobListingPathWSL}'.`;
     prompt += ` Make sure to follow all instructions in '${resumeCustomInstructionsPath}' that are relevant for writing a cover letter.`;
     prompt += ` Use '${resumePersonalInformationPath}' as your canonical source for contact information.`;
     prompt += ` Save the cover letter to '${sessionData.coverLetterPathWSL}'`;
+    prompt += ` Upon completion save your current session id to a file by following these instructions: '${sessionData.sessionIdInstructionsPathWSL}'`;
 
     await AskClaude(prompt);
     let response = fs.readFileSync(sessionData.coverLetterPath).toString();
     
-    // Initialize coverLetter as array if it doesn't exist or append to existing array
-    if (!nutNote.coverLetter) {
-        nutNote.coverLetter = [];
-    } else if (!Array.isArray(nutNote.coverLetter)) {
-        // Convert string to array (for backwards compatibility)
-        nutNote.coverLetter = [nutNote.coverLetter];
-    }
-    
+    sessionData.sessionId = fs.readFileSync(sessionData.sessionIdPath).toString();
+
     nutNote.coverLetter.push(response);
     nutNote.sessionData.push(sessionData);
     addOrUpdateNutNote(nutNote);
     console.log("cover letter generated!");
+}
+
+async function remixCoverLetterAnthropic(nutNote, remixInstructions, remixIndex) {
+    let sessionData = generateSessionData();
+
+    fs.writeFileSync(sessionData.jobListingPath, nutNote.markdown);
+    fs.writeFileSync(sessionData.remixCoverLetterPath, nutNote.coverLetter[remixIndex]);
+    fs.writeFileSync(sessionData.remixCoverLetterInstructionsPath, remixInstructions);
+
+    let resumeCustomInstructionsPath = getCustomResumeInstructions(true);
+    let resumePersonalInformationPath = getResumePersonalInformation(true);
+    let resumeDataDirectory = getResumeDataDirectory(true);
+
+    let prompt = `Remix this cover letter '${sessionData.remixCoverLetterPathWSL}' according to these instructions: '${sessionData.remixCoverLetterInstructionsPathWSL}' for this job listing '${sessionData.jobListingPathWSL}'`;
+    prompt += ` Use the files in '${resumeDataDirectory}' as your source of information about the job candidate.`;
+    prompt += ` Make sure to follow all instructions in '${resumeCustomInstructionsPath}' that are relevant for writing a cover letter.`;
+    prompt += ` Use '${resumePersonalInformationPath}' as your canonical source for contact information.`;
+    prompt += ` Save the new, remixed, cover letter to '${sessionData.remixCoverLetterPathWSL}'.`;
+    prompt += ` Upon completion save your current session id to a file by following these instructions: '${sessionData.sessionIdInstructionsPathWSL}'`;
+
+    await AskClaude(prompt);
+    let response = fs.readFileSync(sessionData.remixCoverLetterPath).toString();
+    sessionData.sessionId = fs.readFileSync(sessionData.sessionIdPath).toString();
+
+    nutNote.coverLetter.push(response);
+    nutNote.sessionData.push(sessionData);
+    addOrUpdateNutNote(nutNote);
+    console.log("cover letter remixed!");
+}
+
+async function doubleCheckCoverLetterAnthropic(nutNote, coverLetterIndex) {
+    let sessionData = generateSessionData();
+
+    let resumeCustomInstructionsPath = getCustomResumeInstructions(true);
+    let resumePersonalInformationPath = getResumePersonalInformation(true);
+    let resumeDataDirectory = getResumeDataDirectory(true);
+
+    fs.writeFileSync(sessionData.coverLetterPath, nutNote.coverLetter[coverLetterIndex]);
+
+    let fixPrompt = `The cover letter at '${sessionData.coverLetterPathWSL}' was supposed to be generated according to this guidelines file: '${resumeCustomInstructionsPath}'.\\n\\n`;
+    fixPrompt += ` However the user has requested a review. Can you please double check that the cover letter is in compliance with the guidelines file.`;
+    fixPrompt += ` Save the new, compliant, cover letter to '${sessionData.doubleCheckedCoverLetterPathWSL}'.`;
+    fixPrompt += ` Use '${resumeDataDirectory}' to backfill or correct any information on the cover letter and '${resumePersonalInformationPath}' as your canonical source of contact information.`;
+    fixPrompt += ` Upon completion save your current session id to a file by following these instructions: '${sessionData.sessionIdInstructionsPathWSL}'`;
+
+    await AskClaude(fixPrompt);
+    let response = fs.readFileSync(sessionData.doubleCheckedCoverLetterPath).toString();
+    sessionData.sessionId = fs.readFileSync(sessionData.sessionIdPath).toString();
+
+    nutNote.coverLetter.push(response);
+    nutNote.sessionData.push(sessionData);
+    addOrUpdateNutNote(nutNote);
+    console.log("cover letter double checked!");
 }
 
 async function remixResumeAnthropic(nutNote, remixInstructions, remixIndex) {
@@ -134,28 +183,22 @@ async function remixResumeAnthropic(nutNote, remixInstructions, remixIndex) {
 
     fs.writeFileSync(sessionData.jobListingPath, nutNote.markdown);
     fs.writeFileSync(sessionData.remixResumePath, nutNote.html[remixIndex]);
-    fs.writeFileSync(sessionData.remixInstructionPath, remixInstructions);
+    fs.writeFileSync(sessionData.remixResumeInstructionsPath, remixInstructions);
 
     let resumeCustomInstructionsPath = getCustomResumeInstructions(true);
     let resumePersonalInformationPath = getResumePersonalInformation(true);
     let resumeDataDirectory = getResumeDataDirectory(true);
 
-    let prompt = `Remix this resume '${sessionData.remixResumePathWSL}' according to these instructions: '${remixInstructionPathWSL}' for this job listing '${sessionData.jobListingPathWSL}'`;
+    let prompt = `Remix this resume '${sessionData.remixResumePathWSL}' according to these instructions: '${sessionData.remixResumeInstructionsPathWSL}' for this job listing '${sessionData.jobListingPathWSL}'`;
     prompt += ` Use the files in '${resumeDataDirectory}' as your source of information about the job candidate.`;
     prompt += ` Make sure to follow all instructions in '${resumeCustomInstructionsPath}'.`;
     prompt += ` Use '${resumePersonalInformationPath}' as your canonical source for contact information.`;
+    prompt += ` Save the new, remixed, resume to '${sessionData.remixResumePathWSL}'.`;
+    prompt += ` Upon completion save your current session id to a file by following these instructions: '${sessionData.sessionIdInstructionsPathWSL}'`;
 
-    let response = await AskClaude(prompt);
-    response = response.substring(response.indexOf("<"));
-    response = response.substring(0, response.lastIndexOf(">") + 1);
-
-    // Initialize html as array if it doesn't exist or append to existing array
-    if (!nutNote.html) {
-        nutNote.html = [];
-    } else if (!Array.isArray(nutNote.html)) {
-        // Convert string to array (shouldn't happen per user's note, but safety check)
-        nutNote.html = [nutNote.html];
-    }
+    await AskClaude(prompt);
+    let response = fs.readFileSync(sessionData.remixResumePath).toString();
+    sessionData.sessionId = fs.readFileSync(sessionData.sessionIdPath).toString();
 
     // save the remixed resume
     nutNote.html.push(response);
@@ -180,6 +223,8 @@ module.exports = {
     generateResume,
     generateCoverLetter,
     remixResumeAnthropic,
-    UploadResumeData,
-    doubleCheckResume
+    remixCoverLetterAnthropic,
+    doubleCheckResume,
+    doubleCheckCoverLetterAnthropic,
+    UploadResumeData
 };

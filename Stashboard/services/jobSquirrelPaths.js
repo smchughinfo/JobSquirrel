@@ -23,11 +23,13 @@ function getSessionIdData(wsl) {
     let sessionIdInstructionsPath = path.join(sessionIdsDir, `save-session-id-${uid}-instructions.txt`);
     let workingResumePath = path.join(sessionIdsDir, `working-resume-${uid}.html`);
     let doubleCheckedResumePath = path.join(sessionIdsDir, `double-checked-resume-${uid}.html`);
+    let doubleCheckedCoverLetterPath = path.join(sessionIdsDir, `double-checked-cover-letter-${uid}.txt`);
     let coverLetterPath = path.join(sessionIdsDir, `cover-letter-${uid}.txt`);
     let jobListingPath = path.join(sessionIdsDir, `job-listing-${uid}.md`);
     let remixResumePath = path.join(sessionIdsDir, `remix-resume-${uid}.html`);
+    let remixCoverLetterPath = path.join(sessionIdsDir, `remix-cover-letter-${uid}.txt`);
     let remixResumeInstructionsPath = path.join(sessionIdsDir, `remix-resume-instructions-${uid}.txt`);
-
+    let remixCoverLetterInstructionsPath = path.join(sessionIdsDir, `remix-cover-letter-instructions-${uid}.txt`);
     if(wsl) {
         sessionIdPath = convertPathToWSL(sessionIdPath);
     }
@@ -40,13 +42,20 @@ function getSessionIdData(wsl) {
         workingResumePathWSL: convertPathToWSL(workingResumePath),
         coverLetterPath: coverLetterPath,
         doubleCheckedResumePath: doubleCheckedResumePath,
+        doubleCheckedResumePathWSL: convertPathToWSL(doubleCheckedResumePath),
+        doubleCheckedCoverLetterPath: doubleCheckedCoverLetterPath,
+        doubleCheckedCoverLetterPathWSL: convertPathToWSL(doubleCheckedCoverLetterPath),
         jobListingPath: jobListingPath,
         jobListingPathWSL: convertPathToWSL(jobListingPath),
         coverLetterPathWSL: convertPathToWSL(coverLetterPath),
         remixResumePath: remixResumePath,
         remixResumePathWSL: convertPathToWSL(remixResumePath),
+        remixCoverLetterPath: remixCoverLetterPath,
+        remixCoverLetterPathWSL: convertPathToWSL(remixCoverLetterPath),
         remixResumeInstructionsPath: remixResumeInstructionsPath,
-        remixResumeInstructionsPathWSL: convertPathToWSL(remixResumeInstructionsPath)
+        remixResumeInstructionsPathWSL: convertPathToWSL(remixResumeInstructionsPath),
+        remixCoverLetterInstructionsPath: remixCoverLetterInstructionsPath,
+        remixCoverLetterInstructionsPathWSL: convertPathToWSL(remixCoverLetterInstructionsPath)
     }
 }
 
