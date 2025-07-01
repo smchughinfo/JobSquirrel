@@ -924,6 +924,41 @@ function JobListings({ lastEvent }) {
                     }}>
                       {job.markdown}
                     </pre>
+                    
+                    {/* Job URL at bottom of details */}
+                    {job.url && job.url !== 'N/A' && (
+                      <div style={{
+                        marginTop: '1rem',
+                        paddingTop: '1rem',
+                        borderTop: '1px solid #dee2e6',
+                        fontSize: '0.8rem'
+                      }}>
+                        <div style={{
+                          color: '#666',
+                          marginBottom: '0.5rem',
+                          fontWeight: '500'
+                        }}>
+                          Original Job Posting:
+                        </div>
+                        <a
+                          href={job.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            color: '#8B4513',
+                            textDecoration: 'none',
+                            fontFamily: 'Monaco, Consolas, "Lucida Console", monospace',
+                            fontSize: '0.75rem',
+                            wordBreak: 'break-all',
+                            lineHeight: '1.4'
+                          }}
+                          onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
+                          onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
+                        >
+                          {job.url}
+                        </a>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

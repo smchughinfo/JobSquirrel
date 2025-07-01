@@ -11,6 +11,7 @@ remix-resume.html
 save-session-id-instructions.txt
 /SessionIds
 /Cache
+/Config
 /Stashboard/queue/errors
 
 .claude
