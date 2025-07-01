@@ -6,10 +6,10 @@
 
 **🚀 Complete Job Application Workflow**:
 ```
-Job Discovery → AI Processing → Multiple Resume Versions → Creative Remix → PDF Generation → Professional Output
+Job Discovery → AI Processing → Multiple Resume Versions → Creative Remix → Double Check → PDF Generation → Professional Output
 ```
 
-The system features a modern React-based web interface (Stashboard) with real-time streaming, tabbed resume management, revolutionary remix functionality, and professional PDF generation with customizable margins. All components share the squirrel/woodland theme and work together to automate the job application process while maintaining full user control and creative freedom.
+The system features a modern React-based web interface (Stashboard) with real-time streaming, tabbed resume management, revolutionary remix functionality, comprehensive double check system, and professional PDF generation with customizable margins. All components share the squirrel/woodland theme and work together to automate the job application process while maintaining full user control and creative freedom.
 
 ## System Architecture
 
@@ -19,7 +19,7 @@ JobSquirrel operates as a unified ecosystem with multiple input methods feeding 
 ```
 ┌─ Manual Capture (Scamper Browser Extension) ─┐
 │                                              ▼
-└─ Future: Automated Scraping ────────── Stashboard Web Interface ── Claude Processing ── Multiple Resume Versions ── Remix Feature ── PDF Generation ── Final Output
+└─ Future: Automated Scraping ────────── Stashboard Web Interface ── Claude Processing ── Multiple Resume Versions ── Remix Feature ── Double Check System ── PDF Generation ── Final Output
 ```
 
 ### Core Components
@@ -28,6 +28,7 @@ JobSquirrel operates as a unified ecosystem with multiple input methods feeding 
 - Real-time job hoard display with live updates
 - Tabbed resume management (HTML + PDF versions)
 - Revolutionary remix feature with natural language instructions
+- Comprehensive double check system for quality assurance
 - Live Claude output streaming with expandable content
 - Professional PDF generation with margin controls
 - Server-Sent Events (SSE) for real-time updates
@@ -41,6 +42,7 @@ JobSquirrel operates as a unified ecosystem with multiple input methods feeding 
 - Multiple resume versions per job (iterative improvements)
 - Real-time output streaming to web interface
 - Revolutionary remix functionality with natural language instructions
+- Universal double check system for any resume version
 - Configurable processing with custom instructions
 
 ## Revolutionary Features
@@ -83,6 +85,40 @@ JobSquirrel operates as a unified ecosystem with multiple input methods feeding 
 6. **UI Update**: New tab appears instantly with remixed content
 
 **Technical Innovation**: The remix feature demonstrates that AI can maintain technical accuracy while enabling unlimited creative expression - from conservative professional themes to wildly creative variations.
+
+### Revolutionary Double Check System 🔍
+**Universal Quality Assurance**: Comprehensive double check system enabling quality review of any resume version:
+
+**Key Innovations**:
+- **Universal Access**: Any resume version can be double checked, not just the latest
+- **Fresh Session Architecture**: Each double check operation gets unique session data
+- **Session Data Arrays**: Migrated from single session to array-based tracking: `nutNote.sessionData = []`
+- **Clean Session Management**: Each operation gets fresh session with unique file paths
+- **No Session Conflicts**: Fresh sessions eliminate Claude confusion and mixed signal issues
+
+**Technical Implementation**:
+```javascript
+// Double check with fresh session data
+async function doubleCheckResume(nutNote, resumeIndex) {
+    let sessionData = generateSessionData(); // Fresh session per operation
+    fs.writeFileSync(sessionData.workingResumePath, nutNote.html[resumeIndex]);
+    
+    let fixPrompt = `Review this resume for compliance with guidelines...`;
+    await AskClaude(fixPrompt);
+    
+    sessionData.sessionId = fs.readFileSync(sessionData.sessionIdPath).toString();
+    let response = fs.readFileSync(sessionData.doubleCheckedResumePath).toString();
+    
+    nutNote.html.push(response); // New version appended
+    nutNote.sessionData.push(sessionData); // Track session
+}
+```
+
+**User Experience Benefits**:
+- **Flexible Quality Control**: Review and improve any resume version in collection
+- **Iterative Refinement**: Build upon any previous version, enabling true creative iteration
+- **Predictable Behavior**: Clean, consistent session management across all operations
+- **Complete Operation History**: Session data arrays provide full audit trail
 
 ### Professional PDF Generation with Precision Controls
 **Advanced PDF System**: Implemented sophisticated PDF generation with pixel-perfect control:
@@ -161,10 +197,10 @@ function processQueue() {
 ### Current Simplified Structure
 ```
 /JobSquirrel/
-├── AcornDepot/Stashboard/          # Main web interface (React + Node.js)
+├── Stashboard/                     # Main web interface (React + Node.js)
 │   ├── src/                        # React frontend components
 │   │   ├── components/             # JobListings, EventMonitor, ClaudeAssistant
-│   │   │   ├── JobListings.jsx     # Job cards + multi-version resume + remix
+│   │   │   ├── JobListings.jsx     # Job cards + multi-version resume + remix + double check
 │   │   │   ├── EventMonitor.jsx    # Real-time system event display
 │   │   │   ├── ClaudeAssistant.jsx # Live Claude output streaming
 │   │   │   └── Header.jsx          # Squirrel-themed navigation
@@ -173,7 +209,7 @@ function processQueue() {
 │   ├── services/                   # Backend services and utilities
 │   │   ├── llm/anthropic.js        # Claude integration with streaming
 │   │   ├── pdf.js                  # PDF generation service
-│   │   ├── resumeGenerator.js      # Resume generation & remix logic
+│   │   ├── resumeGenerator.js      # Resume generation, remix & double check logic
 │   │   ├── hoard.js                # Job data management
 │   │   ├── eventBroadcaster.js     # Real-time event system
 │   │   └── jobSquirrelPaths.js     # Centralized path management
@@ -191,6 +227,11 @@ function processQueue() {
 │   └── certifications/             # Professional certifications
 ├── GeneratedResumes/               # Final PDF and resume outputs
 │   └── [Clean filename format: "Sean McHugh - Resume For [Job] - [Company].pdf"]
+├── SessionIdS/                     # Session tracking and temp files
+│   ├── working-resume-[uid].html   # Resume generation temp files
+│   ├── double-checked-resume-[uid].html # Double check output files
+│   ├── session-id-[uid].txt        # Claude session tracking
+│   └── cover-letter-[uid].txt      # Cover letter temp files
 ├── Cache/                          # Temporary processing files
 │   ├── job-listing.md              # Current job being processed
 │   ├── remix-resume.html           # Resume being remixed
@@ -229,14 +270,21 @@ function processQueue() {
 - **Technical Accuracy Maintained**: AI preserves job relevance while enabling creative expression
 - **Iterative Process**: Build upon previous versions without file conflicts or management overhead
 
-### 5. **Professional PDF Creation**: Precision output generation
+### 5. **Quality Assurance**: The Double Check System ✅
+- **"✅ Double Check" button**: Available on any resume version
+- **Universal Review**: Any resume can be reviewed and improved, not just the latest
+- **Fresh Session Processing**: Each double check gets unique session data for clean separation
+- **Guidelines Compliance**: Reviews resume against custom instructions for quality assurance
+- **Version Creation**: Creates new improved version while preserving original
+
+### 6. **Professional PDF Creation**: Precision output generation
 - **Customizable Margins**: 0-2 inch margin control with 0.1-inch precision
 - **One-Click Generation**: Instant PDF creation from any resume version
 - **Clean Naming**: Professional filename format ready for HR submission
 - **Instant Preview**: PDF opens in new tab for immediate review
 - **Automatic Management**: File overwriting prevents version clutter
 
-### 6. **Complete Real-time Monitoring**: Full transparency
+### 7. **Complete Real-time Monitoring**: Full transparency
 - **Claude Output Panel**: Live streaming of AI reasoning and generation process
 - **Event Monitor**: System-wide operation tracking with timestamped events
 - **Expandable Content**: Click to view full responses and detailed information
@@ -279,6 +327,7 @@ const result = execSync(command, { encoding: 'utf8', timeout: 600000 });
 - Real-time job card display with hover effects
 - Multi-version resume management with tabbed interface
 - Revolutionary remix dialog with natural language input
+- Universal double check system for quality assurance
 - PDF generation controls with margin precision
 - Interactive job controls (collapse, delete, links)
 
@@ -316,6 +365,7 @@ getGeneratedResumesDirectory(wsl = false)
 getJobListingMDPath(wsl = false)
 getRemixResumePath(wsl = false)
 getRemixResumeInstructionsPath(wsl = false)
+getSessionIdData(wsl = false) // Session management
 
 // Automatic Windows → WSL path conversion
 convertPathToWSL(windowsPath)
@@ -339,25 +389,28 @@ All code uses consistent squirrel/woodland-themed language throughout the ecosys
 - **Job Hoard** - Collection of captured job postings
 - **Nut Note** - Individual job data structure
 - **Remix** - Creative resume modification feature
+- **Double Check** - Quality assurance feature
 
 **File & Directory Names**:
 - `hoard.json` - Main job storage file with HTML arrays
 - `jobSquirrelPaths.js` - Centralized path management
 - `remix-resume.html` - Current resume being modified
 - `remix-instructions.txt` - User's creative instructions
+- `SessionIdS/` - Session tracking directory
 
 **UI Elements**:
 - 🐿️ Squirrel emoji for main system operations
 - 🌰 Acorn emoji for job processing operations  
 - 🥜 Nut emoji for stored data and cache operations
 - 🎨 Artist palette emoji for remix functionality
+- ✅ Check mark emoji for double check system
 - Brown/orange/woodland color scheme throughout interface
 
 This consistent theming makes the codebase memorable, fun to work with, and maintains a cohesive identity while providing professional functionality.
 
-## Recent Major Improvements (December 2024)
+## Recent Major Improvements (January 2025)
 
-### Revolutionary Double Check System Implementation (January 2025)
+### Revolutionary Double Check System Implementation
 **Game-Changing Resume Quality Assurance**: Implemented a comprehensive double check system that enables quality review of any resume version:
 
 **Technical Achievement**:
@@ -372,24 +425,6 @@ This consistent theming makes the codebase memorable, fun to work with, and main
 - **Clean Session Management**: Each operation (generate, double check, remix) gets fresh session data with unique file paths
 - **Universal Double Check**: Users can now review and improve any resume version in their collection
 - **No Session Conflicts**: Fresh sessions eliminate Claude confusion and mixed signal issues
-
-**Technical Implementation**:
-```javascript
-// Double check with fresh session data
-async function doubleCheckResume(nutNote, resumeIndex) {
-    let sessionData = generateSessionData(); // Fresh session per operation
-    fs.writeFileSync(sessionData.workingResumePath, nutNote.html[resumeIndex]);
-    
-    let fixPrompt = `Review this resume for compliance with guidelines...`;
-    await AskClaude(fixPrompt);
-    
-    sessionData.sessionId = fs.readFileSync(sessionData.sessionIdPath).toString();
-    let response = fs.readFileSync(sessionData.doubleCheckedResumePath).toString();
-    
-    nutNote.html.push(response); // New version appended
-    nutNote.sessionData.push(sessionData); // Track session
-}
-```
 
 **User Experience Benefits**:
 - **Quality Assurance**: Any resume can be reviewed and improved
@@ -415,6 +450,23 @@ onMouseLeave={(e) => {
     }
 }}
 ```
+
+### Claude Streaming Implementation
+**Real-time AI Transparency**: Implemented comprehensive file-watching streaming architecture for real-time Claude output:
+
+**Essential Changes Made**:
+- **`services/llm/anthropic.js`**: Complete file-watching streaming implementation with cross-platform support
+- **`server.js`**: Added `/api/test-claude-stream` endpoint for testing streaming functionality
+- **`components/Header.jsx`**: Added Claude streaming test button for development and debugging
+- **`App.css`**: Styling for Claude test interface elements
+
+**Technical Features**:
+- **File-watching Architecture**: Real-time JSON parsing of Claude output files
+- **Cross-platform Support**: Windows/WSL compatibility with proper path handling
+- **Event Broadcasting**: Streaming callbacks for immediate browser updates
+- **Error Handling**: Comprehensive error management and response formatting
+
+**Result**: Complete transparency into Claude's reasoning process with zero data loss and real-time updates.
 
 ### Revolutionary Remix Feature Implementation
 **Game-Changing Creative Freedom**: Implemented the most innovative feature in JobSquirrel - natural language resume modification:
@@ -443,27 +495,6 @@ onMouseLeave={(e) => {
 
 **Real-time Synchronization Breakthrough**: Solved complex file watching and event broadcasting challenges to ensure UI stays perfectly synchronized with backend changes.
 
-### Claude Integration Streaming Revolution
-**Transparent AI Processing**: Implemented comprehensive real-time streaming of Claude's reasoning process:
-
-**Streaming Components**:
-- **Individual Response Lines**: Real-time display of Claude's step-by-step thinking process
-- **Expandable Content Cards**: Smart truncation with click-to-expand for responses >200 characters
-- **Session Tracking**: Automatic display of Claude session IDs and processing status
-- **Performance Monitoring**: Live request timing, API costs, and completion statistics
-
-**Technical Breakthrough**: Solved React state batching issues with event queue mechanism, enabling perfect capture of high-frequency Claude output streams without data loss.
-
-### Professional PDF Generation System
-**Enterprise-Grade Output**: Implemented sophisticated PDF generation with precision controls:
-
-**Advanced Features**:
-- **Puppeteer Engine**: Consistent, high-quality PDF rendering from HTML
-- **Precision Margin Controls**: 0-2 inch margins with 0.1-inch increments
-- **Professional File Management**: Clean naming conventions ready for HR submission
-- **Instant Preview**: New tab PDF display with immediate feedback
-- **Version Integration**: PDF generation from any resume version in the tabbed interface
-
 ## Current System State: Modern & Professional 🚀
 
 JobSquirrel has successfully evolved into a sophisticated, cohesive system that demonstrates the perfect balance of professional capability and creative freedom:
@@ -472,6 +503,7 @@ JobSquirrel has successfully evolved into a sophisticated, cohesive system that 
 - ✅ **Modern React-based Interface**: Professional UI with real-time everything
 - ✅ **Multi-Version Resume Management**: Revolutionary approach to resume iteration
 - ✅ **Remix Feature**: Natural language modifications from professional to wildly creative
+- ✅ **Universal Double Check System**: Quality assurance for any resume version
 - ✅ **Professional PDF Generation**: Enterprise-quality output with precision controls
 - ✅ **Real-time Streaming**: Complete transparency into Claude's AI reasoning process
 - ✅ **Zero Manual File Management**: System handles all organization automatically
@@ -498,7 +530,7 @@ JobSquirrel has successfully evolved into a sophisticated, cohesive system that 
 ### Quick Start
 ```bash
 # Launch Stashboard
-cd AcornDepot/Stashboard
+cd Stashboard
 npm install
 npm run build
 node server.js

@@ -1,1 +1,0 @@
-delete HelperScripts/clipboard.html

@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/AcornDepot/Scamper/Scamper.sln",
+                "${workspaceFolder}/Scamper/Scamper.sln",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
@@ -19,7 +19,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/AcornDepot/Scamper/Scamper.sln",
+                "${workspaceFolder}/Scamper/Scamper.sln",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
@@ -33,7 +33,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/AcornDepot/Scamper/Scamper.sln"
+                "${workspaceFolder}/Scamper/Scamper.sln"
             ],
             "problemMatcher": "$msCompile"
         },
@@ -43,7 +43,7 @@
             "command": "npm",
             "args": ["install"],
             "options": {
-                "cwd": "${workspaceFolder}\\AcornDepot\\Stashboard"
+                "cwd": "${workspaceFolder}\\Stashboard"
             },
             "group": "build",
             "presentation": {
@@ -62,7 +62,7 @@
             "command": "npm",
             "args": ["run", "build"],
             "options": {
-                "cwd": "${workspaceFolder}\\AcornDepot\\Stashboard"
+                "cwd": "${workspaceFolder}\\Stashboard"
             },
             "group": "build",
             "presentation": {

@@ -11,16 +11,16 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}\\AcornDepot\\Stashboard\\server.js",
+            "program": "${workspaceFolder}\\Stashboard\\server.js",
             "preLaunchTask": "build-stashboard-frontend"
         },
         {
             "name": "Build Stashboard Frontend",
             "type": "node",
             "request": "launch",
-            "program": "${workspaceFolder}\\AcornDepot\\Stashboard\\node_modules\\npm\\bin\\npm-cli.js",
+            "program": "${workspaceFolder}\\Stashboard\\node_modules\\npm\\bin\\npm-cli.js",
             "args": ["run", "build"],
-            "cwd": "${workspaceFolder}\\AcornDepot\\Stashboard",
+            "cwd": "${workspaceFolder}\\Stashboard",
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen"
         }

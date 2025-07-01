@@ -1,3 +1,0 @@
-For the resume and cover letter that you just created substitute all instances of things like "available upon request" with the job seekers actual information, which you can find in /personal-information.txt.
-
-Then delete all other instances of things like "available upon request".
