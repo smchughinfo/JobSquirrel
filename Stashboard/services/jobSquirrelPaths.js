@@ -9,95 +9,11 @@ function getJobSquirrelRootDirectory(wsl = false) {
     return rootDir;
 }
 
-function getAcornDepotDirectory(wsl) {
-    let rootDir = getJobSquirrelRootDirectory();
-    let adDir = path.join(rootDir, "AcornDepot");
-    if(wsl) {
-        adDir = convertPathToWSL(adDir);
-    }
-    return adDir;
-}
-
-function getResumeDataDirectory(wsl) {
-    let rootDir = getJobSquirrelRootDirectory();
-    let adDir = path.join(rootDir, "ResumeData");
-    if(wsl) {
-        adDir = convertPathToWSL(adDir);
-    }
-    return adDir;
-}
-
-function getHoardPath(wsl) {
-    let adDir = getAcornDepotDirectory();
-    let hoardPath = path.join(adDir, "Stashboard", "hoard.json");
-    if(wsl) {
-        hoardPath = convertPathToWSL(hoardPath);
-    }
-    return hoardPath;
-}
-
-function getResumeDataVectorStoreIdPath(wsl) {
-    let adDir = getAcornDepotDirectory();
-    let vectorStoreIdPath = path.join(adDir, "Stashboard", "resume-data-vector-store-id.txt");
-    if(wsl) {
-        vectorStoreIdPath = convertPathToWSL(vectorStoreIdPath);
-    }
-    return vectorStoreIdPath;
-}
-
-function getCustomResumeInstructions(wsl) {
-    let rootDir = getJobSquirrelRootDirectory();
-    let adDir = path.join(rootDir, "custom-resume-instructions.txt");
-    if(wsl) {
-        adDir = convertPathToWSL(adDir);
-    }
-    return adDir;
-}
-
-function getResumePersonalInformation(wsl) {
-    let rootDir = getJobSquirrelRootDirectory();
-    let adDir = path.join(rootDir, "personal-information.txt");
-    if(wsl) {
-        adDir = convertPathToWSL(adDir);
-    }
-    return adDir;
-}
-
-function getTempHtmlToPDFPath(wsl) {
-    let rootDir = getJobSquirrelRootDirectory();
-    let adDir = path.join(rootDir, "tmp-html-to-pdf.html");
-    if(wsl) {
-        adDir = convertPathToWSL(adDir);
-    }
-    return adDir;
-}
-
-function getJobListingMDPath(wsl) {
-    let adDir = getAcornDepotDirectory();
-    let hoardPath = path.join(adDir, "Stashboard", "job-listing.md");
-    if(wsl) {
-        hoardPath = convertPathToWSL(hoardPath);
-    }
-    return hoardPath;
-}
-
-function getRemixResumePath(wsl) {
-    let adDir = getAcornDepotDirectory();
-    let hoardPath = path.join(adDir, "Stashboard", "remix-resume.html");
-    if(wsl) {
-        hoardPath = convertPathToWSL(hoardPath);
-    }
-    return hoardPath;
-}
-
-function getSaveSessionIdInstructionsTemplatePath(wsl) {
-    let rootDir = getJobSquirrelRootDirectory();
-    let saveSessionIdPath = path.join(rootDir, `save-session-id-instructions-template.txt`);
-    if(wsl) {
-        saveSessionIdPath = convertPathToWSL(saveSessionIdPath);
-    }
-    return saveSessionIdPath;
-}
+let getHoardPath = (wsl) => getJobSquirrelPath(wsl, ["Stashboard", "hoard.json"]);
+let getResumeDataDirectory = (wsl) => getJobSquirrelPath(wsl, ["Config", "ResumeData"]);
+let getCustomResumeInstructions = (wsl) => getJobSquirrelPath(wsl, ["Config", "custom-resume-instructions.txt"]);
+let getResumePersonalInformation = (wsl) => getJobSquirrelPath(wsl, ["Config", "personal-information.txt"]);
+let getSaveSessionIdInstructionsTemplatePath = (wsl) => getJobSquirrelPath(wsl, ["ScriptsForClaude", "save-session-id-instructions-template.txt"]);
 
 function getSessionIdData(wsl) {
     let rootDir = getJobSquirrelRootDirectory();
@@ -108,6 +24,9 @@ function getSessionIdData(wsl) {
     let workingResumePath = path.join(sessionIdsDir, `working-resume-${uid}.html`);
     let doubleCheckedResumePath = path.join(sessionIdsDir, `double-checked-resume-${uid}.html`);
     let coverLetterPath = path.join(sessionIdsDir, `cover-letter-${uid}.txt`);
+    let jobListingPath = path.join(rootDir, "Stashboard", `job-listing-${uid}.md`);
+    let remixResumePath = path.join(rootDir, "Stashboard", `remix-resume-${uid}.html`);
+    let remixResumeInstructionsPath = path.join(rootDir, "Stashboard", `remix-resume-instructions-${uid}'.txt`);
 
     if(wsl) {
         sessionIdPath = convertPathToWSL(sessionIdPath);
@@ -121,35 +40,50 @@ function getSessionIdData(wsl) {
         workingResumePathWSL: convertPathToWSL(workingResumePath),
         coverLetterPath: coverLetterPath,
         doubleCheckedResumePath: doubleCheckedResumePath,
-        coverLetterPathWSL: convertPathToWSL(coverLetterPath)
+        jobListingPath: jobListingPath,
+        jobListingPathWSL: convertPathToWSL(jobListingPath),
+        coverLetterPathWSL: convertPathToWSL(coverLetterPath),
+        remixResumePath: remixResumePath,
+        remixResumePathWSL: convertPathToWSL(remixResumePath),
+        remixResumeInstructionsPath: remixResumeInstructionsPath,
+        remixResumeInstructionsPathWSL: convertPathToWSL(remixResumeInstructionsPath)
     }
-}
-
-function getRemixResumeInstructionsPath(wsl) {
-    let adDir = getAcornDepotDirectory();
-    let hoardPath = path.join(adDir, "Stashboard", "remix-resume-instructions.txt");
-    if(wsl) {
-        hoardPath = convertPathToWSL(hoardPath);
-    }
-    return hoardPath;
 }
 
 function convertPathToWSL(windowPath) {
     return windowPath.replace(/\\/g, '/').replace(/^([A-Z]):/, (match, drive) => `/mnt/${drive.toLowerCase()}`);
 }
 
+function getJobSquirrelPath(wsl, pathArray) {
+    let rootDir = getJobSquirrelRootDirectory();
+    let fullPath = path.join(rootDir, ...pathArray); 
+    if(wsl) {
+        fullPath = convertPathToWSL(fullPath);
+    }
+    return fullPath;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+/////// PERHAPS DEPRECATED //////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// for OpenAI resume generation. reason for possible deprecation is claude code does a better job at generating resumes, at least with the way this application is written
+function getResumeDataVectorStoreIdPath(wsl) {
+    let rootDir = getJobSquirrelRootDirectory();
+    let vectorStoreIdPath = path.join(rootDir, "Stashboard", "resume-data-vector-store-id.txt");
+    if(wsl) {
+        vectorStoreIdPath = convertPathToWSL(vectorStoreIdPath);
+    }
+    return vectorStoreIdPath;
+}
+
 module.exports = {
     getJobSquirrelRootDirectory,
-    getAcornDepotDirectory,
     getHoardPath,
     getResumeDataDirectory,
     getResumeDataVectorStoreIdPath,
     getCustomResumeInstructions,
     getResumePersonalInformation,
-    getTempHtmlToPDFPath,
-    getJobListingMDPath,
-    getRemixResumePath,
-    getRemixResumeInstructionsPath,
     getSaveSessionIdInstructionsTemplatePath,
     getSessionIdData,
     convertPathToWSL
