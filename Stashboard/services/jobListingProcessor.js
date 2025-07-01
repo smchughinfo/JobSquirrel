@@ -35,38 +35,18 @@ const schema = z.object({
 function getUrl(rawJobListing, company, jobTitle) {
     let url = getInnerText(rawJobListing, "[data-job-squirrel-reference='url']");
     
-    // Check if URL contains IDs using regex patterns
+    // Check if URL contains IDs using regex patterns (only check for IDs, not job paths)
     const hasNumericId = /\d{3,}/.test(url); // 3+ consecutive digits
     const hasUuid = /[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i.test(url); // UUID pattern
     const hasHexId = /[a-f0-9]{6,}/i.test(url); // 6+ character hex strings
-    const isJobUrl = /\/(job|career|posting|position)s?\//i.test(url); // Contains job-related path
     
-    // If URL looks like it has an ID or is a proper job URL, use it
-    if ((hasNumericId || hasUuid || hasHexId || isJobUrl) && url && url !== 'N/A' && url.startsWith('http')) {
+    // If URL looks like it has an ID, use it
+    if ((hasNumericId || hasUuid || hasHexId) && url && url !== 'N/A' && url.startsWith('http')) {
         return url;
     } else {
-        // Extract domain name for Google search
-        let domainName = '';
-        if (url && url !== 'N/A' && url.includes('.')) {
-            try {
-                // Extract just the domain (handle both full URLs and partial domains)
-                if (url.startsWith('http')) {
-                    const urlObj = new URL(url);
-                    domainName = urlObj.hostname;
-                } else {
-                    // Handle cases like "company.com" or "www.company.com/careers"
-                    domainName = url.split('/')[0].replace(/^www\./, '');
-                }
-            } catch (error) {
-                // If URL parsing fails, try simple regex extraction
-                const domainMatch = url.match(/(?:https?:\/\/)?(?:www\.)?([^\/\s]+)/);
-                domainName = domainMatch ? domainMatch[1] : '';
-            }
-        }
-        
-        // Create Google search query with domain (if we have one)
-        const searchTerms = domainName ? 
-            `site:${domainName} ${company} ${jobTitle} job` : 
+        // Dump the whole URL into Google search and let them figure it out
+        const searchTerms = url && url !== 'N/A' ? 
+            `${url} ${company} ${jobTitle}` : 
             `${company} ${jobTitle} job`;
         const searchQuery = encodeURIComponent(searchTerms);
         return `https://www.google.com/search?q=${searchQuery}`;

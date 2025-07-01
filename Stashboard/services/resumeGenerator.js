@@ -4,6 +4,7 @@ const { execSync } = require('child_process');
 const { AskAssistant, CreateVectorStore } = require('./llm/openai');
 const { AskClaude } = require('./llm/anthropic');
 const { eventBroadcaster } = require('./eventBroadcaster');
+const { embedHiddenText } = require('./htmlUtilities');
 const { getResumeDataDirectory, getCustomResumeInstructions, getResumePersonalInformation, getSaveSessionIdInstructionsTemplatePath, getSessionIdData, getJobSquirrelRootDirectory, convertPathToWSL } = require('./jobSquirrelPaths');
 const { addOrUpdateNutNote } = require('./hoard');
 
@@ -61,13 +62,7 @@ async function generateResumeAnthropic(nutNote) {
     sessionData.sessionId = fs.readFileSync(sessionData.sessionIdPath).toString();
     nutNote.sessionData.push(sessionData);
 
-    // Initialize html as array if it doesn't exist or append to existing array
-    if (!nutNote.html) {
-        nutNote.html = [];
-    } else if (!Array.isArray(nutNote.html)) {
-        // Convert string to array (shouldn't happen per user's note, but safety check)
-        nutNote.html = [nutNote.html];
-    }
+    response = embedHiddenText(response, "Job Listing used by JobSquirrel to tailor resume: " + nutNote.markdown);
 
     // save the resume now so it's available in the ui while we are waiting on the cover letter
     nutNote.html.push(response);
@@ -93,6 +88,8 @@ async function doubleCheckResume(nutNote, resumeIndex) {
     await AskClaude(fixPrompt);
     let response = fs.readFileSync(sessionData.doubleCheckedResumePath).toString();
     sessionData.sessionId = fs.readFileSync(sessionData.sessionIdPath).toString();
+
+    response = embedHiddenText(response, "Job Listing used by JobSquirrel to tailor resume: " + nutNote.markdown);
 
     nutNote.html.push(response);
     nutNote.sessionData.push(sessionData);
@@ -200,6 +197,8 @@ async function remixResumeAnthropic(nutNote, remixInstructions, remixIndex) {
     await AskClaude(prompt);
     let response = fs.readFileSync(sessionData.remixResumePath).toString();
     sessionData.sessionId = fs.readFileSync(sessionData.sessionIdPath).toString();
+
+    response = embedHiddenText(response, "Job Listing used by JobSquirrel to tailor resume: " + nutNote.markdown);
 
     // save the remixed resume
     nutNote.html.push(response);

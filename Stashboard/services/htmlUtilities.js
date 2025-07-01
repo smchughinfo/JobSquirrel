@@ -26,7 +26,34 @@ function getInnerTextFromFile(htmlFilePath, selector, removeStyleAndScripts = tr
     return getInnerText(html, selector, removeStyleAndScripts);
 }
 
+function embedHiddenText(htmlDocument, textToInject) {
+    const $ = cheerio.load(htmlDocument);
+    
+    // Create hidden div with invisible text
+    const hiddenDiv = $('<div>');
+    
+    // Set the style attribute properly
+    hiddenDiv.attr('style', 'color:red');
+    
+    // Add the text to inject (escaped for safety)
+    hiddenDiv.text(textToInject);
+    
+    // Inject at the end of body, or create body if it doesn't exist
+    if ($('body').length > 0) {
+        $('body').append(hiddenDiv);
+    } else {
+        // If no body tag, wrap content and add hidden div
+        const bodyContent = $.html();
+        $.root().empty();
+        $.root().append(`<html><body>${bodyContent}</body></html>`);
+        $('body').append(hiddenDiv);
+    }
+    
+    return $.html();
+}
+
 module.exports = {
     getInnerText,
-    getInnerTextFromFile
+    getInnerTextFromFile,
+    embedHiddenText
 };

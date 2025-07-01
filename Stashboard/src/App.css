@@ -139,8 +139,7 @@ header {
     border-radius: 12px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     width: 90%;
-    max-width: 600px;
-    max-height: 80vh;
+    max-height: 100vh;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -188,7 +187,7 @@ header {
 
 .config-textarea {
     width: 100%;
-    height: 400px;
+    height: 750px;
     min-height: 300px;
     border: 2px solid rgba(139, 69, 19, 0.2);
     border-radius: 8px;
