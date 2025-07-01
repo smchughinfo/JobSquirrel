@@ -5,7 +5,7 @@ function JobListings({ lastEvent }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedMarkdown, setExpandedMarkdown] = useState(new Set());
-  const [resumeDialog, setResumeDialog] = useState({ open: false, htmlArray: [], pdfPath: null, coverLetter: null, activeTab: 0, activeType: 'html', jobTitle: '', company: '', job: null });
+  const [resumeDialog, setResumeDialog] = useState({ open: false, htmlArray: [], pdfPath: null, coverLetterArray: [], activeTab: 0, activeType: 'html', activeCoverLetterTab: 0, jobTitle: '', company: '', job: null });
   const [remixDialog, setRemixDialog] = useState({ open: false, changes: '', loading: false });
   const [deleteConfirmDialog, setDeleteConfirmDialog] = useState({ open: false, resumeIndex: null });
   const [marginInches, setMarginInches] = useState(0);
@@ -66,10 +66,12 @@ function JobListings({ lastEvent }) {
           ...prev,
           htmlArray: updatedJob.html,
           pdfPath: updatedJob.pdfPath || prev.pdfPath, // Update PDF path if available
-          coverLetter: updatedJob.coverLetter || prev.coverLetter, // Update cover letter if available
+          coverLetterArray: Array.isArray(updatedJob.coverLetter) ? updatedJob.coverLetter : (updatedJob.coverLetter ? [updatedJob.coverLetter] : prev.coverLetterArray), // Update cover letter array
           job: updatedJob,
           // If new resume was added, switch to it
-          activeTab: updatedJob.html.length > prev.htmlArray.length ? updatedJob.html.length - 1 : prev.activeTab
+          activeTab: updatedJob.html.length > prev.htmlArray.length ? updatedJob.html.length - 1 : prev.activeTab,
+          // If new cover letter was added, switch to it
+          activeCoverLetterTab: Array.isArray(updatedJob.coverLetter) && updatedJob.coverLetter.length > (prev.coverLetterArray?.length || 0) ? updatedJob.coverLetter.length - 1 : prev.activeCoverLetterTab
         }));
       }
     }
@@ -197,8 +199,9 @@ function JobListings({ lastEvent }) {
         open: true,
         htmlArray: job.html,
         pdfPath: job.pdfPath || null, // Load existing PDF path if available
-        coverLetter: job.coverLetter || null, // Load existing cover letter if available
+        coverLetterArray: Array.isArray(job.coverLetter) ? job.coverLetter : (job.coverLetter ? [job.coverLetter] : []), // Convert to array format
         activeTab: job.html.length - 1, // Default to newest resume
+        activeCoverLetterTab: Array.isArray(job.coverLetter) && job.coverLetter.length > 0 ? job.coverLetter.length - 1 : 0, // Default to newest cover letter
         activeType: job.pdfPath ? 'pdf' : 'html', // Default to PDF if available, otherwise HTML
         jobTitle: job.jobTitle || 'N/A',
         company: job.company || 'N/A',
@@ -288,7 +291,8 @@ function JobListings({ lastEvent }) {
   const setActiveTab = (tabIndex, type = null) => {
     setResumeDialog(prev => ({ 
       ...prev, 
-      activeTab: tabIndex, 
+      activeTab: type === 'coverLetter' ? prev.activeTab : tabIndex, // Keep resume tab unchanged if switching to cover letter
+      activeCoverLetterTab: type === 'coverLetter' ? tabIndex : prev.activeCoverLetterTab, // Set cover letter tab if type is coverLetter
       activeType: type || prev.activeType 
     }));
   };
@@ -846,24 +850,6 @@ function JobListings({ lastEvent }) {
               </h3>
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                 <button
-                  onClick={handleRegenerateResume}
-                  style={{
-                    background: '#28a745',
-                    color: 'white',
-                    border: 'none',
-                    padding: '0.5rem 1rem',
-                    borderRadius: '5px',
-                    fontSize: '0.9rem',
-                    fontWeight: '500',
-                    cursor: 'pointer',
-                    transition: 'background-color 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#218838'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = '#28a745'}
-                >
-                  🔄 Generate
-                </button>
-                <button
                   onClick={handleRemixClick}
                   style={{
                     background: '#6f42c1',
@@ -1087,15 +1073,53 @@ function JobListings({ lastEvent }) {
                   </button>
                 )}
                 
-                {/* Cover Letter tab */}
+                {/* Cover Letter tabs */}
+                {resumeDialog.coverLetterArray && resumeDialog.coverLetterArray.length > 0 && (
+                  resumeDialog.coverLetterArray.map((_, index) => (
+                    <button
+                      key={`coverLetter-${index}`}
+                      onClick={() => setActiveTab(index, 'coverLetter')}
+                      style={{
+                        background: (resumeDialog.activeType === 'coverLetter' && resumeDialog.activeCoverLetterTab === index) ? '#28a745' : 'transparent',
+                        color: (resumeDialog.activeType === 'coverLetter' && resumeDialog.activeCoverLetterTab === index) ? 'white' : '#28a745',
+                        border: '1px solid #28a745',
+                        borderBottom: (resumeDialog.activeType === 'coverLetter' && resumeDialog.activeCoverLetterTab === index) ? '1px solid #28a745' : '1px solid #dee2e6',
+                        borderBottomLeftRadius: '0',
+                        borderBottomRightRadius: '0',
+                        borderTopLeftRadius: '5px',
+                        borderTopRightRadius: '5px',
+                        padding: '0.5rem 1rem',
+                        fontSize: '0.9rem',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        marginBottom: '-1px'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!(resumeDialog.activeType === 'coverLetter' && resumeDialog.activeCoverLetterTab === index)) {
+                          e.target.style.backgroundColor = '#f8f9fa';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!(resumeDialog.activeType === 'coverLetter' && resumeDialog.activeCoverLetterTab === index)) {
+                          e.target.style.backgroundColor = 'transparent';
+                        }
+                      }}
+                    >
+                      💌 Cover Letter {index + 1}
+                    </button>
+                  ))
+                )}
+                
+                {/* Generate tab - always present */}
                 <button
-                  key="coverLetter"
-                  onClick={() => setActiveTab(0, 'coverLetter')}
+                  key="generate"
+                  onClick={() => setActiveTab(0, 'generate')}
                   style={{
-                    background: (resumeDialog.activeType === 'coverLetter') ? '#28a745' : 'transparent',
-                    color: (resumeDialog.activeType === 'coverLetter') ? 'white' : '#28a745',
-                    border: '1px solid #28a745',
-                    borderBottom: (resumeDialog.activeType === 'coverLetter') ? '1px solid #28a745' : '1px solid #dee2e6',
+                    background: (resumeDialog.activeType === 'generate') ? '#007bff' : 'transparent',
+                    color: (resumeDialog.activeType === 'generate') ? 'white' : '#007bff',
+                    border: '1px solid #007bff',
+                    borderBottom: (resumeDialog.activeType === 'generate') ? '1px solid #007bff' : '1px solid #dee2e6',
                     borderBottomLeftRadius: '0',
                     borderBottomRightRadius: '0',
                     borderTopLeftRadius: '5px',
@@ -1108,17 +1132,17 @@ function JobListings({ lastEvent }) {
                     marginBottom: '-1px'
                   }}
                   onMouseEnter={(e) => {
-                    if (resumeDialog.activeType !== 'coverLetter') {
+                    if (resumeDialog.activeType !== 'generate') {
                       e.target.style.backgroundColor = '#f8f9fa';
                     }
                   }}
                   onMouseLeave={(e) => {
-                    if (resumeDialog.activeType !== 'coverLetter') {
+                    if (resumeDialog.activeType !== 'generate') {
                       e.target.style.backgroundColor = 'transparent';
                     }
                   }}
                 >
-                  💌 Cover Letter
+                  🚀 Generate
                 </button>
               </div>
             )}
@@ -1145,6 +1169,98 @@ function JobListings({ lastEvent }) {
                 }}
                 title={`PDF Resume for ${resumeDialog.jobTitle} at ${resumeDialog.company}`}
               />
+            ) : resumeDialog.activeType === 'generate' ? (
+              <div
+                style={{
+                  flex: 1,
+                  border: '1px solid #dee2e6',
+                  borderRadius: '5px',
+                  padding: '2rem',
+                  backgroundColor: '#fff',
+                  overflow: 'auto',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '2rem'
+                }}
+              >
+                {/* Generate Resume Section */}
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    textAlign: 'center'
+                  }}
+                >
+                  <p
+                    style={{
+                      color: '#6c757d',
+                      fontSize: '16px',
+                      marginBottom: '1rem'
+                    }}
+                  >
+                    Generate a new resume version
+                  </p>
+                  <button
+                    onClick={handleRegenerateResume}
+                    style={{
+                      background: '#8B4513',
+                      color: 'white',
+                      border: 'none',
+                      padding: '0.75rem 1.5rem',
+                      borderRadius: '5px',
+                      fontSize: '0.9rem',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      transition: 'background-color 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#6d3510'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#8B4513'}
+                  >
+                    📄 Generate Resume
+                  </button>
+                </div>
+
+                {/* Generate Cover Letter Section */}
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    textAlign: 'center'
+                  }}
+                >
+                  <p
+                    style={{
+                      color: '#6c757d',
+                      fontSize: '16px',
+                      marginBottom: '1rem'
+                    }}
+                  >
+                    Generate a new cover letter version
+                  </p>
+                  <button
+                    onClick={handleGenerateCoverLetter}
+                    style={{
+                      background: '#28a745',
+                      color: 'white',
+                      border: 'none',
+                      padding: '0.75rem 1.5rem',
+                      borderRadius: '5px',
+                      fontSize: '0.9rem',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      transition: 'background-color 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#218838'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#28a745'}
+                  >
+                    💌 Generate Cover Letter
+                  </button>
+                </div>
+              </div>
             ) : (
               <div
                 style={{
@@ -1156,7 +1272,7 @@ function JobListings({ lastEvent }) {
                   overflow: 'auto'
                 }}
               >
-                {resumeDialog.coverLetter ? (
+                {resumeDialog.coverLetterArray && resumeDialog.coverLetterArray.length > 0 ? (
                   <pre
                     style={{
                       whiteSpace: 'pre-wrap',
@@ -1168,7 +1284,7 @@ function JobListings({ lastEvent }) {
                       color: '#333'
                     }}
                   >
-                    {resumeDialog.coverLetter}
+                    {resumeDialog.coverLetterArray[resumeDialog.activeCoverLetterTab] || ''}
                   </pre>
                 ) : (
                   <div

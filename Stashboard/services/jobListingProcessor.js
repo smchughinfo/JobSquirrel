@@ -47,7 +47,7 @@ async function processRawJobListing_OpenAI(rawJobListing) {
     nutNote.scrapeDate = new Date();
     nutNote.collapsed = false; // Default to expanded state
     nutNote.html = "";
-    nutNote.coverLetter = "";
+    nutNote.coverLetter = [];
     nutNote.pdfPath = "";
     nutNote.sessionData = [];
     
@@ -90,7 +90,7 @@ async function processRawJobListing_Ollama(rawJobListing) {
         nutNote.collapsed = false; // Default to expanded state
         nutNote.scrapeDate = new Date();
         nutNote.html = "";
-        nutNote.coverLetter = "";
+        nutNote.coverLetter = [];
         nutNote.pdfPath = "";
         nutNote.sessionData = [];
 

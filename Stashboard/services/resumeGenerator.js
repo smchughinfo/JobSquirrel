@@ -114,8 +114,17 @@ async function generateCoverLetterAnthropic(nutNote) {
 
     await AskClaude(prompt);
     let response = fs.readFileSync(sessionData.coverLetterPath).toString();
-    nutNote.coverLetter = response;
-    nutNote.sessionData = sessionData;
+    
+    // Initialize coverLetter as array if it doesn't exist or append to existing array
+    if (!nutNote.coverLetter) {
+        nutNote.coverLetter = [];
+    } else if (!Array.isArray(nutNote.coverLetter)) {
+        // Convert string to array (for backwards compatibility)
+        nutNote.coverLetter = [nutNote.coverLetter];
+    }
+    
+    nutNote.coverLetter.push(response);
+    nutNote.sessionData.push(sessionData);
     addOrUpdateNutNote(nutNote);
     console.log("cover letter generated!");
 }
