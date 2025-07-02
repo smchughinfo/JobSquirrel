@@ -7,21 +7,22 @@ async function htmlToPdf(htmlContent, outputPath, marginInches = 0) {
 
     await page.setContent(htmlContent);
     
-    // Inject the CSS for page margins
+    // Inject the CSS for page margins using body padding instead of @page margins
     await page.addStyleTag({
         content: `
-            @page { 
-                margin-top: 0.5in; 
-                margin-bottom: 0.5in; 
-                ${marginInches > 0 ? `margin-left: ${marginInches}in;` : ""}
-                ${marginInches > 0 ? `margin-right: ${marginInches}in;` : ""}
-            } 
-            @page :first { 
-                margin-top: 0; 
-                margin-bottom: 0.5in; 
+            @page {
+                padding-top: 0.5in;
+                padding-bottom: 0.5in;
                 ${marginInches > 0 ? `margin-left: ${marginInches}in;` : ""}
                 ${marginInches > 0 ? `margin-right: ${marginInches}in;` : ""}
             }
+            @page :first {
+                padding-top: 0;
+                padding-bottom: 0.5in;
+                ${marginInches > 0 ? `margin-left: ${marginInches}in;` : ""}
+                ${marginInches > 0 ? `margin-right: ${marginInches}in;` : ""}
+            }
+
         `
     });
 

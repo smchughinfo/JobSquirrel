@@ -9,6 +9,7 @@ function JobListings({ lastEvent }) {
   const [remixDialog, setRemixDialog] = useState({ open: false, changes: '', loading: false });
   const [deleteConfirmDialog, setDeleteConfirmDialog] = useState({ open: false, resumeIndex: null });
   const [marginInches, setMarginInches] = useState(0);
+  const [editorDialog, setEditorDialog] = useState({ open: false, content: '', loading: false, resumeIndex: null, type: null });
 
   // Fetch jobs from the API
   const fetchJobs = async () => {
@@ -570,6 +571,66 @@ function JobListings({ lastEvent }) {
     }
   };
 
+  const handleEditClick = () => {
+    if (resumeDialog.activeType === 'html') {
+      setEditorDialog({
+        open: true,
+        content: resumeDialog.htmlArray[resumeDialog.activeTab] || '',
+        loading: false,
+        resumeIndex: resumeDialog.activeTab,
+        type: 'resume'
+      });
+    } else if (resumeDialog.activeType === 'coverLetter') {
+      setEditorDialog({
+        open: true,
+        content: resumeDialog.coverLetterArray[resumeDialog.activeCoverLetterTab] || '',
+        loading: false,
+        resumeIndex: resumeDialog.activeCoverLetterTab,
+        type: 'coverLetter'
+      });
+    }
+  };
+
+  const closeEditorDialog = () => {
+    setEditorDialog({ open: false, content: '', loading: false, resumeIndex: null, type: null });
+  };
+
+  const handleEditorSave = async () => {
+    if (!editorDialog.content.trim() || !resumeDialog.job || editorDialog.resumeIndex === null) return;
+    
+    setEditorDialog(prev => ({ ...prev, loading: true }));
+    
+    try {
+      const endpoint = editorDialog.type === 'coverLetter' ? '/api/edit-cover-letter' : '/api/edit-resume';
+      const indexKey = editorDialog.type === 'coverLetter' ? 'coverLetterIndex' : 'resumeIndex';
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nutNote: resumeDialog.job,
+          [indexKey]: editorDialog.resumeIndex,
+          newContent: editorDialog.content
+        })
+      });
+      
+      if (response.ok) {
+        console.log(`✅ ${editorDialog.type === 'coverLetter' ? 'Cover letter' : 'Resume'} updated successfully`);
+        closeEditorDialog();
+        // The content will be updated via the real-time event system
+      } else {
+        const error = await response.json();
+        console.error(`Failed to update ${editorDialog.type}:`, error.error);
+      }
+    } catch (error) {
+      console.error(`Error updating ${editorDialog.type}:`, error);
+    } finally {
+      setEditorDialog(prev => ({ ...prev, loading: false }));
+    }
+  };
+
   if (loading) {
     return (
       <div>
@@ -977,6 +1038,24 @@ function JobListings({ lastEvent }) {
                 {resumeDialog.activeType === 'html' && (
                   <>
                     <button
+                      onClick={handleEditClick}
+                      style={{
+                        background: '#17a2b8',
+                        color: 'white',
+                        border: 'none',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '5px',
+                        fontSize: '0.9rem',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#138496'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = '#17a2b8'}
+                    >
+                      📝 Edit
+                    </button>
+                    <button
                       onClick={handleRemixClick}
                       style={{
                         background: '#6f42c1',
@@ -1016,6 +1095,24 @@ function JobListings({ lastEvent }) {
                 )}
                 {resumeDialog.activeType === 'coverLetter' && (
                   <>
+                    <button
+                      onClick={handleEditClick}
+                      style={{
+                        background: '#17a2b8',
+                        color: 'white',
+                        border: 'none',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '5px',
+                        fontSize: '0.9rem',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#138496'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = '#17a2b8'}
+                    >
+                      📝 Edit
+                    </button>
                     <button
                       onClick={handleRemixCoverLetterClick}
                       style={{
@@ -1781,6 +1878,138 @@ function JobListings({ lastEvent }) {
               >
                 🗑️ Delete
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Editor Dialog */}
+      {editorDialog.open && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1300
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '10px',
+            padding: '1.5rem',
+            width: '90vw',
+            maxWidth: '1200px',
+            height: '85vh',
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '1rem',
+              paddingBottom: '1rem',
+              borderBottom: '1px solid #dee2e6'
+            }}>
+              <h3 style={{
+                margin: 0,
+                color: '#2c3e50',
+                fontSize: '1.4rem'
+              }}>
+                📝 Edit {editorDialog.type === 'coverLetter' ? 'Cover Letter' : 'Resume'}
+              </h3>
+              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                <button
+                  onClick={handleEditorSave}
+                  disabled={editorDialog.loading || !editorDialog.content.trim()}
+                  style={{
+                    background: editorDialog.loading || !editorDialog.content.trim() ? '#ccc' : '#28a745',
+                    color: 'white',
+                    border: 'none',
+                    padding: '0.75rem 1.5rem',
+                    borderRadius: '5px',
+                    fontSize: '0.9rem',
+                    fontWeight: '500',
+                    cursor: (editorDialog.loading || !editorDialog.content.trim()) ? 'not-allowed' : 'pointer',
+                    transition: 'background-color 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!editorDialog.loading && editorDialog.content.trim()) {
+                      e.target.style.backgroundColor = '#218838';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!editorDialog.loading && editorDialog.content.trim()) {
+                      e.target.style.backgroundColor = '#28a745';
+                    }
+                  }}
+                >
+                  {editorDialog.loading ? '💾 Saving...' : '💾 Save'}
+                </button>
+                <button
+                  onClick={closeEditorDialog}
+                  disabled={editorDialog.loading}
+                  style={{
+                    background: '#6c757d',
+                    color: 'white',
+                    border: 'none',
+                    padding: '0.75rem 1.5rem',
+                    borderRadius: '5px',
+                    fontSize: '0.9rem',
+                    fontWeight: '500',
+                    cursor: editorDialog.loading ? 'not-allowed' : 'pointer',
+                    opacity: editorDialog.loading ? 0.6 : 1,
+                    transition: 'background-color 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!editorDialog.loading) {
+                      e.target.style.backgroundColor = '#5a6268';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!editorDialog.loading) {
+                      e.target.style.backgroundColor = '#6c757d';
+                    }
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+            
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <textarea
+                value={editorDialog.content}
+                onChange={(e) => setEditorDialog(prev => ({ ...prev, content: e.target.value }))}
+                placeholder={`Edit the ${editorDialog.type === 'coverLetter' ? 'cover letter' : 'resume'} HTML content...`}
+                style={{
+                  flex: 1,
+                  padding: '1rem',
+                  border: '1px solid #ced4da',
+                  borderRadius: '5px',
+                  fontSize: '0.85rem',
+                  fontFamily: 'Monaco, Consolas, "Lucida Console", monospace',
+                  resize: 'none',
+                  backgroundColor: '#f8f9fa',
+                  color: '#333',
+                  lineHeight: '1.4'
+                }}
+                disabled={editorDialog.loading}
+                spellCheck="false"
+              />
+              <div style={{
+                marginTop: '0.75rem',
+                fontSize: '0.8rem',
+                color: '#666',
+                fontStyle: 'italic'
+              }}>
+                💡 Tip: Edit the HTML content directly. Changes will be saved to the current {editorDialog.type === 'coverLetter' ? 'cover letter' : 'resume'} version.
+              </div>
             </div>
           </div>
         </div>

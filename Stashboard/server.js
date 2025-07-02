@@ -5,7 +5,7 @@ const puppeteer = require('puppeteer');
 const { ClipboardMonitor } = require('./services/clipboard');
 const { JobQueue } = require('./services/jobQueue');
 const { eventBroadcaster } = require('./services/eventBroadcaster');
-const { getHoard, addOrUpdateNutNote, getIdentifier, deleteNutNote, deleteNuteNoteByIndex, deleteCoverLetterByIndex } = require('./services/hoard');
+const { getHoard, addOrUpdateNutNote, getIdentifier, deleteNutNote, deleteNuteNoteByIndex, deleteCoverLetterByIndex, editResumeByIndex, editCoverLetterByIndex } = require('./services/hoard');
 const { getHoardPath, getResumeDataVectorStoreIdPath } = require('./services/jobSquirrelPaths');
 const { generateResume, generateCoverLetter, remixResumeAnthropic, remixCoverLetterAnthropic, UploadResumeData, doubleCheckResume, doubleCheckCoverLetterAnthropic, processPDFsInResumeData } = require('./services/resumeGenerator');
 const { htmlToPdf } = require('./services/pdf');
@@ -284,6 +284,76 @@ app.post('/api/double-check-cover-letter', async (req, res) => {
         
     } catch (error) {
         console.error('❌ Cover letter double-check failed:', error.message);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+});
+
+// Edit resume endpoint
+app.post('/api/edit-resume', async (req, res) => {
+    try {
+        const { nutNote, resumeIndex, newContent } = req.body;
+        
+        if (!nutNote || resumeIndex === undefined || !newContent) {
+            return res.status(400).json({ 
+                error: 'Missing required parameters: nutNote, resumeIndex, newContent' 
+            });
+        }
+        
+        console.log(`📝 Editing resume version ${resumeIndex + 1} for ${nutNote.company} - ${nutNote.jobTitle}`);
+        
+        editResumeByIndex(nutNote, resumeIndex, newContent);
+        
+        // Broadcast hoard update event
+        eventBroadcaster.broadcast('hoard-updated', {
+            type: 'resume-edited',
+            content: `Resume version ${resumeIndex + 1} edited for ${nutNote.company} - ${nutNote.jobTitle}`
+        });
+        
+        res.json({ 
+            success: true, 
+            message: `Resume version ${resumeIndex + 1} updated successfully`
+        });
+        
+    } catch (error) {
+        console.error('❌ Resume edit failed:', error.message);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+});
+
+// Edit cover letter endpoint
+app.post('/api/edit-cover-letter', async (req, res) => {
+    try {
+        const { nutNote, coverLetterIndex, newContent } = req.body;
+        
+        if (!nutNote || coverLetterIndex === undefined || !newContent) {
+            return res.status(400).json({ 
+                error: 'Missing required parameters: nutNote, coverLetterIndex, newContent' 
+            });
+        }
+        
+        console.log(`📝 Editing cover letter version ${coverLetterIndex + 1} for ${nutNote.company} - ${nutNote.jobTitle}`);
+        
+        editCoverLetterByIndex(nutNote, coverLetterIndex, newContent);
+        
+        // Broadcast hoard update event
+        eventBroadcaster.broadcast('hoard-updated', {
+            type: 'cover-letter-edited',
+            content: `Cover letter version ${coverLetterIndex + 1} edited for ${nutNote.company} - ${nutNote.jobTitle}`
+        });
+        
+        res.json({ 
+            success: true, 
+            message: `Cover letter version ${coverLetterIndex + 1} updated successfully`
+        });
+        
+    } catch (error) {
+        console.error('❌ Cover letter edit failed:', error.message);
         res.status(500).json({ 
             success: false, 
             error: error.message 
