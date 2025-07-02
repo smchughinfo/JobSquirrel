@@ -84,7 +84,7 @@ Transform resumes with natural language instructions:
 
 2. **Install Browser Extension**
    - Open Chrome → Extensions → Developer Mode
-   - Load unpacked extension from `/BrowserExtension`
+   - Load unpacked extension from `/Scamper`
 
 3. **Configure Career Data**
    ```
