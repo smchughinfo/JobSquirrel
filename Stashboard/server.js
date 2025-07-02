@@ -305,7 +305,7 @@ app.post('/api/generate-pdf', async (req, res) => {
         const path = require('path');
         
         // Generate PDF filename and path
-        const filename = `Sean McHugh - Resume For ${nutNote.jobTitle} - ${nutNote.company}.pdf`;
+        const filename = `Sean McHugh - ${nutNote.company}.pdf`;
         const rootDir = getJobSquirrelRootDirectory();
         const pdfPath = path.join(rootDir, 'GeneratedResumes', filename);
         
