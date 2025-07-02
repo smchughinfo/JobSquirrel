@@ -3,12 +3,13 @@ const fs = require('fs');
 const path = require('path');
 const { processJobListing } = require('./jobListingProcessor');
 const { generateUUID } = require('./utilities');
+const { getQueueDirectory } = require('./jobSquirrelPaths');
 
 class JobQueue extends EventEmitter {
     constructor() {
         super();
         this.isRunning = false;
-        this.queueDir = path.join(__dirname, '..', 'queue');
+        this.queueDir = getQueueDirectory();
         this.pollInterval = 2000; // Check every 2 seconds
         this.chatter = (message) => console.log(`🥜 JobQueue: ${message}`);
         
@@ -16,6 +17,9 @@ class JobQueue extends EventEmitter {
         if (!fs.existsSync(this.queueDir)) {
             fs.mkdirSync(this.queueDir, { recursive: true });
         }
+        
+        // Clear all existing queue items on startup
+        this.clearQueue();
     }
 
     addJob(rawJobData) {
@@ -134,6 +138,31 @@ class JobQueue extends EventEmitter {
     // Generate unique job ID
     generateJobId() {
         return generateUUID();
+    }
+
+    // Clear all items from the queue
+    clearQueue() {
+        try {
+            const queuedJobs = this.getQueuedJobs();
+            let deletedCount = 0;
+            
+            queuedJobs.forEach(job => {
+                try {
+                    fs.unlinkSync(job.filepath);
+                    deletedCount++;
+                } catch (error) {
+                    this.chatter(`Error deleting queue file ${job.filename}: ${error.message}`);
+                }
+            });
+            
+            if (deletedCount > 0) {
+                this.chatter(`Cleared ${deletedCount} items from queue on startup`);
+            } else {
+                this.chatter('Queue was already empty on startup');
+            }
+        } catch (error) {
+            this.chatter(`Error clearing queue: ${error.message}`);
+        }
     }
 
     // Utility delay function

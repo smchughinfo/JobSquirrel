@@ -14,6 +14,7 @@ let getResumeDataDirectory = (wsl) => getJobSquirrelPath(wsl, ["Config", "Resume
 let getCustomResumeInstructions = (wsl) => getJobSquirrelPath(wsl, ["Config", "custom-resume-instructions.txt"]);
 let getResumePersonalInformation = (wsl) => getJobSquirrelPath(wsl, ["Config", "personal-information.txt"]);
 let getSaveSessionIdInstructionsTemplatePath = (wsl) => getJobSquirrelPath(wsl, ["ScriptsForClaude", "save-session-id-instructions-template.txt"]);
+let getQueueDirectory = (wsl) => getJobSquirrelPath(wsl, ["Stashboard", "queue"]);
 
 function getSessionIdData(wsl) {
     let rootDir = getJobSquirrelRootDirectory();
@@ -94,6 +95,7 @@ module.exports = {
     getCustomResumeInstructions,
     getResumePersonalInformation,
     getSaveSessionIdInstructionsTemplatePath,
+    getQueueDirectory,
     getSessionIdData,
     convertPathToWSL
 };
