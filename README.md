@@ -155,7 +155,7 @@ JobSquirrel/
 │   │   └── eventBroadcaster.js     # Real-time event system
 │   ├── server.js                   # Express server with SSE endpoints
 │   └── hoard.json                  # Job data storage with HTML arrays
-├── BrowserExtension/               # Scamper browser extension
+├── Scamper/                        # Scamper browser extension
 │   ├── manifest.json               # Extension configuration
 │   ├── content.js                  # Job page interaction
 │   └── background.js               # Extension background tasks
