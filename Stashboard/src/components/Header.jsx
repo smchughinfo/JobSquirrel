@@ -173,13 +173,6 @@ function Header() {
                 <div className="hamburger-dropdown">
                   <button 
                     className="dropdown-item"
-                    onClick={handleUploadClick}
-                    disabled={isUploading}
-                  >
-                    {isUploading ? '🔄 Uploading...' : '📁 Upload Resume Data'}
-                  </button>
-                  <button 
-                    className="dropdown-item"
                     onClick={handleCustomInstructionsClick}
                   >
                     🔧 Custom Instructions
