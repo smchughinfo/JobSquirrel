@@ -2,8 +2,6 @@
 
 [![Video Intro](/Documentation/YouTube.png)](https://www.youtube.com/watch?v=L4lyqi66l9Q)
 
-*The early squirrel catches the job!*
-
 ## JobSquirrel In A Nutshell
 
 ![JobSquirrel In A Nutshell](/Documentation/JobSquirrel%20in%20a%20nutshell.svg)
