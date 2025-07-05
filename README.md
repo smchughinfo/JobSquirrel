@@ -72,7 +72,7 @@ Transform resumes with natural language instructions:
 ### Installation
 
 1. **Configure LLMs**
-   - Set OPENAI_API_KEY environment variables
+   - Set OPENAI_API_KEY environment variable
    - Install and run Claude Code
 
 2. **Install Dependencies**
