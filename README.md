@@ -86,7 +86,7 @@ Transform resumes with natural language instructions:
 
 2. **Install Browser Extension**
    - Open Chrome → Extensions → Developer Mode
-   - Load unpacked extension from `/BrowserExtension`
+   - Load unpacked extension from `/Scamper`
 
 3. **Configure Career Data**
    ```
@@ -157,7 +157,7 @@ JobSquirrel/
 │   │   └── eventBroadcaster.js     # Real-time event system
 │   ├── server.js                   # Express server with SSE endpoints
 │   └── hoard.json                  # Job data storage with HTML arrays
-├── BrowserExtension/               # Scamper browser extension
+├── Scamper/                        # Scamper browser extension
 │   ├── manifest.json               # Extension configuration
 │   ├── content.js                  # Job page interaction
 │   └── background.js               # Extension background tasks
