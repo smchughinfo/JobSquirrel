@@ -156,7 +156,6 @@ JobSquirrel/
 - **Cross-platform compatibility** (Windows + WSL)
 - **Custom instruction processing** for personalized results
 
-
 ## 🤖 Claude Code Credits
 
 - **Co-author** Claude Code wrote most of the front end and was terrifically helpful throughout the entire development process. This project was completed in half the time thanks to Claude Code.
