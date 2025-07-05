@@ -1,6 +1,6 @@
 # 🐿️ JobSquirrel - AI-Powered Job Application Automation
 
-[![Video Intro](https://img.youtube.com/vi/L4lyqi66l9Q/0.jpg)](https://www.youtube.com/watch?v=L4lyqi66l9Q)
+[![Video Intro](https://raw.githubusercontent.com/smchughinfo/JobSquirrel/refs/heads/main/Documentation/YouTube.png)](https://www.youtube.com/watch?v=L4lyqi66l9Q)
 
 *The early squirrel catches the job!*
 
