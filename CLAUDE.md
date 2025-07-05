@@ -463,6 +463,42 @@ embedHiddenText(resumeHTML, "Job Listing used by JobSquirrel to tailor resume: "
 
 **Key Achievement**: Complete feature parity - users can generate, remix, double-check, and delete cover letter versions exactly like resumes.
 
+### Cover Letter File Management Architecture (Current State)
+**Multi-Version UI with Single File Storage**: Cover letter system demonstrates interesting architectural trade-offs between user experience and file management:
+
+**Multi-Version User Interface**:
+- Cover letters stored as arrays in memory: `nutNote.coverLetter = [version1, version2, version3...]`
+- Users can view/edit multiple versions via green-themed tabs (Cover Letter 1, Cover Letter 2, etc.)
+- Full feature parity with resumes: generate, remix, double-check, delete operations
+- Complete UI consistency with tabbed interface and version management
+
+**Single File Storage Pattern**:
+- All cover letter operations save to single text file in `GeneratedResumes/` directory
+- File path: `GeneratedResumes/Sean McHugh - [Company].txt` (via `getCoverLetterPath(nutNote.company)`)
+- Each operation (generate, remix, double-check) overwrites previous file content
+- **Result**: Only most recent version preserved on disk, despite multiple versions in UI
+
+**Technical Implementation Details**:
+```javascript
+// All three cover letter functions use identical pattern:
+generateCoverLetterAnthropic() → fs.writeFileSync(getCoverLetterPath(nutNote.company), response)
+remixCoverLetterAnthropic() → fs.writeFileSync(getCoverLetterPath(nutNote.company), response)  
+doubleCheckCoverLetterAnthropic() → fs.writeFileSync(getCoverLetterPath(nutNote.company), response)
+```
+
+**Architectural Trade-offs**:
+- **User Experience Benefit**: Eliminates file management friction - users don't navigate multiple directories
+- **Workflow Optimization**: Matches typical usage pattern (most users go with first/latest version)
+- **File Management Simplification**: Single file per job rather than versioned file collections
+- **Data Preservation Limitation**: Previous versions lost when new versions generated
+
+**Comparison with Resume PDF System**:
+- **Resume PDFs**: Each version gets unique filename, multiple files preserved
+- **Cover Letter Text**: Single file overwritten, only current version saved
+- **Reasoning**: Cover letters typically don't need same level of version preservation as resumes
+
+**Recovery Pattern**: Users wanting to preserve specific cover letter versions can edit that version in the UI, which will overwrite the file with the desired content - providing manual version control when needed.
+
 ### Revolutionary Double Check System Implementation
 **Game-Changing Resume Quality Assurance**: Implemented a comprehensive double check system that enables quality review of any resume version:
 

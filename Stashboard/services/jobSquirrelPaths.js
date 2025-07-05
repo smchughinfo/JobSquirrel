@@ -73,6 +73,20 @@ function getJobSquirrelPath(wsl, pathArray) {
     return fullPath;
 }
 
+function getResumePDFPath(companyName) {
+    const filename = `Sean McHugh - ${companyName}.pdf`;
+    const rootDir = getJobSquirrelRootDirectory();
+    const pdfPath = path.join(rootDir, 'GeneratedResumes', filename);
+    return pdfPath;
+}
+
+function getCoverLetterPath(companyName) {
+    const filename = `Sean McHugh - ${companyName}.txt`;
+    const rootDir = getJobSquirrelRootDirectory();
+    const pdfPath = path.join(rootDir, 'GeneratedResumes', filename);
+    return pdfPath;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 /////// PERHAPS DEPRECATED //////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -97,5 +111,7 @@ module.exports = {
     getSaveSessionIdInstructionsTemplatePath,
     getQueueDirectory,
     getSessionIdData,
+    getResumePDFPath,
+    getCoverLetterPath,
     convertPathToWSL
 };

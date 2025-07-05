@@ -6,7 +6,7 @@ const { ClipboardMonitor } = require('./services/clipboard');
 const { JobQueue } = require('./services/jobQueue');
 const { eventBroadcaster } = require('./services/eventBroadcaster');
 const { getHoard, addOrUpdateNutNote, getIdentifier, deleteNutNote, deleteNuteNoteByIndex, deleteCoverLetterByIndex, editResumeByIndex, editCoverLetterByIndex } = require('./services/hoard');
-const { getHoardPath, getResumeDataVectorStoreIdPath } = require('./services/jobSquirrelPaths');
+const { getHoardPath, getResumeDataVectorStoreIdPath, getResumePDFPath } = require('./services/jobSquirrelPaths');
 const { generateResume, generateCoverLetter, remixResumeAnthropic, remixCoverLetterAnthropic, UploadResumeData, doubleCheckResume, doubleCheckCoverLetterAnthropic, processPDFsInResumeData } = require('./services/resumeGenerator');
 const { htmlToPdf } = require('./services/pdf');
 
@@ -375,11 +375,10 @@ app.post('/api/generate-pdf', async (req, res) => {
         const path = require('path');
         
         // Generate PDF filename and path
-        const filename = `Sean McHugh - ${nutNote.company}.pdf`;
-        const rootDir = getJobSquirrelRootDirectory();
-        const pdfPath = path.join(rootDir, 'GeneratedResumes', filename);
+        let pdfPath = getResumePDFPath(nutNote.company);
         
         // Ensure GeneratedResumes directory exists
+        const rootDir = getJobSquirrelRootDirectory();
         const generatedResumesDir = path.join(rootDir, 'GeneratedResumes');
         if (!fs.existsSync(generatedResumesDir)) {
             fs.mkdirSync(generatedResumesDir, { recursive: true });
@@ -389,7 +388,9 @@ app.post('/api/generate-pdf', async (req, res) => {
         await htmlToPdf(resumeHtml, pdfPath, parseFloat(marginInches) || 0);
         
         // Return the PDF path (relative for client access)
-        const relativePdfPath = `/GeneratedResumes/${filename}`;
+        
+        const filename =  path.basename(pdfPath);
+        const relativePdfPath = `/GeneratedResumes/${filename}`
         
         // Update the job record with the PDF path
         try {

@@ -5,7 +5,7 @@ const { AskAssistant, CreateVectorStore } = require('./llm/openai');
 const { AskClaude } = require('./llm/anthropic');
 const { eventBroadcaster } = require('./eventBroadcaster');
 const { embedHiddenText } = require('./htmlUtilities');
-const { getResumeDataDirectory, getCustomResumeInstructions, getResumePersonalInformation, getSaveSessionIdInstructionsTemplatePath, getSessionIdData, getJobSquirrelRootDirectory, convertPathToWSL } = require('./jobSquirrelPaths');
+const { getResumeDataDirectory, getCustomResumeInstructions, getResumePersonalInformation, getSaveSessionIdInstructionsTemplatePath, getSessionIdData, getJobSquirrelRootDirectory, convertPathToWSL, getCoverLetterPath } = require('./jobSquirrelPaths');
 const { addOrUpdateNutNote } = require('./hoard');
 
 const RESUME_CLAMP_CLAUSE = `Do not include any preamble, commentary, or code block formatting. Output only the final html content, nothing else.`;
@@ -117,6 +117,7 @@ async function generateCoverLetterAnthropic(nutNote) {
     
     sessionData.sessionId = fs.readFileSync(sessionData.sessionIdPath).toString();
 
+    fs.writeFileSync(getCoverLetterPath(nutNote.company), response);
     nutNote.coverLetter.push(response);
     nutNote.sessionData.push(sessionData);
     addOrUpdateNutNote(nutNote);
@@ -145,6 +146,7 @@ async function remixCoverLetterAnthropic(nutNote, remixInstructions, remixIndex)
     let response = fs.readFileSync(sessionData.remixCoverLetterPath).toString();
     sessionData.sessionId = fs.readFileSync(sessionData.sessionIdPath).toString();
 
+    fs.writeFileSync(getCoverLetterPath(nutNote.company), response);
     nutNote.coverLetter.push(response);
     nutNote.sessionData.push(sessionData);
     addOrUpdateNutNote(nutNote);
@@ -170,6 +172,7 @@ async function doubleCheckCoverLetterAnthropic(nutNote, coverLetterIndex) {
     let response = fs.readFileSync(sessionData.doubleCheckedCoverLetterPath).toString();
     sessionData.sessionId = fs.readFileSync(sessionData.sessionIdPath).toString();
 
+    fs.writeFileSync(getCoverLetterPath(nutNote.company), response);
     nutNote.coverLetter.push(response);
     nutNote.sessionData.push(sessionData);
     addOrUpdateNutNote(nutNote);
