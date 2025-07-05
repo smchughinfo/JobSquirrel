@@ -43,11 +43,11 @@ Transform resumes with natural language instructions:
 - Real-time updates across all components
 
 ### 📄 **PDF Output**
-- Customizable margins (0-2 inches with 0.1-inch precision)
+- Customizable margins
 - Clean filename format ready for HR submission
 
 ### 💉 **Job Listing Injection**
-- Embed teh job listing inside your resume as (.01px, white font) to maximize keyword matching
+- Embed the job listing inside your resume as (.01px, white font) to maximize keyword matching
 
 ## 🏗️ Architecture
 
