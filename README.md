@@ -1,91 +1,90 @@
 # 🐿️ JobSquirrel - AI-Powered Job Application Automation
 
-[![Video Intro](https://raw.githubusercontent.com/smchughinfo/JobSquirrel/refs/heads/main/Documentation/YouTube.png)](https://www.youtube.com/watch?v=L4lyqi66l9Q)
+[![Video Intro](/Documentation/YouTube.png)](https://www.youtube.com/watch?v=L4lyqi66l9Q)
 
 *The early squirrel catches the job!*
 
-## Overview
+## JobSquirrel In A Nutshell
 
-**JobSquirrel** is a revolutionary AI-powered job application automation platform that transforms your entire job search workflow. From discovery to professional output, JobSquirrel combines automated job capture, real-time AI processing, and intelligent resume generation with an intuitive web interface.
+![JobSquirrel In A Nutshell](/Documentation/JobSquirrel%20in%20a%20nutshell.svg)
+<hr>
 
-### 🚀 Complete Workflow
-```
-Job Discovery → AI Processing → Multiple Resume Versions → Creative Remix → Quality Check → PDF Generation
-```
+## Beautiful And Varied Results
+
+![Resume 1](/Documentation/resume1.svg)
+
+<hr>
+
+![Resume 2](/Documentation/resume2.svg)
+
+<hr>
+
+![Resume 3](/Documentation/resume3.svg)
+
+<hr>
 
 ## ✨ Key Features
 
 ### 🎯 **Multi-Version Resume Management**
 - Generate multiple resume versions per job for iterative improvement
 - Tabbed interface for seamless version switching
-- Zero manual file management - system handles all organization
 
-### 🎨 **Revolutionary Remix Feature**
+### 🎨 **Remix Feature**
 Transform resumes with natural language instructions:
 - **"Make it more creative and engaging"** → Enhanced visual appeal
 - **"Emphasize leadership experience"** → Management focus
 - **"Style like a space pirate"** → Complete thematic transformation
 - Maintains technical accuracy while enabling unlimited creativity
 
-### ✅ **Universal Double Check System**
-- Review and improve ANY resume version
-- Fresh session processing prevents AI confusion
-- Quality assurance with custom instruction compliance
+### ✅ **Double Check **
+- Ask AI to double check resume accuracey with one-click
 
 ### 📝 **Direct HTML Editor**
 - Edit resume and cover letter content directly in browser
 - Monospace editor with syntax highlighting
 - Real-time updates across all components
 
-### 📄 **Professional PDF Generation**
+### 📄 **PDF Output**
 - Customizable margins (0-2 inches with 0.1-inch precision)
 - Clean filename format ready for HR submission
-- One-click generation from any resume version
 
-### 🔄 **Real-Time Everything**
-- Live Claude AI output streaming
-- Instant UI updates via Server-Sent Events
-- Complete transparency into AI reasoning process
+### 💉 **Job Listing Injection**
+- Embed teh job listing inside your resume as (.01px, white font) to maximize keyword matching
 
 ## 🏗️ Architecture
 
 ### Core Components
 
 **🌐 Stashboard** - Modern React web interface with:
-- Real-time job hoard display with live updates
-- Tabbed resume management (HTML + PDF versions)
-- Live Claude output streaming with expandable content
-- Professional PDF generation with margin controls
+- Web interface for job listings and resumes
+- Live updates for server-side events
 
 **🏃 Scamper** - Browser extension for job capture:
 - One-click job posting capture
-- Seamless integration with Stashboard processing
-- Clean, reliable job data extraction
-
-**🤖 Claude Integration** - AI-powered processing:
-- Multiple resume versions per job
-- Real-time output streaming to web interface
-- Natural language remix functionality
-- Universal double check system
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 - **Node.js** (for Stashboard web server)
+- **OpenAI API Key** (for job listing capture)
 - **Claude Code** installed in WSL
 - **Chrome browser** (for Scamper extension)
 - **WSL** (Windows Subsystem for Linux)
 
 ### Installation
 
-1. **Install Dependencies**
+1. **Configure LLMs**
+   - Set OPENAI_API_KEY environment variables
+   - Install and run Claude Code
+
+2. **Install Dependencies**
    ```bash
    cd Stashboard
    npm install
    ```
 
 2. **Install Browser Extension**
-   - Open Chrome → Extensions → Developer Mode
+   - [Open Chrome → Extensions → Developer Mode](https://claude.ai/share/9c00acf1-23bd-486d-85a4-300b63d6d24b)
    - Load unpacked extension from `/Scamper`
 
 3. **Configure Career Data**
@@ -99,7 +98,7 @@ Transform resumes with natural language instructions:
 
 4. **Set Configuration Files**
    - `Config/personal-information.txt` - Contact information
-   - `Config/custom-resume-instructions.txt` - AI processing guidelines
+   - `Config/custom-resume-instructions.txt` - Your custom instructions to the AI for how you want the resume and cover letter generated
 
 5. **Launch System**
    ```bash
@@ -109,37 +108,6 @@ Transform resumes with natural language instructions:
    # Interface available at http://localhost:3000
    ```
 
-## 🎯 Usage Workflow
-
-### 1. **Job Capture**
-- Navigate to any job posting website
-- Click **Scamper browser extension** button
-- Job automatically added to your hoard with real-time updates
-
-### 2. **AI-Powered Resume Generation**
-- Click **📄 Generate Resume** button
-- Watch live Claude AI processing in real-time
-- Multiple versions created automatically (Resume 1, Resume 2, etc.)
-
-### 3. **Creative Customization**
-- Use **🎨 Remix** for natural language modifications
-- Example: *"Make this sound more technical and data-driven"*
-- Each remix creates a new version while preserving originals
-
-### 4. **Quality Assurance**
-- Click **✅ Double Check** on any resume version
-- AI reviews against your custom guidelines
-- Creates improved version with quality enhancements
-
-### 5. **Direct Editing**
-- Use **📝 Edit** button for direct HTML modifications
-- Professional monospace editor with real-time saving
-- Perfect for fine-tuning specific details
-
-### 6. **Professional Output**
-- Configure margin settings (0-2 inches)
-- Click **📄 PDF** for instant generation
-- Professional filename: `Sean McHugh - Resume For [Job] - [Company].pdf`
 
 ## 📁 Project Structure
 
@@ -190,44 +158,13 @@ JobSquirrel/
 - **Cross-platform compatibility** (Windows + WSL)
 - **Custom instruction processing** for personalized results
 
-## 🎨 Code Theme
 
-All code uses consistent squirrel/woodland-themed language:
+## 🤖 Claude Code Credits
 
-**Functions:**
-- `forage()` - retrieving/gathering data
-- `stash()` - saving/storing data
-- `scamper()` - navigation/iteration operations
-- `chatter()` - logging and communication
+- **Co-author** Claude Code wrote most of the front end and was terrifically helpful throughout the entire development process. This project was completed in half the time thanks to Claude Code.
+- **Self-improvement** It should be noted that among Claude Code's many amazing accomplishments during development was literal self-improvement. Claude wrote `ScriptsForClaude\get-current-session-id.sh` to retrieve its own session ID, which it cannot do out of the box and only seemed to discover that it could do after investigating its own configuration. I had first heard about self-improvement many years ago and then one night, while working on JobSquirrel, it happened in front of my eyes.
 
-**Components:**
-- **Stashboard** - Main web interface
-- **Scamper** - Browser extension
-- **Job Hoard** - Collection of captured jobs
-- **Nut Note** - Individual job data structure
+## ❓ Claude Code Credits
+- **Help** As this project was a collaboration with Claude Code, the correct way to troubleshoot any problems you are having with it is to set your working directory to the JobSquirrel repository and ask Claude Code.
 
-## 🌟 Innovation Highlights
 
-### Multi-Version Architecture
-Revolutionary approach to resume management with HTML arrays instead of single files, enabling true iterative improvement.
-
-### Cross-Platform Integration
-Seamless Claude Code execution from Windows Node.js server using WSL bridge with TTY emulation.
-
-### Real-Time Streaming
-React queue mechanism solving state batching issues for perfect high-frequency event capture.
-
-### Creative AI Freedom
-Demonstrates that AI can maintain technical accuracy while enabling unlimited creative expression.
-
-## 🤝 Contributing
-
-JobSquirrel was built through passionate human-AI collaboration, showcasing iterative development that exceeds what either human or AI could accomplish alone.
-
-## 📄 License
-
-This project demonstrates the perfect balance of professional capability and creative freedom in AI-powered career tools.
-
----
-
-*JobSquirrel - Where woodland efficiency meets cutting-edge technology to revolutionize the job search experience! 🐿️🌰*
