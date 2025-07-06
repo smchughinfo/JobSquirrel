@@ -88,10 +88,11 @@ Transform resumes with natural language instructions:
 3. **Configure Career Data**
    ```
    JobSquirrel/Config/ResumeData/
-   ├── resumes/              # Existing resume files
-   ├── cover-letters/        # Cover letter templates  
-   ├── projects/             # Project descriptions
-   └── certifications/       # Professional certifications
+   ├── resume1.pdf
+   ├── resume2.pdf
+   ├── cover-lettet.txt
+   ├── personal-project-summary.md
+   ├── etc.
    ```
 
 4. **Set Configuration Files**
