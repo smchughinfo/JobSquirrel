@@ -1,4 +1,4 @@
-# 🐿️ JobSquirrel - AI-Powered Job Application Automation
+# 🐿️ JobSquirrel - AI Resume Tailor
 
 [![Video Intro](/Documentation/YouTube.png)](https://www.youtube.com/watch?v=L4lyqi66l9Q)
 
