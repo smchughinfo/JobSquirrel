@@ -1,16 +1,10 @@
-/ResumeData
 /GeneratedResumes
-personal-information.txt
-custom-resume-instructions.txt
-/AcornDepot/Cache
 hoard.json
-resume-data-vector-store.txt
-job-listing.md
-remix-resume-instructions.txt
-remix-resume.html
-save-session-id-instructions.txt
-/SessionIds
 /Cache
 /Config
 /Stashboard/queue/
 .claude
+
+# POSSIBLY ANTIQUATED STUFF
+# for openai assistant resume generation
+resume-data-vector-store.txt 

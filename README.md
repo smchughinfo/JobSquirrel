@@ -114,27 +114,73 @@ Transform resumes with natural language instructions:
 JobSquirrel/
 ├── Stashboard/                     # Main web interface (React + Node.js)
 │   ├── src/                        # React frontend components
-│   │   ├── components/             # JobListings, EventMonitor, ClaudeAssistant
-│   │   └── hooks/                  # Custom React hooks for SSE
+│   │   ├── components/             # Core UI components
+│   │   │   ├── JobListings.jsx     # Job cards + multi-version resume + remix + double check
+│   │   │   ├── EventMonitor.jsx    # Real-time system event display
+│   │   │   ├── ClaudeAssistant.jsx # Live Claude output streaming
+│   │   │   ├── Header.jsx          # Squirrel-themed navigation
+│   │   │   └── ClipboardMonitor.jsx # Clipboard monitoring component
+│   │   └── hooks/                  # Custom React hooks
+│   │       └── useEventStream.js   # SSE integration with queue mechanism
 │   ├── services/                   # Backend services and utilities
-│   │   ├── llm/anthropic.js        # Claude integration with streaming
+│   │   ├── llm/                    # AI integration services
+│   │   │   ├── anthropic.js        # Claude integration with streaming
+│   │   │   ├── ollama.js           # Ollama local LLM integration (deprecated)
+│   │   │   └── openai/             # OpenAI services
+│   │   │       ├── assistant.js    # OpenAI assistant integration (deprecated)
+│   │   │       ├── index.js        # OpenAI main service
+│   │   │       └── openai.js       # OpenAI API wrapper
 │   │   ├── pdf.js                  # PDF generation service
-│   │   ├── resumeGenerator.js      # Resume generation, remix & double check
+│   │   ├── resumeGenerator.js      # Resume generation, remix & double check logic
 │   │   ├── hoard.js                # Job data management
-│   │   └── eventBroadcaster.js     # Real-time event system
+│   │   ├── eventBroadcaster.js     # Real-time event system
+│   │   ├── jobSquirrelPaths.js     # Centralized path management
+│   │   ├── clipboard.js            # Clipboard monitoring service
+│   │   ├── jobQueue.js             # Job processing queue
+│   │   ├── jobListingProcessor.js  # Job listing processing logic
+│   │   ├── htmlUtilities.js        # HTML processing utilities
+│   │   ├── commandRunner.js        # Command execution service
+│   │   └── utilities.js            # General utility functions
+│   ├── routes/                     # API route handlers
+│   │   └── api.js                  # REST API endpoints
+│   ├── public/                     # Static web assets
+│   │   └── assets/                 # Built CSS/JS assets
+│   ├── queue/                      # Job queue storage
 │   ├── server.js                   # Express server with SSE endpoints
 │   └── hoard.json                  # Job data storage with HTML arrays
-├── Scamper/                        # Scamper browser extension
+├── Scamper/                        # Browser extension
 │   ├── manifest.json               # Extension configuration
 │   ├── content.js                  # Job page interaction
 │   └── background.js               # Extension background tasks
 ├── Config/                         # Configuration and career data
 │   ├── ResumeData/                 # User's career data sources
+│   │   ├── chat-gpt-career-related-memory-dump.md
+│   │   ├── nutkins cover letter template.txt
+│   │   ├── resume1.txt             # Resume data file
+│   │   └── resume2.txt             # Resume data file
 │   ├── personal-information.txt    # Contact information
 │   └── custom-resume-instructions.txt # AI processing guidelines
-├── GeneratedResumes/               # Final PDF outputs
-├── SessionIdS/                     # Session tracking and temp files
-└── Cache/                          # Temporary processing files
+├── Cache/                          # Session tracking and temp files
+│   ├── working-resume-[uid].html   # Resume generation temp files
+│   ├── double-checked-resume-[uid].html # Double check output files
+│   ├── session-id-[uid].txt        # Claude session tracking
+│   ├── cover-letter-[uid].txt      # Cover letter temp files
+│   ├── job-listing-[uid].md        # Job listing temp files
+│   ├── remix-resume-[uid].html     # Resume being remixed
+│   ├── remix-resume-instructions-[uid].txt # User's remix instructions
+│   └── save-session-id-[uid]-instructions.txt # Session save instructions
+├── ScriptsForClaude/               # Claude Code utility scripts
+│   ├── get-current-session-id.sh   # Session ID retrieval script
+│   └── save-session-id-instructions-template.txt # Template for session instructions
+├── Documentation/                  # Project documentation
+│   ├── JobSquirrel in a nutshell.svg
+│   ├── YouTube.png
+│   ├── resume1.svg
+│   ├── resume2.svg
+│   └── resume3.svg
+└── GeneratedResumes/               # Final PDF and resume outputs (created dynamically)
+    ├── [Company Name] - Sean McHugh.pdf # Resume PDFs
+    └── [Company Name] - Sean McHugh.txt # Cover letter files
 ```
 
 ## 🔧 Technology Stack
@@ -160,7 +206,7 @@ JobSquirrel/
 ## 🤖 Claude Code Credits
 
 - **Co-author** Claude Code wrote most of the front end and was terrifically helpful throughout the entire development process. This project was completed in half the time thanks to Claude Code.
-- **Self-improvement** It should be noted that among Claude Code's many amazing accomplishments during development was literal self-improvement. Claude wrote a script to retrieve its own session ID, which it cannot do out of the box and only seemed to discover that it could do after investigating its own configuration. I first heard about self-improvement years ago and then one night, while working on JobSquirrel, it happened in front of my eyes.
+- **Self-improvement** It should be noted that among Claude Code's many amazing accomplishments during development was literal self-improvement. Claude wrote `/ScriptsForClaude/get-current-session-id.sh` to retrieve its own session ID, which it cannot do out of the box and only seemed to discover that it could do after investigating its own configuration. I first heard about self-improvement years ago and then one night, while working on JobSquirrel, it happened in front of my eyes.
 
 ## ❓ Help
 - **Help** As this project was a collaboration with Claude Code, the correct way to troubleshoot any problems you are having with it is to set your working directory to the JobSquirrel repository and ask Claude Code.

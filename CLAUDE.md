@@ -199,47 +199,73 @@ function processQueue() {
 /JobSquirrel/
 ├── Stashboard/                     # Main web interface (React + Node.js)
 │   ├── src/                        # React frontend components
-│   │   ├── components/             # JobListings, EventMonitor, ClaudeAssistant
+│   │   ├── components/             # Core UI components
 │   │   │   ├── JobListings.jsx     # Job cards + multi-version resume + remix + double check
 │   │   │   ├── EventMonitor.jsx    # Real-time system event display
 │   │   │   ├── ClaudeAssistant.jsx # Live Claude output streaming
-│   │   │   └── Header.jsx          # Squirrel-themed navigation
+│   │   │   ├── Header.jsx          # Squirrel-themed navigation
+│   │   │   └── ClipboardMonitor.jsx # Clipboard monitoring component
 │   │   └── hooks/                  # Custom React hooks
 │   │       └── useEventStream.js   # SSE integration with queue mechanism
 │   ├── services/                   # Backend services and utilities
-│   │   ├── llm/anthropic.js        # Claude integration with streaming
+│   │   ├── llm/                    # AI integration services
+│   │   │   ├── anthropic.js        # Claude integration with streaming
+│   │   │   ├── ollama.js           # Ollama local LLM integration (deprecated)
+│   │   │   └── openai/             # OpenAI services
+│   │   │       ├── assistant.js    # OpenAI assistant integration (deprecated)
+│   │   │       ├── index.js        # OpenAI main service
+│   │   │       └── openai.js       # OpenAI API wrapper
 │   │   ├── pdf.js                  # PDF generation service
 │   │   ├── resumeGenerator.js      # Resume generation, remix & double check logic
 │   │   ├── hoard.js                # Job data management
 │   │   ├── eventBroadcaster.js     # Real-time event system
-│   │   └── jobSquirrelPaths.js     # Centralized path management
+│   │   ├── jobSquirrelPaths.js     # Centralized path management
+│   │   ├── clipboard.js            # Clipboard monitoring service
+│   │   ├── jobQueue.js             # Job processing queue
+│   │   ├── jobListingProcessor.js  # Job listing processing logic
+│   │   ├── htmlUtilities.js        # HTML processing utilities
+│   │   ├── commandRunner.js        # Command execution service
+│   │   └── utilities.js            # General utility functions
+│   ├── routes/                     # API route handlers
+│   │   └── api.js                  # REST API endpoints
 │   ├── public/                     # Static web assets
+│   │   └── assets/                 # Built CSS/JS assets
+│   ├── queue/                      # Job queue storage
 │   ├── server.js                   # Express server with SSE endpoints
 │   └── hoard.json                  # Job data storage with HTML arrays
-├── BrowserExtension/               # Scamper browser extension
+├── Scamper/                        # Browser extension
 │   ├── manifest.json               # Extension configuration
 │   ├── content.js                  # Job page interaction
 │   └── background.js               # Extension background tasks
-├── ResumeData/                     # User's career data sources
-│   ├── resumes/                    # Existing resume files
-│   ├── cover-letters/              # Cover letter templates
-│   ├── projects/                   # Project descriptions
-│   └── certifications/             # Professional certifications
-├── GeneratedResumes/               # Final PDF and resume outputs
-│   └── [Clean filename format: "Sean McHugh - Resume For [Job] - [Company].pdf"]
-├── SessionIdS/                     # Session tracking and temp files
+├── Config/                         # Configuration and career data
+│   ├── ResumeData/                 # User's career data sources
+│   │   ├── chat-gpt-career-related-memory-dump.md
+│   │   ├── nutkins cover letter template.txt
+│   │   ├── resume1.txt             # Resume data file
+│   │   └── resume2.txt             # Resume data file
+│   ├── personal-information.txt    # Contact information
+│   └── custom-resume-instructions.txt # AI processing guidelines
+├── Cache/                          # Session tracking and temp files
 │   ├── working-resume-[uid].html   # Resume generation temp files
 │   ├── double-checked-resume-[uid].html # Double check output files
 │   ├── session-id-[uid].txt        # Claude session tracking
-│   └── cover-letter-[uid].txt      # Cover letter temp files
-├── Cache/                          # Temporary processing files
-│   ├── job-listing.md              # Current job being processed
-│   ├── remix-resume.html           # Resume being remixed
-│   └── remix-instructions.txt      # User's remix instructions
-└── Configuration Files
-    ├── selectors.json              # CSS selectors for job sites
-    ├── personal-information.txt    # User contact information
-    └── custom-resume-instructions.txt # Claude processing guidelines
+│   ├── cover-letter-[uid].txt      # Cover letter temp files
+│   ├── job-listing-[uid].md        # Job listing temp files
+│   ├── remix-resume-[uid].html     # Resume being remixed
+│   ├── remix-resume-instructions-[uid].txt # User's remix instructions
+│   └── save-session-id-[uid]-instructions.txt # Session save instructions
+├── ScriptsForClaude/               # Claude Code utility scripts
+│   ├── get-current-session-id.sh   # Session ID retrieval script
+│   └── save-session-id-instructions-template.txt # Template for session instructions
+├── Documentation/                  # Project documentation
+│   ├── JobSquirrel in a nutshell.svg
+│   ├── YouTube.png
+│   ├── resume1.svg
+│   ├── resume2.svg
+│   └── resume3.svg
+└── GeneratedResumes/               # Final PDF and resume outputs (created dynamically)
+    ├── [Company Name] - Sean McHugh.pdf # Resume PDFs
+    └── [Company Name] - Sean McHugh.txt # Cover letter files
 ```
 
 ## Complete JobSquirrel Workflow
@@ -652,7 +678,7 @@ JobSquirrel/ResumeData/
 - **Team Collaboration**: Share creative resume variations with career coaches
 
 ### Advanced AI Integration
-- **Multi-Model Support**: Ollama local processing for cost optimization
+- **Multi-Model Support**: Ollama local processing for cost optimization (ollama is currently deprecated but the code shoudl still work)
 - **Bulk Processing**: Parallel resume generation for multiple jobs
 - **Smart Suggestions**: AI-recommended improvements based on job analysis
 - **Performance Analytics**: Track application success rates across different resume styles
