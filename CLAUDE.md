@@ -9,18 +9,9 @@
 Job Discovery → AI Processing → Multiple Resume Versions → Creative Remix → Double Check → PDF Generation → Professional Output
 ```
 
-The system features a modern React-based web interface (Stashboard) with real-time streaming, tabbed resume management, revolutionary remix functionality, comprehensive double check system, and professional PDF generation with customizable margins. All components share the squirrel/woodland theme and work together to automate the job application process while maintaining full user control and creative freedom.
+The system features a modern React-based web interface (Stashboard) with real-time streaming, tabbed resume management, revolutionary remix functionality, comprehensive double check system, and professional PDF generation with customizable margins.
 
 ## System Architecture
-
-JobSquirrel operates as a unified ecosystem with multiple input methods feeding into a single processing pipeline:
-
-### Unified JobSquirrel Architecture
-```
-┌─ Manual Capture (Scamper Browser Extension) ─┐
-│                                              ▼
-└─ Future: Automated Scraping ────────── Stashboard Web Interface ── Claude Processing ── Multiple Resume Versions ── Remix Feature ── Double Check System ── PDF Generation ── Final Output
-```
 
 ### Core Components
 
@@ -48,7 +39,7 @@ JobSquirrel operates as a unified ecosystem with multiple input methods feeding 
 ## Revolutionary Features
 
 ### Multi-Version Resume Management System
-**Revolutionary Resume Workflow**: Implemented a complete multi-version resume management system that fundamentally changed how JobSquirrel handles resume generation:
+**Revolutionary Resume Workflow**: Complete multi-version resume management system that fundamentally changed how JobSquirrel handles resume generation:
 
 **HTML Array Architecture**:
 - Resume HTML stored in arrays rather than single strings: `html: [version1, version2, version3...]`
@@ -56,7 +47,7 @@ JobSquirrel operates as a unified ecosystem with multiple input methods feeding 
 - Tabbed interface for seamless version switching
 - No filename conflicts or version management issues
 
-**Benefits Achieved**:
+**Benefits**:
 - **Iterative Improvement**: Generate multiple versions to refine quality
 - **Easy Comparison**: Switch between versions instantly via tabs
 - **No Manual File Management**: System handles all version organization
@@ -65,24 +56,15 @@ JobSquirrel operates as a unified ecosystem with multiple input methods feeding 
 ### Revolutionary Remix Feature 🎨
 **Natural Language Resume Modifications**: The most innovative feature that allows users to transform resumes with simple instructions:
 
-**Remix Examples with Real Results**:
+**Remix Examples**:
 - **"Make it more creative and engaging"** → Professional yet playful tone with enhanced visual appeal
 - **"Emphasize leadership experience"** → Focus shifts to management and team leadership accomplishments
 - **"Style like a space pirate obsessed with outer space"** → Complete thematic transformation:
   - **"Captain Sean 'Space Rover' McHugh"**
   - **"🚀 Interstellar Code Buccaneer & Cosmic .NET Navigator 🏴‍☠️"**
   - Skills become "🚀 Xamarin/MAUI doubloons", "⚡ Reactive Extensions stardust", "☁️ Azure cloud navigation charts"
-  - Job titles become "🏴‍☠️ Lead Space-Faring Software Buccaneer"
   - Complete color scheme transformation (cosmic black/cyan/gold)
   - Maintains technical accuracy while enabling unlimited creativity
-
-**Processing Pipeline**:
-1. **User Input**: Natural language instructions via beautiful dialog interface
-2. **File Preparation**: Current resume saved to temp file for Claude context
-3. **Instruction Processing**: User changes written to dedicated instructions file
-4. **Claude Integration**: AI processes remix request with full job and resume context
-5. **Version Creation**: New version added to resume array (Resume 1, Resume 2, etc.)
-6. **UI Update**: New tab appears instantly with remixed content
 
 **Technical Innovation**: The remix feature demonstrates that AI can maintain technical accuracy while enabling unlimited creative expression - from conservative professional themes to wildly creative variations.
 
@@ -96,32 +78,8 @@ JobSquirrel operates as a unified ecosystem with multiple input methods feeding 
 - **Clean Session Management**: Each operation gets fresh session with unique file paths
 - **No Session Conflicts**: Fresh sessions eliminate Claude confusion and mixed signal issues
 
-**Technical Implementation**:
-```javascript
-// Double check with fresh session data
-async function doubleCheckResume(nutNote, resumeIndex) {
-    let sessionData = generateSessionData(); // Fresh session per operation
-    fs.writeFileSync(sessionData.workingResumePath, nutNote.html[resumeIndex]);
-    
-    let fixPrompt = `Review this resume for compliance with guidelines...`;
-    await AskClaude(fixPrompt);
-    
-    sessionData.sessionId = fs.readFileSync(sessionData.sessionIdPath).toString();
-    let response = fs.readFileSync(sessionData.doubleCheckedResumePath).toString();
-    
-    nutNote.html.push(response); // New version appended
-    nutNote.sessionData.push(sessionData); // Track session
-}
-```
-
-**User Experience Benefits**:
-- **Flexible Quality Control**: Review and improve any resume version in collection
-- **Iterative Refinement**: Build upon any previous version, enabling true creative iteration
-- **Predictable Behavior**: Clean, consistent session management across all operations
-- **Complete Operation History**: Session data arrays provide full audit trail
-
 ### Professional PDF Generation with Precision Controls
-**Advanced PDF System**: Implemented sophisticated PDF generation with pixel-perfect control:
+**Advanced PDF System**: Sophisticated PDF generation with pixel-perfect control:
 
 **Technical Implementation**:
 - **Puppeteer-based PDF engine** for consistent, high-quality output
@@ -130,36 +88,12 @@ async function doubleCheckResume(nutNote, resumeIndex) {
 - **Automatic file overwriting** for clean file management
 - **Instant preview** in new browser tab
 
-**User Experience**:
-- Professional margin input group with real-time feedback
-- One-click PDF generation from any resume version
-- Professional filenames ready for immediate HR submission
-- No manual file renaming or organization required
-
-### Real-time Streaming Architecture Revolution
+### Real-time Streaming Architecture
 **React Queue Mechanism**: Solved critical React state batching issues that were preventing real-time Claude output display:
 
 **Problem Solved**: React was batching rapid Claude events, causing UI to miss updates and lose streaming visibility
 **Solution Implemented**: Event queue with 10ms processing delays to force individual React renders
 **Result**: Perfect capture of high-frequency streaming output with complete visibility into Claude's reasoning process
-
-**Technical Breakthrough**:
-```javascript
-// Event queue processing prevents React batching
-const eventQueue = [];
-let processing = false;
-
-function processQueue() {
-    if (processing || eventQueue.length === 0) return;
-    processing = true;
-    const nextEvent = eventQueue.shift();
-    setLastEvent(nextEvent); // Each event gets individual React render
-    setTimeout(() => {
-        processing = false;
-        processQueue();
-    }, 10); // Critical 10ms delay ensures React processes each event individually
-}
-```
 
 ## Technology Stack
 
@@ -480,159 +414,36 @@ embedHiddenText(resumeHTML, "Job Listing used by JobSquirrel to tailor resume: "
 - **Cost Optimization**: Eliminated expensive OpenAI calls, replaced with instant regex processing
 - **Cross-Platform Reliability**: Robust URL processing with proper encoding and fallback handling
 
-### Cover Letter Feature Parity Implementation (Previous Session)
-**Complete Remix, Double Check & Delete**: Implemented full feature parity between resumes and cover letters:
+### Cover Letter Feature Parity Implementation
+**Complete Remix, Double Check & Delete**: Implemented full feature parity between resumes and cover letters with complete UI consistency and tabbed interface management.
 
-**Backend**: Added `/api/remix-cover-letter`, `/api/double-check-cover-letter`, `/api/cover-letter-version` endpoints. Fixed critical path bugs in resumeGenerator.js (sessionData.sessionData.* errors, wrong WSL paths). Added `deleteCoverLetterByIndex()` to hoard.js.
-
-**Frontend**: Conditional UI buttons based on `activeType`, shared remix dialog with dynamic titles, unified delete confirmation dialog, green-themed cover letter tabs with delete buttons (only when multiple versions exist).
-
-**Key Achievement**: Complete feature parity - users can generate, remix, double-check, and delete cover letter versions exactly like resumes.
-
-### Cover Letter File Management Architecture (Current State)
-**Multi-Version UI with Single File Storage**: Cover letter system demonstrates interesting architectural trade-offs between user experience and file management:
-
-**Multi-Version User Interface**:
-- Cover letters stored as arrays in memory: `nutNote.coverLetter = [version1, version2, version3...]`
-- Users can view/edit multiple versions via green-themed tabs (Cover Letter 1, Cover Letter 2, etc.)
-- Full feature parity with resumes: generate, remix, double-check, delete operations
-- Complete UI consistency with tabbed interface and version management
-
-**Single File Storage Pattern**:
-- All cover letter operations save to single text file in `GeneratedResumes/` directory
-- File path: `GeneratedResumes/Sean McHugh - [Company].txt` (via `getCoverLetterPath(nutNote.company)`)
-- Each operation (generate, remix, double-check) overwrites previous file content
-- **Result**: Only most recent version preserved on disk, despite multiple versions in UI
-
-**Technical Implementation Details**:
-```javascript
-// All three cover letter functions use identical pattern:
-generateCoverLetterAnthropic() → fs.writeFileSync(getCoverLetterPath(nutNote.company), response)
-remixCoverLetterAnthropic() → fs.writeFileSync(getCoverLetterPath(nutNote.company), response)  
-doubleCheckCoverLetterAnthropic() → fs.writeFileSync(getCoverLetterPath(nutNote.company), response)
-```
-
-**Architectural Trade-offs**:
-- **User Experience Benefit**: Eliminates file management friction - users don't navigate multiple directories
-- **Workflow Optimization**: Matches typical usage pattern (most users go with first/latest version)
-- **File Management Simplification**: Single file per job rather than versioned file collections
-- **Data Preservation Limitation**: Previous versions lost when new versions generated
-
-**Comparison with Resume PDF System**:
-- **Resume PDFs**: Each version gets unique filename, multiple files preserved
-- **Cover Letter Text**: Single file overwritten, only current version saved
-- **Reasoning**: Cover letters typically don't need same level of version preservation as resumes
-
-**Recovery Pattern**: Users wanting to preserve specific cover letter versions can edit that version in the UI, which will overwrite the file with the desired content - providing manual version control when needed.
-
-### Revolutionary Double Check System Implementation
-**Game-Changing Resume Quality Assurance**: Implemented a comprehensive double check system that enables quality review of any resume version:
-
-**Technical Achievement**:
-- **Flexible Resume Review**: Any resume version can now be double checked, not just the latest
-- **Fresh Session Architecture**: Each double check operation gets its own unique session data
-- **Session Data Array**: Moved from single session to array-based tracking: `nutNote.sessionData = []`
-- **Independent Cover Letter Function**: Extracted cover letter generation into dedicated function for better modularity
-- **Architectural Simplification**: Eliminated complex session tracking by embracing fresh sessions per operation
-
-**Key Innovations**:
-- **Mental Reframing**: Realized that preserving same session ID between generation and review was unnecessary constraint
-- **Clean Session Management**: Each operation (generate, double check, remix) gets fresh session data with unique file paths
-- **Universal Double Check**: Users can now review and improve any resume version in their collection
-- **No Session Conflicts**: Fresh sessions eliminate Claude confusion and mixed signal issues
-
-**User Experience Benefits**:
-- **Quality Assurance**: Any resume can be reviewed and improved
-- **Iterative Refinement**: Build upon any previous version, not just the latest
-- **Simplified Architecture**: Clean, predictable session management
-- **Better Organization**: Session data arrays provide complete operation history
-
-### UI Enhancement: Tab Styling Fix
-**Visual Polish**: Fixed active tab styling issue where acorn-brown theme was being overridden by hover effects
-
-**Problem Solved**: Active resume tabs were sometimes appearing white instead of beautiful acorn brown (`#8B4513`)
-**Root Cause**: Hover event handlers using `e.target` instead of `e.currentTarget` caused styling conflicts with child elements
-**Solution**: Enhanced hover logic with explicit background color restoration for active tabs
-
-**Technical Fix**:
-```javascript
-onMouseLeave={(e) => {
-    if (!(resumeDialog.activeTab === index && resumeDialog.activeType === 'html')) {
-        e.currentTarget.style.backgroundColor = 'transparent';
-    } else {
-        // Ensure active tab maintains brown background
-        e.currentTarget.style.backgroundColor = '#8B4513';
-    }
-}}
-```
-
-### Claude Streaming Implementation
-**Real-time AI Transparency**: Implemented comprehensive file-watching streaming architecture for real-time Claude output:
-
-**Essential Changes Made**:
-- **`services/llm/anthropic.js`**: Complete file-watching streaming implementation with cross-platform support
-- **`server.js`**: Added `/api/test-claude-stream` endpoint for testing streaming functionality
-- **`components/Header.jsx`**: Added Claude streaming test button for development and debugging
-- **`App.css`**: Styling for Claude test interface elements
-
-**Technical Features**:
-- **File-watching Architecture**: Real-time JSON parsing of Claude output files
-- **Cross-platform Support**: Windows/WSL compatibility with proper path handling
-- **Event Broadcasting**: Streaming callbacks for immediate browser updates
-- **Error Handling**: Comprehensive error management and response formatting
-
-**Result**: Complete transparency into Claude's reasoning process with zero data loss and real-time updates.
-
-### Revolutionary Remix Feature Implementation
-**Game-Changing Creative Freedom**: Implemented the most innovative feature in JobSquirrel - natural language resume modification:
-
-**Technical Achievement**:
-- **Natural Language Processing**: Users describe changes in plain English
-- **Context-Aware Processing**: Claude receives current resume, job requirements, and user instructions
-- **Creative Freedom**: Unlimited thematic and stylistic transformations
-- **Technical Accuracy**: Maintains job relevance while enabling creative expression
-- **Version Management**: Seamlessly integrates with multi-version resume system
-
-**Real-World Examples**:
-- **Space Pirate Theme**: Complete transformation including "Captain Sean 'Space Rover' McHugh", cosmic color schemes, pirate terminology while maintaining technical qualifications
-- **Professional Polish**: Subtle improvements to tone, formatting, and presentation
-- **Industry Focus**: Emphasis shifts (technical depth, leadership, innovation, specific skills)
-- **Creative Expressions**: Unlimited artistic freedom while preserving professional relevance
+### Double Check System Implementation
+**Quality Assurance**: Comprehensive double check system enabling quality review of any resume version with fresh session architecture and clean session management.
 
 ### React Frontend Migration & Real-time System
-**Technology Stack Modernization**: Successfully migrated from vanilla JavaScript to cutting-edge React ecosystem:
-
-**Architecture Improvements**:
-- **React 19.1.0 + Vite 7.0.0**: Latest frontend technologies for optimal performance
-- **Component-based Design**: Modular, maintainable code structure with proper separation of concerns
-- **Real-time Job Hoard**: Live display with automatic updates on all job changes
-- **Professional UI/UX**: Woodland-themed interface with excellent usability and accessibility
-
-**Real-time Synchronization Breakthrough**: Solved complex file watching and event broadcasting challenges to ensure UI stays perfectly synchronized with backend changes.
+**Technology Stack Modernization**: Successfully migrated from vanilla JavaScript to React 19.1.0 + Vite 7.0.0 with component-based design and real-time job hoard display.
 
 ## Current System State: Modern & Professional 🚀
 
-JobSquirrel has successfully evolved into a sophisticated, cohesive system that demonstrates the perfect balance of professional capability and creative freedom:
+JobSquirrel has evolved into a sophisticated system that balances professional capability with creative freedom:
 
-**Exceptional Achievements**:
-- ✅ **Modern React-based Interface**: Professional UI with real-time everything
+**Key Achievements**:
+- ✅ **Modern React-based Interface**: Professional UI with real-time updates
 - ✅ **Multi-Version Resume Management**: Revolutionary approach to resume iteration
 - ✅ **Remix Feature**: Natural language modifications from professional to wildly creative
 - ✅ **Universal Double Check System**: Quality assurance for any resume version
 - ✅ **Professional PDF Generation**: Enterprise-quality output with precision controls
 - ✅ **Real-time Streaming**: Complete transparency into Claude's AI reasoning process
 - ✅ **Zero Manual File Management**: System handles all organization automatically
-- ✅ **Creative Freedom**: From conservative professional to space pirate themes
 
 **System Strengths**:
 - **Cutting-Edge Technology**: React 19.1.0, Node.js, Puppeteer, Server-Sent Events
 - **Professional Excellence**: Output ready for immediate HR submission
 - **Creative Innovation**: Unlimited artistic expression while maintaining technical accuracy
-- **User Experience**: Intuitive interface with powerful features and excellent usability
-- **AI Transparency**: Complete visibility into artificial intelligence decision-making
+- **User Experience**: Intuitive interface with powerful features
 - **Cross-Platform Integration**: Seamless Windows + WSL + Claude Code execution
 
-**Unique Value Proposition**: JobSquirrel is the only job application system that combines professional-grade output with unlimited creative expression, demonstrating that AI can enhance human creativity rather than constraining it.
+**Unique Value Proposition**: JobSquirrel combines professional-grade output with unlimited creative expression, demonstrating that AI can enhance human creativity rather than constraining it.
 
 ## Development Setup & Usage
 
@@ -675,31 +486,22 @@ JobSquirrel/ResumeData/
 - **Template Library**: Pre-built creative themes (corporate, startup, creative, technical)
 - **Style Inheritance**: Apply successful remix patterns to new jobs
 - **A/B Testing**: Compare resume performance across different creative approaches
-- **Team Collaboration**: Share creative resume variations with career coaches
 
 ### Advanced AI Integration
-- **Multi-Model Support**: Ollama local processing for cost optimization (ollama is currently deprecated but the code shoudl still work)
+- **Multi-Model Support**: Ollama local processing for cost optimization
 - **Bulk Processing**: Parallel resume generation for multiple jobs
 - **Smart Suggestions**: AI-recommended improvements based on job analysis
-- **Performance Analytics**: Track application success rates across different resume styles
 
 ### Professional Platform Features
 - **Application Tracking**: Monitor application status and follow-ups
 - **Interview Preparation**: AI-generated interview questions based on resume and job
 - **Salary Analytics**: Market analysis and negotiation recommendations
-- **Career Progression**: Long-term career path optimization
-
-### Enterprise Capabilities
-- **Team Dashboards**: Career coaching and HR management interfaces
-- **Integration APIs**: Connect with existing HR and recruiting systems
-- **Custom Branding**: White-label solutions for career services
-- **Advanced Analytics**: Comprehensive reporting and success metrics
 
 ---
 
 ## Development Philosophy
 
-**"Professional Excellence with Creative Freedom"** - JobSquirrel demonstrates that technology can enhance human creativity rather than constraining it. The system proves that AI can maintain technical accuracy while enabling unlimited artistic expression.
+**"Professional Excellence with Creative Freedom"** - JobSquirrel demonstrates that technology can enhance human creativity rather than constraining it.
 
 **Core Principles**:
 - **Real-time Transparency**: Every operation provides immediate, complete visibility
@@ -709,12 +511,10 @@ JobSquirrel/ResumeData/
 - **AI-Human Collaboration**: Technology amplifies human creativity and decision-making
 - **Iterative Excellence**: Multi-version systems enable continuous improvement
 
-**Innovation Demonstration**: The space pirate resume feature exemplifies JobSquirrel's unique value - maintaining perfect technical qualifications while enabling complete creative transformation. This shows that AI can understand context deeply enough to preserve what matters while transforming everything else.
+**Innovation Demonstration**: The space pirate resume feature exemplifies JobSquirrel's unique value - maintaining perfect technical qualifications while enabling complete creative transformation.
 
 *Remember: The early squirrel catches the job, but the creative squirrel catches the dream job! 🐿️🎨*
 
-**Development Legacy**: Built through passionate human-AI collaboration, showcasing how iterative development with AI assistance can create software that exceeds what either human or AI could accomplish alone.
-
 ---
 
-*JobSquirrel - Where woodland efficiency meets cutting-edge technology to revolutionize both the job search experience and the creative possibilities of AI-human collaboration.*
+*JobSquirrel - Where woodland efficiency meets cutting-edge technology to revolutionize the job search experience.*
