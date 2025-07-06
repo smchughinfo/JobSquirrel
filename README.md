@@ -39,15 +39,13 @@ Transform resumes with natural language instructions:
 
 ### 📝 **Direct HTML Editor**
 - Edit resume and cover letter content directly in browser
-- Monospace editor with syntax highlighting
-- Real-time updates across all components
 
 ### 📄 **PDF Output**
 - Customizable margins
 - Clean filename format ready for HR submission
 
 ### 💉 **Job Listing Injection**
-- Embed the job listing inside your resume as (.01px, white font) to maximize keyword matching
+- Embed the job listing inside your resume (.01px, white font) to maximize keyword matching
 
 ## 🏗️ Architecture
 
