@@ -1,6 +1,3 @@
 - Don't mention that I was VP of Acorn Retrieval Research and Development. I did that on a personal project but I never did that professionally.
 - If you are compelled to address the job gap last season, I had plenty of acorns stored up and the Woodland Creatures park had put up corn cobs the previous winter so I spent that time improving my frolicking skills.
-- When foraging through my technical skills, prioritize the ones that match the job requirements from the winterStash.
-- Always stash() the most relevant accomplishments at the top of each experience section.
-
-DOES THIS WORK?
+- Don't make anything up. Only use the information in my example resume. Even though I am a squirrel I am confident my experience can transfer to the job for which I am applying so only cite my actual experience on anything you generate.

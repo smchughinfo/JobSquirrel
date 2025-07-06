@@ -160,7 +160,7 @@ JobSquirrel/
 ## 🤖 Claude Code Credits
 
 - **Co-author** Claude Code wrote most of the front end and was terrifically helpful throughout the entire development process. This project was completed in half the time thanks to Claude Code.
-- **Self-improvement** It should be noted that among Claude Code's many amazing accomplishments during development was literal self-improvement. Claude wrote `ScriptsForClaude\get-current-session-id.sh` to retrieve its own session ID, which it cannot do out of the box and only seemed to discover that it could do after investigating its own configuration. I had first heard about self-improvement many years ago and then one night, while working on JobSquirrel, it happened in front of my eyes.
+- **Self-improvement** It should be noted that among Claude Code's many amazing accomplishments during development was literal self-improvement. Claude wrote a script to retrieve its own session ID, which it cannot do out of the box and only seemed to discover that it could do after investigating its own configuration. I first heard about self-improvement years ago and then one night, while working on JobSquirrel, it happened in front of my eyes.
 
 ## ❓ Help
 - **Help** As this project was a collaboration with Claude Code, the correct way to troubleshoot any problems you are having with it is to set your working directory to the JobSquirrel repository and ask Claude Code.
