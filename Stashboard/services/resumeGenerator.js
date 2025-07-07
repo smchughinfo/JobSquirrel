@@ -50,7 +50,7 @@ async function generateResumeAnthropic(nutNote) {
     let resumePersonalInformationPath = getResumePersonalInformation(true);
     let resumeDataDirectory = getResumeDataDirectory(true);
 
-    let prompt = `Use the files provided in '${resumeDataDirectory}' to generate a tailored resume for the job listing in '${sessionData.jobListingPathWSL}'.`;
+    let prompt = `Use the files provided in '${resumeDataDirectory}' to generate a tailored resume for the job listing in '${sessionData.jobListingPathWSL}'. Only include skills found in '${resumeDataDirectory}' to generate the resume.`;
     prompt += ` Output the resume as html to '${sessionData.workingResumePathWSL}'.`;
     prompt += ` Make sure to follow all instructions in '${resumeCustomInstructionsPath}' when generating the resume.`;
     prompt += ` Use '${resumePersonalInformationPath}' as your canonical source of contact information. In other words, no matter what name, email, phone number, personal url, etc. that you encounter in '${resumeDataDirectory}' use the values from '${resumePersonalInformationPath}' when generating your output.`;
@@ -81,6 +81,7 @@ async function doubleCheckResume(nutNote, resumeIndex) {
 
     let fixPrompt = `The resume at '${sessionData.workingResumePathWSL}' was supposed to be generated according to this guidelines file: '${resumeCustomInstructionsPath}'.\n\n`;
     fixPrompt += ` However the user has requested a review. Can you please double check that the resume is in compliance with the guidelines file.`;
+    fixPrompt += ` Only include skills found in '${resumeDataDirectory}' to generate the resume.`;
     fixPrompt += ` Save the new, compliant, resume to '${sessionData.doubleCheckedResumePathWSL}'.`;
     fixPrompt += ` Use '${resumeDataDirectory}' to backfill or correct any information on the resume and '${resumePersonalInformationPath}' as your canonical source of contact information. In other words, no matter what name, email, phone number, personal url, etc. that you encounter in '${resumeDataDirectory}' use the values from '${resumePersonalInformationPath}' when generating your output.`;
     fixPrompt += ` Upon completion save your current session id to a file by following these instructions: '${sessionData.sessionIdInstructionsPathWSL}'`;
@@ -106,7 +107,7 @@ async function generateCoverLetterAnthropic(nutNote) {
     let resumePersonalInformationPath = getResumePersonalInformation(true);
     let resumeDataDirectory = getResumeDataDirectory(true);
 
-    let prompt = `Use the provided files in '${resumeDataDirectory}' to generate a tailored cover letter for the job listing in '${sessionData.jobListingPathWSL}'.`;
+    let prompt = `Use the provided files in '${resumeDataDirectory}' to generate a tailored cover letter for the job listing in '${sessionData.jobListingPathWSL}'. Only include skills found in '${resumeDataDirectory}' to generate the cover letter.`;
     prompt += ` Make sure to follow all instructions in '${resumeCustomInstructionsPath}' that are relevant for writing a cover letter.`;
     prompt += ` Use '${resumePersonalInformationPath}' as your canonical source for contact information. In other words, no matter what name, email, phone number, personal url, etc. that you encounter in '${resumeDataDirectory}' use the values from '${resumePersonalInformationPath}' when generating your output.`;
     prompt += ` Save the cover letter to '${sessionData.coverLetterPathWSL}'`;
@@ -135,7 +136,7 @@ async function remixCoverLetterAnthropic(nutNote, remixInstructions, remixIndex)
     let resumePersonalInformationPath = getResumePersonalInformation(true);
     let resumeDataDirectory = getResumeDataDirectory(true);
 
-    let prompt = `Remix this cover letter '${sessionData.remixCoverLetterPathWSL}' according to these instructions: '${sessionData.remixCoverLetterInstructionsPathWSL}' for this job listing '${sessionData.jobListingPathWSL}'`;
+    let prompt = `Remix this cover letter '${sessionData.remixCoverLetterPathWSL}' according to these instructions: '${sessionData.remixCoverLetterInstructionsPathWSL}' for this job listing '${sessionData.jobListingPathWSL}'. Only include skills found in '${resumeDataDirectory}' to generate the cover letter`;
     prompt += ` Use the files in '${resumeDataDirectory}' as your source of information about the job candidate.`;
     prompt += ` Make sure to follow all instructions in '${resumeCustomInstructionsPath}' that are relevant for writing a cover letter.`;
     prompt += ` Use '${resumePersonalInformationPath}' as your canonical source for contact information. In other words, no matter what name, email, phone number, personal url, etc. that you encounter in '${resumeDataDirectory}' use the values from '${resumePersonalInformationPath}' when generating your output.`;
@@ -164,6 +165,7 @@ async function doubleCheckCoverLetterAnthropic(nutNote, coverLetterIndex) {
 
     let fixPrompt = `The cover letter at '${sessionData.coverLetterPathWSL}' was supposed to be generated according to this guidelines file: '${resumeCustomInstructionsPath}'.\\n\\n`;
     fixPrompt += ` However the user has requested a review. Can you please double check that the cover letter is in compliance with the guidelines file.`;
+    fixPrompt += ` Only include skills found in '${resumeDataDirectory}' to generate the cover letter`;
     fixPrompt += ` Save the new, compliant, cover letter to '${sessionData.doubleCheckedCoverLetterPathWSL}'.`;
     fixPrompt += ` Use '${resumeDataDirectory}' to backfill or correct any information on the cover letter and '${resumePersonalInformationPath}' as your canonical source of contact information. In other words, no matter what name, email, phone number, personal url, etc. that you encounter in '${resumeDataDirectory}' use the values from '${resumePersonalInformationPath}' when generating your output.`;
     fixPrompt += ` Upon completion save your current session id to a file by following these instructions: '${sessionData.sessionIdInstructionsPathWSL}'`;
@@ -191,7 +193,7 @@ async function remixResumeAnthropic(nutNote, remixInstructions, remixIndex) {
     let resumeDataDirectory = getResumeDataDirectory(true);
 
     let prompt = `Remix this resume '${sessionData.remixResumePathWSL}' according to these instructions: '${sessionData.remixResumeInstructionsPathWSL}' for this job listing '${sessionData.jobListingPathWSL}'`;
-    prompt += ` Use the files in '${resumeDataDirectory}' as your source of information about the job candidate.`;
+    prompt += ` Use the files in '${resumeDataDirectory}' as your source of information about the job candidate. Only include skills found in '${resumeDataDirectory}' to generate the resume`;
     prompt += ` Make sure to follow all instructions in '${resumeCustomInstructionsPath}'.`;
     prompt += ` Use '${resumePersonalInformationPath}' as your canonical source for contact information. In other words, no matter what name, email, phone number, personal url, etc. that you encounter in '${resumeDataDirectory}' use the values from '${resumePersonalInformationPath}' when generating your output.`;
     prompt += ` Save the new, remixed, resume to '${sessionData.remixResumePathWSL}'.`;
