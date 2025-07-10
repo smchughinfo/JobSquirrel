@@ -7,7 +7,7 @@ const { JobQueue } = require('./services/jobQueue');
 const { eventBroadcaster } = require('./services/eventBroadcaster');
 const { getHoard, addOrUpdateNutNote, getIdentifier, deleteNutNote, deleteNuteNoteByIndex, deleteCoverLetterByIndex, editResumeByIndex, editCoverLetterByIndex } = require('./services/hoard');
 const { getHoardPath, getResumeDataVectorStoreIdPath, getResumePDFPath } = require('./services/jobSquirrelPaths');
-const { generateResume, generateCoverLetter, remixResumeAnthropic, remixCoverLetterAnthropic, UploadResumeData, doubleCheckResume, doubleCheckCoverLetterAnthropic, processPDFsInResumeData } = require('./services/resumeGenerator');
+const { generateResume, generateCoverLetter, useStaticResume, remixResumeAnthropic, remixCoverLetterAnthropic, UploadResumeData, doubleCheckResume, doubleCheckCoverLetterAnthropic, processPDFsInResumeData } = require('./services/resumeGenerator');
 const { htmlToPdf } = require('./services/pdf');
 
 
@@ -159,6 +159,13 @@ app.delete('/api/cover-letter-version', (req, res) => {
 app.post('/api/generate-resume', async (req, res) => {
     const nutNote = req.body;
     await generateResume(nutNote);
+    res.sendStatus(200);
+});
+
+// Use static resume endpoint
+app.post('/api/use-static-resume', async (req, res) => {
+    const nutNote = req.body;
+    await useStaticResume(nutNote);
     res.sendStatus(200);
 });
 

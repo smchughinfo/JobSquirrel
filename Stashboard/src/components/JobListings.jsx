@@ -236,6 +236,28 @@ function JobListings({ lastEvent }) {
     }
   };
 
+  const useStaticResume = async (job) => {
+    try {
+      console.log(`📋 Using static resume for: ${job.company} - ${job.jobTitle}`);
+      
+      const response = await fetch('/api/use-static-resume', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(job)
+      });
+      
+      if (!response.ok) {
+        console.error('Failed to use static resume');
+      } else {
+        console.log('✅ Static resume applied');
+      }
+    } catch (error) {
+      console.error('Error using static resume:', error);
+    }
+  };
+
   const closeResumeDialog = () => {
     setResumeDialog({ open: false, htmlArray: [], pdfPath: null, coverLetter: null, activeTab: 0, activeType: 'html', jobTitle: '', company: '', job: null });
     setMarginInches(0);
@@ -844,6 +866,24 @@ function JobListings({ lastEvent }) {
                       }}
                     >
                       {(job.html && Array.isArray(job.html) && job.html.length > 0) ? `👁️ View Resume (${job.html.length})` : '📄 Generate Resume'}
+                    </button>
+                    <button
+                      onClick={() => useStaticResume(job)}
+                      style={{
+                        background: '#6c757d',
+                        color: 'white',
+                        border: 'none',
+                        padding: '0.4rem 0.8rem',
+                        borderRadius: '5px',
+                        fontSize: '0.8rem',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#5a6268'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = '#6c757d'}
+                    >
+                      📋 Use Static Resume
                     </button>
                     {job.url && job.url !== 'N/A' && (
                       <a 

@@ -41,6 +41,21 @@ function generateSessionData() {
     return sessionIdData;
 }
 
+async function useStaticResume(nutNote) {
+    let sessionData = generateSessionData();
+
+    fs.writeFileSync(sessionData.jobListingPath, nutNote.markdown);
+
+    let response = "USING STATIC RESUME";
+
+    sessionData.sessionId = "STATIC";
+    nutNote.sessionData.push(sessionData);
+
+    nutNote.html.push(response);
+    addOrUpdateNutNote(nutNote);
+    console.log("resume generated!");
+}
+
 async function generateResumeAnthropic(nutNote) {
     let sessionData = generateSessionData();
 
@@ -330,6 +345,7 @@ async function processPDFsInResumeData() {
 module.exports = {
     generateResume,
     generateCoverLetter,
+    useStaticResume,
     remixResumeAnthropic,
     remixCoverLetterAnthropic,
     doubleCheckResume,
