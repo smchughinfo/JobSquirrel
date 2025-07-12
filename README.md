@@ -4,7 +4,7 @@
 
 ## JobSquirrel In A Nutshell
 
-![JobSquirrel In A Nutshell](/Documentation/JobSquirrel%20in%20a%20nutshell.svg)
+![JobSquirrel In A Nutshell](https://seanmchugh.dev/github-images/JobSquirrel%20in%20a%20nutshell.svg)
 <hr>
 
 ## Beautiful And Varied Results
