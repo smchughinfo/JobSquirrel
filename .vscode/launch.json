@@ -5,6 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "JobSpy",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}\\Scrapers\\JobSpy\\test_jobspy.py",
+            "console": "integratedTerminal"
+        },
+        {
             "type": "node",
             "request": "launch",
             "name": "Stashboard",
@@ -19,7 +26,10 @@
             "type": "node",
             "request": "launch",
             "program": "${workspaceFolder}\\Stashboard\\node_modules\\npm\\bin\\npm-cli.js",
-            "args": ["run", "build"],
+            "args": [
+                "run",
+                "build"
+            ],
             "cwd": "${workspaceFolder}\\Stashboard",
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen"
