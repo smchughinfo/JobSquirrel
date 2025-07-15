@@ -1,12 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
-const { AskAssistant, CreateVectorStore } = require('./llm/openai');
-const { AskClaude } = require('./llm/anthropic');
-const { eventBroadcaster } = require('./eventBroadcaster');
-const { embedHiddenText } = require('./htmlUtilities');
-const { getResumeDataDirectory, getCustomResumeInstructions, getResumePersonalInformation, getSaveSessionIdInstructionsTemplatePath, getSessionIdData, getJobSquirrelRootDirectory, convertPathToWSL, getCoverLetterPath } = require('./jobSquirrelPaths');
-const { addOrUpdateNutNote } = require('./hoard');
+const { AskAssistant, CreateVectorStore } = require('../llm/openai');
+const { AskClaude } = require('../llm/anthropic');
+const { eventBroadcaster } = require('../eventBroadcaster');
+const { embedHiddenText } = require('../htmlUtilities');
+const { getResumeDataDirectory, getCustomResumeInstructions, getResumePersonalInformation, getJobSquirrelRootDirectory, convertPathToWSL, getCoverLetterPath } = require('../jobSquirrelPaths');
+const { addOrUpdateNutNote } = require('../hoard');
+const { generateSessionData } = require('./common');
 
 const RESUME_CLAMP_CLAUSE = `Do not include any preamble, commentary, or code block formatting. Output only the final html content, nothing else.`;
 
@@ -24,21 +25,6 @@ async function generateResumeOpenAI(nutNote) {
     nutNote.html = response;
     addOrUpdateNutNote(nutNote);
     console.log("resume generated!");
-}
-
-function generateSessionData() {
-    let sessionIdData = getSessionIdData();
-
-    let sessionIdsDir = path.dirname(sessionIdData.sessionIdPath);
-    if (!fs.existsSync(sessionIdsDir)) {
-        fs.mkdirSync(sessionIdsDir, { recursive: true });
-    }
-
-    let templatePath = getSaveSessionIdInstructionsTemplatePath();
-    let instructions = fs.readFileSync(templatePath).toString();
-    instructions = instructions.replace("[SESSION ID PATH]", sessionIdData.sessionIdPath);
-    fs.writeFileSync(sessionIdData.sessionIdInstructionsPath, instructions);
-    return sessionIdData;
 }
 
 async function useStaticResume(nutNote) {

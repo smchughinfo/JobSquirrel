@@ -15,6 +15,7 @@ let getCustomResumeInstructions = (wsl) => getJobSquirrelPath(wsl, ["Config", "c
 let getResumePersonalInformation = (wsl) => getJobSquirrelPath(wsl, ["Config", "personal-information.txt"]);
 let getSaveSessionIdInstructionsTemplatePath = (wsl) => getJobSquirrelPath(wsl, ["ScriptsForClaude", "save-session-id-instructions-template.txt"]);
 let getQueueDirectory = (wsl) => getJobSquirrelPath(wsl, ["Stashboard", "queue"]);
+let getResumeTemplatesDirectory = (wsl) => getJobSquirrelPath(wsl, ["Stashboard", "public", "resume-templates"]);
 
 function getSessionIdData(wsl) {
     let rootDir = getJobSquirrelRootDirectory();
@@ -31,6 +32,7 @@ function getSessionIdData(wsl) {
     let remixCoverLetterPath = path.join(sessionIdsDir, `remix-cover-letter-${uid}.txt`);
     let remixResumeInstructionsPath = path.join(sessionIdsDir, `remix-resume-instructions-${uid}.txt`);
     let remixCoverLetterInstructionsPath = path.join(sessionIdsDir, `remix-cover-letter-instructions-${uid}.txt`);
+
     if(wsl) {
         sessionIdPath = convertPathToWSL(sessionIdPath);
     }
@@ -113,5 +115,6 @@ module.exports = {
     getSessionIdData,
     getResumePDFPath,
     getCoverLetterPath,
+    getResumeTemplatesDirectory,
     convertPathToWSL
 };

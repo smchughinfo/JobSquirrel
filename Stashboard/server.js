@@ -7,7 +7,7 @@ const { JobQueue } = require('./services/jobQueue');
 const { eventBroadcaster } = require('./services/eventBroadcaster');
 const { getHoard, addOrUpdateNutNote, getIdentifier, deleteNutNote, deleteNuteNoteByIndex, deleteCoverLetterByIndex, editResumeByIndex, editCoverLetterByIndex } = require('./services/hoard');
 const { getHoardPath, getResumeDataVectorStoreIdPath, getResumePDFPath } = require('./services/jobSquirrelPaths');
-const { generateResume, generateCoverLetter, useStaticResume, remixResumeAnthropic, remixCoverLetterAnthropic, UploadResumeData, doubleCheckResume, doubleCheckCoverLetterAnthropic, processPDFsInResumeData } = require('./services/resumeGenerator');
+const noTemplate = require('./services/generators/noTemplate');
 const { htmlToPdf } = require('./services/pdf');
 
 
@@ -158,21 +158,21 @@ app.delete('/api/cover-letter-version', (req, res) => {
 // Generate resume endpoint
 app.post('/api/generate-resume', async (req, res) => {
     const nutNote = req.body;
-    await generateResume(nutNote);
+    await noTemplate.generateResume(nutNote);
     res.sendStatus(200);
 });
 
 // Use static resume endpoint
 app.post('/api/use-static-resume', async (req, res) => {
     const nutNote = req.body;
-    await useStaticResume(nutNote);
+    await noTemplate.useStaticResume(nutNote);
     res.sendStatus(200);
 });
 
 // Generate cover letter endpoint
 app.post('/api/generate-cover-letter', async (req, res) => {
     const nutNote = req.body;
-    await generateCoverLetter(nutNote);
+    await noTemplate.generateCoverLetter(nutNote);
     res.sendStatus(200);
 });
 
@@ -189,7 +189,7 @@ app.post('/api/double-check-resume', async (req, res) => {
         
         console.log(`✅ Starting double-check for resume version ${resumeIndex + 1} for ${nutNote.company} - ${nutNote.jobTitle}`);
         
-        await doubleCheckResume(nutNote, resumeIndex);
+        await noTemplate.doubleCheckResume(nutNote, resumeIndex);
         
         res.json({ 
             success: true, 
@@ -221,7 +221,7 @@ app.post('/api/remix-resume', async (req, res) => {
         console.log(`📊 Remixing resume version ${activeResumeIndex + 1}`);
         
         // Call the actual remix function
-        await remixResumeAnthropic(nutNote, requestedChanges, activeResumeIndex);
+        await noTemplate.remixResumeAnthropic(nutNote, requestedChanges, activeResumeIndex);
         
         res.json({ 
             success: true, 
@@ -253,7 +253,7 @@ app.post('/api/remix-cover-letter', async (req, res) => {
         console.log(`📊 Remixing cover letter version ${activeCoverLetterIndex + 1}`);
         
         // Call the actual remix function
-        await remixCoverLetterAnthropic(nutNote, requestedChanges, activeCoverLetterIndex);
+        await noTemplate.remixCoverLetterAnthropic(nutNote, requestedChanges, activeCoverLetterIndex);
         
         res.json({ 
             success: true, 
@@ -282,7 +282,7 @@ app.post('/api/double-check-cover-letter', async (req, res) => {
         
         console.log(`✅ Starting double-check for cover letter version ${coverLetterIndex + 1} for ${nutNote.company} - ${nutNote.jobTitle}`);
         
-        await doubleCheckCoverLetterAnthropic(nutNote, coverLetterIndex);
+        await noTemplate.doubleCheckCoverLetterAnthropic(nutNote, coverLetterIndex);
         
         res.json({ 
             success: true, 
@@ -483,7 +483,7 @@ app.post('/api/test-claude-stream', async (req, res) => {
 // Upload resume data endpoint
 app.post('/api/upload-resume-data', async (req, res) => {
     try {
-        const vectorStoreId = await UploadResumeData();
+        const vectorStoreId = await noTemplate.UploadResumeData();
         res.json({ success: true, vectorStoreId });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -639,7 +639,7 @@ clipboardMonitor.startMonitoring();
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 // this is because claude code cant read pdfs. if you aren't using claude code this may not be necessry
-processPDFsInResumeData();
+noTemplate.processPDFsInResumeData();
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 ////////// FILE WATCHING /////////////////////////////////////////////////////////////////////////
