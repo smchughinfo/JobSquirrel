@@ -865,7 +865,7 @@ function JobListings({ lastEvent }) {
                     <button
                       onClick={() => handleResumeClick(job)}
                       style={{
-                        background: '#007bff',
+                        background: (job.html && Array.isArray(job.html) && job.html.length > 0) || (job.coverLetter && Array.isArray(job.coverLetter) && job.coverLetter.length > 0) ? '#007bff' : '#28a745',
                         color: 'white',
                         border: 'none',
                         padding: '0.4rem 0.8rem',
@@ -875,8 +875,14 @@ function JobListings({ lastEvent }) {
                         cursor: 'pointer',
                         transition: 'background-color 0.2s ease'
                       }}
-                      onMouseEnter={(e) => e.target.style.backgroundColor = '#0056b3'}
-                      onMouseLeave={(e) => e.target.style.backgroundColor = '#007bff'}
+                      onMouseEnter={(e) => {
+                        const hasContent = (job.html && Array.isArray(job.html) && job.html.length > 0) || (job.coverLetter && Array.isArray(job.coverLetter) && job.coverLetter.length > 0);
+                        e.target.style.backgroundColor = hasContent ? '#0056b3' : '#218838';
+                      }}
+                      onMouseLeave={(e) => {
+                        const hasContent = (job.html && Array.isArray(job.html) && job.html.length > 0) || (job.coverLetter && Array.isArray(job.coverLetter) && job.coverLetter.length > 0);
+                        e.target.style.backgroundColor = hasContent ? '#007bff' : '#28a745';
+                      }}
                     >
                       {(job.html && Array.isArray(job.html) && job.html.length > 0) || (job.coverLetter && Array.isArray(job.coverLetter) && job.coverLetter.length > 0) ? 
                         `📋 Resume & Cover Letter${job.html && Array.isArray(job.html) ? ` (${job.html.length})` : ''}` : 
