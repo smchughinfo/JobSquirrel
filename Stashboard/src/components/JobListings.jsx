@@ -11,7 +11,8 @@ function JobListings({ lastEvent }) {
   const [marginInches, setMarginInches] = useState(0);
   const [editorDialog, setEditorDialog] = useState({ open: false, content: '', loading: false, resumeIndex: null, type: null });
   const [selectedTemplateNumber, setSelectedTemplateNumber] = useState(1);
-  const [templatePreview, setTemplatePreview] = useState({ show: false, x: 0, y: 0 });
+  const [selectedCoverLetterTemplateNumber, setSelectedCoverLetterTemplateNumber] = useState(1);
+  const [templatePreview, setTemplatePreview] = useState({ show: false, x: 0, y: 0, type: 'resume' });
 
   // Fetch jobs from the API
   const fetchJobs = async () => {
@@ -281,6 +282,33 @@ function JobListings({ lastEvent }) {
       }
     } catch (error) {
       console.error('Error generating template resume:', error);
+    }
+  };
+
+  const generateTemplateCoverLetter = async (job, templateNumber) => {
+    try {
+      console.log(`💌 Generating template cover letter (Template ${templateNumber}) for: ${job.company} - ${job.jobTitle}`);
+      
+      const response = await fetch('/api/generate-template-cover-letter', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nutNote: job,
+          templateNumber: templateNumber
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Failed to generate template cover letter:', errorData.error || 'Unknown error');
+      } else {
+        const successData = await response.json();
+        console.log('✅ Template cover letter generation started:', successData.message);
+      }
+    } catch (error) {
+      console.error('Error generating template cover letter:', error);
     }
   };
 
@@ -1656,10 +1684,10 @@ function JobListings({ lastEvent }) {
                                 transition: 'all 0.2s ease'
                               }}
                               onMouseEnter={(e) => {
-                                setTemplatePreview({ show: true, x: e.clientX, y: e.clientY });
+                                setTemplatePreview({ show: true, x: e.clientX, y: e.clientY, type: 'resume' });
                               }}
                               onMouseLeave={() => {
-                                setTemplatePreview({ show: false, x: 0, y: 0 });
+                                setTemplatePreview({ show: false, x: 0, y: 0, type: 'resume' });
                               }}
                               title="Preview template"
                             >
@@ -1786,21 +1814,70 @@ function JobListings({ lastEvent }) {
                           Use structured cover letter templates with your information for professional consistency.
                         </p>
                         
+                        <div style={{ marginBottom: '1rem' }}>
+                          <label style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            marginBottom: '0.5rem',
+                            fontSize: '0.85rem',
+                            fontWeight: '500',
+                            color: '#495057'
+                          }}>
+                            Template Style:
+                            <span 
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '1rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease'
+                              }}
+                              onMouseEnter={(e) => {
+                                setTemplatePreview({ show: true, x: e.clientX, y: e.clientY, type: 'cover-letter' });
+                              }}
+                              onMouseLeave={() => {
+                                setTemplatePreview({ show: false, x: 0, y: 0, type: 'cover-letter' });
+                              }}
+                              title="Preview cover letter template"
+                            >
+                              👁️
+                            </span>
+                          </label>
+                          <select 
+                            value={selectedCoverLetterTemplateNumber}
+                            onChange={(e) => setSelectedCoverLetterTemplateNumber(parseInt(e.target.value))}
+                            style={{
+                              width: '100%',
+                              padding: '0.4rem',
+                              border: '1px solid #ced4da',
+                              borderRadius: '4px',
+                              fontSize: '0.85rem',
+                              backgroundColor: 'white'
+                            }}>
+                            <option value="1">Template 1 - Professional</option>
+                          </select>
+                        </div>
+                        
                         <button
-                          disabled
+                          onClick={() => generateTemplateCoverLetter(resumeDialog.job, selectedCoverLetterTemplateNumber)}
                           style={{
-                            background: '#cccccc',
-                            color: '#666',
+                            background: '#6c757d',
+                            color: 'white',
                             border: 'none',
                             padding: '0.6rem 1.2rem',
                             borderRadius: '5px',
                             fontSize: '0.9rem',
                             fontWeight: '500',
-                            cursor: 'not-allowed',
+                            cursor: 'pointer',
+                            transition: 'background-color 0.2s ease',
                             width: '100%'
                           }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#5a6268'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = '#6c757d'}
                         >
-                          📋 Template Cover Letter (Coming Soon)
+                          📋 Generate Template Cover Letter
                         </button>
                       </div>
                     </div>
@@ -2321,19 +2398,33 @@ function JobListings({ lastEvent }) {
             fontWeight: '500',
             textAlign: 'center'
           }}>
-            Template {selectedTemplateNumber} Preview
+            {templatePreview.type === 'cover-letter' ? 
+              `Cover Letter Template ${selectedCoverLetterTemplateNumber} Preview` : 
+              `Resume Template ${selectedTemplateNumber} Preview`
+            }
           </div>
           <iframe
-            src={`/static/resume-template-${selectedTemplateNumber}.html`}
+            src={templatePreview.type === 'cover-letter' ? 
+              `/static/cover-letter-template-${selectedCoverLetterTemplateNumber}.txt` : 
+              `/static/resume-template-${selectedTemplateNumber}.html`
+            }
             style={{
-              width: '1500px',
               height: '2000px',
               border: 'none',
-              transform: 'scale(0.33) translate(-20%, 0%)',
+              transform: templatePreview.type === 'cover-letter' ? 
+                'scale(1)' : 
+                'scale(0.33) translate(-20%, 0%)',
+              width: templatePreview.type === 'cover-letter' ? 
+                '300px' : 
+                '1500px',
+
               transformOrigin: 'top left',
               backgroundColor: 'white'
             }}
-            title={`Template ${selectedTemplateNumber} Preview`}
+            title={templatePreview.type === 'cover-letter' ? 
+              `Cover Letter Template ${selectedCoverLetterTemplateNumber} Preview` : 
+              `Resume Template ${selectedTemplateNumber} Preview`
+            }
           />
         </div>
       )}

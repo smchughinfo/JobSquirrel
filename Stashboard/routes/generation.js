@@ -46,11 +46,40 @@ router.post('/use-static-resume', async (req, res) => {
     res.sendStatus(200);
 });
 
-// Generate cover letter endpoint
+// Generate cover letter endpoint (AI-based)
 router.post('/generate-cover-letter', async (req, res) => {
     const nutNote = req.body;
     await noTemplate.generateCoverLetter(nutNote);
     res.sendStatus(200);
+});
+
+// Generate cover letter endpoint (Template-based)
+router.post('/generate-template-cover-letter', async (req, res) => {
+    try {
+        const { nutNote, templateNumber } = req.body;
+        
+        if (!nutNote) {
+            return res.status(400).json({ 
+                error: 'Missing required parameter: nutNote' 
+            });
+        }
+        
+        console.log(`💌 Generating template cover letter (Template ${templateNumber || 1}) for: ${nutNote.company} - ${nutNote.jobTitle}`);
+        
+        await templatized.generateCoverLetter(nutNote, templateNumber || 1);
+        
+        res.json({ 
+            success: true, 
+            message: `Template cover letter generated successfully using Template ${templateNumber || 1}`
+        });
+        
+    } catch (error) {
+        console.error('❌ Template cover letter generation failed:', error.message);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
 });
 
 // Double-check resume endpoint
