@@ -23,26 +23,36 @@
 
 ## ✨ Key Features
 
+### 🎯 **Hybrid Resume Generation System**
+- **AI-Generated Resumes**: Claude's creative intelligence for unique, tailored content
+- **Template-Based Resumes**: Clean, consistent, ATS-friendly formatting with Handlebars
+- Unified interface with comprehensive generation options
+
 ### 🎯 **Multi-Version Resume Management**
 - Generate multiple resume versions per job for iterative improvement
 - Tabbed interface for seamless version switching
+- Array-based storage eliminates version conflicts
 
-### 🎨 **Remix Feature**
+### 🎨 **Revolutionary Remix Feature**
 Transform resumes with natural language instructions:
 - **"Make it more creative and engaging"** → Enhanced visual appeal
 - **"Emphasize leadership experience"** → Management focus
 - **"Style like a space pirate"** → Complete thematic transformation
 - Maintains technical accuracy while enabling unlimited creativity
 
-### ✅ **Double Check **
-- Ask AI to double check resume accuracey with one-click
+### ✅ **Universal Double Check System**
+- Quality review for any resume version, not just the latest
+- Fresh session architecture eliminates Claude confusion
+- One-click quality assurance with custom guidelines compliance
 
 ### 📝 **Direct HTML Editor**
 - Edit resume and cover letter content directly in browser
+- Real-time updates with event broadcasting
 
-### 📄 **PDF Output**
-- Customizable margins
+### 📄 **Professional PDF Generation**
+- Customizable margins (0-2 inches with 0.1-inch precision)
 - Clean filename format ready for HR submission
+- Automatic file overwriting for clean management
 
 ### 💉 **Job Listing Injection**
 - Embed the job listing inside your resume (.01px, white font) to maximize keyword matching
@@ -52,11 +62,17 @@ Transform resumes with natural language instructions:
 ### Core Components
 
 **🌐 Stashboard** - Modern React web interface with:
-- Web interface for job listings and resumes
-- Live updates for server-side events
+- Real-time job hoard display with live updates
+- Tabbed resume management (HTML + PDF versions)
+- Revolutionary remix feature with natural language instructions
+- Comprehensive double check system for quality assurance
+- Live Claude output streaming with expandable content
+- Professional PDF generation with margin controls
+- Server-Sent Events (SSE) for real-time updates
 
-**🏃 Scamper** - Browser extension for job capture:
+**🏃 Scamper** - Browser extension for manual job capture:
 - One-click job posting capture
+- Seamless integration with Stashboard processing
 
 ## 🚀 Quick Start
 
@@ -128,8 +144,11 @@ JobSquirrel/
 │   │   │       ├── assistant.js    # OpenAI assistant integration (deprecated)
 │   │   │       ├── index.js        # OpenAI main service
 │   │   │       └── openai.js       # OpenAI API wrapper
+│   │   ├── generators/             # Resume generation engines
+│   │   │   ├── common.js           # Shared generation utilities
+│   │   │   ├── noTemplate.js       # AI-based resume generation
+│   │   │   └── templatized.js      # Template-based resume generation
 │   │   ├── pdf.js                  # PDF generation service
-│   │   ├── resumeGenerator.js      # Resume generation, remix & double check logic
 │   │   ├── hoard.js                # Job data management
 │   │   ├── eventBroadcaster.js     # Real-time event system
 │   │   ├── jobSquirrelPaths.js     # Centralized path management
@@ -139,17 +158,26 @@ JobSquirrel/
 │   │   ├── htmlUtilities.js        # HTML processing utilities
 │   │   ├── commandRunner.js        # Command execution service
 │   │   └── utilities.js            # General utility functions
-│   ├── routes/                     # API route handlers
-│   │   └── api.js                  # REST API endpoints
-│   ├── public/                     # Static web assets
+│   ├── routes/                     # Modular API route handlers
+│   │   ├── index.js                # Route registration hub
+│   │   ├── hoard.js                # Job listing endpoints
+│   │   ├── generation.js           # Resume/cover letter generation endpoints
+│   │   ├── pdf.js                  # PDF generation endpoints
+│   │   ├── config.js               # Configuration endpoints
+│   │   └── events.js               # SSE and monitoring endpoints
+│   ├── public/                     # Static web assets (built by Vite)
 │   │   └── assets/                 # Built CSS/JS assets
 │   ├── queue/                      # Job queue storage
-│   ├── server.js                   # Express server with SSE endpoints
+│   ├── server.js                   # Express server with modular routes
 │   └── hoard.json                  # Job data storage with HTML arrays
 ├── Scamper/                        # Browser extension
 │   ├── manifest.json               # Extension configuration
 │   ├── content.js                  # Job page interaction
 │   └── background.js               # Extension background tasks
+├── Static/                         # Template files and static assets
+│   ├── resume-template-1.html      # ATS-friendly resume template
+│   ├── resume-template-2.html      # Enhanced design resume template
+│   └── generate-resume.js          # Template generation script
 ├── Config/                         # Configuration and career data
 │   ├── ResumeData/                 # User's career data sources
 │   │   ├── chat-gpt-career-related-memory-dump.md
@@ -190,10 +218,11 @@ JobSquirrel/
 - **Custom React hooks** for SSE integration
 
 ### Backend
-- **Node.js + Express** with RESTful API design
+- **Node.js + Express** with modular route architecture
 - **Server-Sent Events** for real-time client communication
 - **File watching** with debounced change detection
 - **Event broadcasting** system for multi-client support
+- **Handlebars templating** for template-based resume generation
 
 ### AI Integration
 - **Claude Code** via WSL bridge with TTY emulation

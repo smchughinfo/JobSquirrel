@@ -149,8 +149,11 @@ The system features a modern React-based web interface (Stashboard) with real-ti
 │   │   │       ├── assistant.js    # OpenAI assistant integration (deprecated)
 │   │   │       ├── index.js        # OpenAI main service
 │   │   │       └── openai.js       # OpenAI API wrapper
+│   │   ├── generators/             # Resume generation engines
+│   │   │   ├── common.js           # Shared generation utilities
+│   │   │   ├── noTemplate.js       # AI-based resume generation
+│   │   │   └── templatized.js      # Template-based resume generation
 │   │   ├── pdf.js                  # PDF generation service
-│   │   ├── resumeGenerator.js      # Resume generation, remix & double check logic
 │   │   ├── hoard.js                # Job data management
 │   │   ├── eventBroadcaster.js     # Real-time event system
 │   │   ├── jobSquirrelPaths.js     # Centralized path management
@@ -160,17 +163,26 @@ The system features a modern React-based web interface (Stashboard) with real-ti
 │   │   ├── htmlUtilities.js        # HTML processing utilities
 │   │   ├── commandRunner.js        # Command execution service
 │   │   └── utilities.js            # General utility functions
-│   ├── routes/                     # API route handlers
-│   │   └── api.js                  # REST API endpoints
-│   ├── public/                     # Static web assets
+│   ├── routes/                     # Modular API route handlers
+│   │   ├── index.js                # Route registration hub
+│   │   ├── hoard.js                # Job listing endpoints
+│   │   ├── generation.js           # Resume/cover letter generation endpoints
+│   │   ├── pdf.js                  # PDF generation endpoints
+│   │   ├── config.js               # Configuration endpoints
+│   │   └── events.js               # SSE and monitoring endpoints
+│   ├── public/                     # Static web assets (built by Vite)
 │   │   └── assets/                 # Built CSS/JS assets
 │   ├── queue/                      # Job queue storage
-│   ├── server.js                   # Express server with SSE endpoints
+│   ├── server.js                   # Express server with modular routes
 │   └── hoard.json                  # Job data storage with HTML arrays
 ├── Scamper/                        # Browser extension
 │   ├── manifest.json               # Extension configuration
 │   ├── content.js                  # Job page interaction
 │   └── background.js               # Extension background tasks
+├── Static/                         # Template files and static assets
+│   ├── resume-template-1.html      # ATS-friendly resume template
+│   ├── resume-template-2.html      # Enhanced design resume template
+│   └── generate-resume.js          # Template generation script
 ├── Config/                         # Configuration and career data
 │   ├── ResumeData/                 # User's career data sources
 │   │   ├── chat-gpt-career-related-memory-dump.md
@@ -216,8 +228,11 @@ The system features a modern React-based web interface (Stashboard) with real-ti
 - **Smart Controls**: Collapse/expand, delete, and direct links to original postings
 - **Real-time Sync**: File watching ensures UI stays perfectly synchronized with backend changes
 
-### 3. **AI-Powered Resume Generation**: Multi-version creation
-- **"📄 Generate Resume" button**: Initiates AI-powered resume creation
+### 3. **Hybrid Resume Generation**: AI and template-based options
+- **"🚀 Resume & Cover Letter" button**: Opens unified generation dialog
+- **AI-Generated Resumes**: Claude's creative intelligence for unique, tailored content
+- **Template-Based Resumes**: Clean, consistent, ATS-friendly formatting with Handlebars
+- **Template Selection**: Choose between "ATS Friendly" or "Enhanced Design" templates
 - **Multiple Versions**: Each generation appends to HTML array (Resume 1, Resume 2, etc.)
 - **Live Streaming**: Real-time Claude output visible in dedicated panel with expandable content
 - **Tabbed Interface**: Switch between different resume versions seamlessly
@@ -413,6 +428,42 @@ embedHiddenText(resumeHTML, "Job Listing used by JobSquirrel to tailor resume: "
 - **Smart Google Search**: Full URL included in search query for maximum context
 - **Cost Optimization**: Eliminated expensive OpenAI calls, replaced with instant regex processing
 - **Cross-Platform Reliability**: Robust URL processing with proper encoding and fallback handling
+
+### Modular Server Architecture & Template System Integration (Latest Session)
+**Complete Server Refactoring**: Transformed monolithic 850+ line server.js into clean modular architecture:
+
+**Modular Route System**: Created focused, maintainable route files:
+- **`routes/index.js`** - Central route registration hub
+- **`routes/hoard.js`** - Job listing management endpoints  
+- **`routes/generation.js`** - Resume/cover letter generation endpoints
+- **`routes/pdf.js`** - PDF generation endpoints
+- **`routes/config.js`** - Configuration file management endpoints
+- **`routes/events.js`** - Server-Sent Events and monitoring endpoints
+
+**Template-Based Resume Generation**: Implemented hybrid AI/template system:
+```javascript
+// New template generation endpoint
+/api/generate-template-resume → templatized.generateResume(nutNote, templateNumber)
+```
+
+**Key Technical Achievements**:
+- **Clean Separation of Concerns**: Each route file handles specific functionality domain
+- **Maintained Functionality**: All existing endpoints preserved during refactoring
+- **Template Integration**: Handlebars-based resume generation with user data from resume.json
+- **Path Organization**: Static directory properly organized outside Vite build process
+- **UI Integration**: Template selector dropdown with real-time generation
+
+**Hybrid Generation System**: Users now have comprehensive options:
+- **AI-Generated Resumes**: Claude's creative intelligence for unique, tailored content
+- **Template-Based Resumes**: Clean, consistent, ATS-friendly formatting
+- **Template Selection**: "ATS Friendly" vs "Enhanced Design" options
+- **Unified Interface**: Single dialog with comprehensive generation options
+
+**File Organization Improvements**:
+- **Static Directory**: Moved to proper JobSquirrel root location (`JobSquirrel/Static/`)
+- **Build Process Safety**: Templates stored outside Vite public folder to prevent overwriting
+- **Template Files**: `resume-template-1.html` (ATS) and `resume-template-2.html` (Enhanced)
+- **Path Configuration**: Updated `jobSquirrelPaths.js` for correct template resolution
 
 ### Cover Letter Feature Parity Implementation
 **Complete Remix, Double Check & Delete**: Implemented full feature parity between resumes and cover letters with complete UI consistency and tabbed interface management.
