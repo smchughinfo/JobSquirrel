@@ -26,7 +26,7 @@ const schema = z.object({
         company: z.string().describe("The complete company name exactly as it appears, including all legal entity suffixes (LLC, Inc, Corp, Ltd, etc.), punctuation, and formatting. Use the most official and complete version found. Examples: 'Govcio LLC' not 'GovCIO', 'Apple Inc.' not 'Apple'"),
         jobTitle: z.string().describe("The exact job title as posted, preserving all original formatting, abbreviations, punctuation, and capitalization. Do not paraphrase or shorten. Examples: 'Sr. Software Engineer' not 'Senior Software Engineer', 'Full Stack Developer/Architect' not 'Full Stack Developer'"),
         salary: z.string().describe("Salary range/amount or 'N/A' if not specified"),
-        requirements: z.array(z.string()).describe("Array of key skills/qualifications required"),
+        requirements: z.array(z.string()).describe("Array of specific skills, technologies, and qualifications as discrete ATS-friendly keywords. Break down complex requirements into individual searchable terms. Examples: 'C#', '.NET Framework', 'AutoCAD', 'SQL Server', 'Azure', 'Git', 'Agile', '7+ years experience', 'Bachelor degree'. Avoid full sentences."),
         jobSummary: z.string().describe("Brief 2-3 sentence description of the role"),
         location: z.string().describe("Work location (remote/hybrid/on-site/city) or 'N/A'")  
     })
