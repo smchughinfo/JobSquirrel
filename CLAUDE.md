@@ -95,6 +95,53 @@ The system features a modern React-based web interface (Stashboard) with real-ti
 **Solution Implemented**: Event queue with 10ms processing delays to force individual React renders
 **Result**: Perfect capture of high-frequency streaming output with complete visibility into Claude's reasoning process
 
+### Revolutionary ATS Skills Optimization System 🎯
+**Intelligent Keyword Management**: Advanced ATS (Applicant Tracking System) skills optimization with user approval workflow that transforms template-based resume generation:
+
+**Smart Skills Detection**:
+- **Automatic Analysis**: AI compares job requirements against existing skill set during template generation
+- **New Skill Identification**: System detects unmatched skills from job postings that could enhance ATS compatibility
+- **Generation Pause**: Template generation intelligently pauses when new skills are discovered
+- **User Approval Workflow**: Professional dialog presents all skills with new ones highlighted for review
+
+**ATS Skills Approval Dialog**:
+- **Professional Interface**: Clean modal with skill matrix display and checkbox controls
+- **Smart Highlighting**: New skills prominently displayed at top with "NEW" badges
+- **Comprehensive View**: Shows all existing ATS skills alongside new discoveries
+- **Instant Integration**: Approved skills immediately available for current and future generations
+
+**Seamless Workflow Integration**:
+- **Template Generation Enhancement**: Approved ATS skills automatically appended to resume.json skills
+- **Dynamic Skill Combination**: `[...resumeData.skills, ...approvedATSSkills]` for optimal keyword coverage
+- **Universal Application**: Same enhancement applies to both resume and cover letter generation
+- **Hamburger Menu Access**: "🎯 Manage ATS Skills" button for ongoing skill library management
+
+**Technical Architecture**:
+- **File-Based Storage**: Skills persisted in `ats-add-on-skills.json` with include/exclude flags
+- **Modular Service Design**: `atsAddOnSkills.js` provides clean API for skill management
+- **React Dialog Component**: `ATSSkillsDialog.jsx` with responsive grid layout and professional styling
+- **API Integration**: RESTful endpoints for skill retrieval and updates (`/api/ats-skills`)
+
+**Key Benefits**:
+- **ATS Optimization**: Maximizes keyword matching for automated recruiting systems
+- **Non-Destructive**: Original skills preserved while adding targeted job-specific keywords
+- **User Control**: Complete transparency and approval control over skill additions
+- **Persistent Library**: Approved skills available across all future job applications
+
+### Dynamic Job Title Integration 🎯
+**Perfect Job Matching**: Revolutionary approach to resume personalization using actual job listing titles instead of generic personal titles:
+
+**Technical Implementation**:
+- **Template Data Enhancement**: `title: nutNote.jobTitle` replaces `title: resumeData.personal_information.title`
+- **Both Resume & Cover Letter**: Consistent job title integration across all template generation
+- **Automatic Alignment**: Every generated document perfectly matches the specific job posting
+
+**Professional Benefits**:
+- **Perfect ATS Matching**: Resume titles now exactly match recruiter expectations
+- **Job-Specific Optimization**: No more generic "Software Engineer" when applying for "Senior React Developer"
+- **Professional Consistency**: Complete alignment between job posting and application materials
+- **Automatic Personalization**: Zero manual effort required for perfect job title matching
+
 ## Technology Stack
 
 ### Frontend
@@ -103,9 +150,14 @@ The system features a modern React-based web interface (Stashboard) with real-ti
 - **Server-Sent Events** for real-time browser updates
 - **Custom React hooks** (`useEventStream`) for SSE integration
 - **Component-based design** with proper state management
+- **ATS Skills Dialog** (`ATSSkillsDialog.jsx`) with responsive grid layout and professional styling
+- **Template Generation Integration** with both AI and template-based resume systems
 
 ### Backend
 - **Node.js + Express** with RESTful API design
+- **Modular Route Architecture** with organized endpoint structure (`routes/` directory)
+- **ATS Skills Management** (`atsAddOnSkills.js`) with file-based persistence
+- **Template Generation System** (`templatized.js`) with Handlebars integration
 - **Server-Sent Events** for real-time client communication
 - **File watching** with debounced change detection
 - **Event broadcasting** system for multi-client support
@@ -122,6 +174,8 @@ The system features a modern React-based web interface (Stashboard) with real-ti
 ### File Management
 - **JSON-based job storage** (`hoard.json`) with atomic updates
 - **HTML array storage** for multi-version resume management
+- **ATS Skills Persistence** (`ats-add-on-skills.json`) with include/exclude flags
+- **Template Storage** (`static/` directory) with resume and cover letter templates
 - **Automatic PDF organization** in `GeneratedResumes/` directory
 - **Temp file management** for Claude processing workflows
 - **Clean filename conventions** for professional output
@@ -137,7 +191,8 @@ The system features a modern React-based web interface (Stashboard) with real-ti
 │   │   │   ├── JobListings.jsx     # Job cards + multi-version resume + remix + double check
 │   │   │   ├── EventMonitor.jsx    # Real-time system event display
 │   │   │   ├── ClaudeAssistant.jsx # Live Claude output streaming
-│   │   │   ├── Header.jsx          # Squirrel-themed navigation
+│   │   │   ├── Header.jsx          # Squirrel-themed navigation with ATS skills access
+│   │   │   ├── ATSSkillsDialog.jsx # ATS skills approval and management dialog
 │   │   │   └── ClipboardMonitor.jsx # Clipboard monitoring component
 │   │   └── hooks/                  # Custom React hooks
 │   │       └── useEventStream.js   # SSE integration with queue mechanism
@@ -152,7 +207,8 @@ The system features a modern React-based web interface (Stashboard) with real-ti
 │   │   ├── generators/             # Resume generation engines
 │   │   │   ├── common.js           # Shared generation utilities
 │   │   │   ├── noTemplate.js       # AI-based resume generation
-│   │   │   └── templatized.js      # Template-based resume generation
+│   │   │   └── templatized.js      # Template-based resume generation with ATS skills
+│   │   ├── atsAddOnSkills.js       # ATS skills management service
 │   │   ├── pdf.js                  # PDF generation service
 │   │   ├── hoard.js                # Job data management
 │   │   ├── eventBroadcaster.js     # Real-time event system
@@ -167,28 +223,31 @@ The system features a modern React-based web interface (Stashboard) with real-ti
 │   │   ├── index.js                # Route registration hub
 │   │   ├── hoard.js                # Job listing endpoints
 │   │   ├── generation.js           # Resume/cover letter generation endpoints
+│   │   ├── atsSkills.js            # ATS skills management endpoints
 │   │   ├── pdf.js                  # PDF generation endpoints
 │   │   ├── config.js               # Configuration endpoints
 │   │   └── events.js               # SSE and monitoring endpoints
 │   ├── public/                     # Static web assets (built by Vite)
 │   │   └── assets/                 # Built CSS/JS assets
+│   ├── static/                     # Template files and static assets
+│   │   ├── resume-template-1.html  # ATS-friendly resume template
+│   │   ├── resume-template-2.html  # Enhanced design resume template
+│   │   └── cover-letter-template-1.txt # Professional cover letter template
 │   ├── queue/                      # Job queue storage
 │   ├── server.js                   # Express server with modular routes
-│   └── hoard.json                  # Job data storage with HTML arrays
+│   ├── hoard.json                  # Job data storage with HTML arrays
+│   └── ats-add-on-skills.json      # ATS skills library with approval flags
 ├── Scamper/                        # Browser extension
 │   ├── manifest.json               # Extension configuration
 │   ├── content.js                  # Job page interaction
 │   └── background.js               # Extension background tasks
-├── Static/                         # Template files and static assets
-│   ├── resume-template-1.html      # ATS-friendly resume template
-│   ├── resume-template-2.html      # Enhanced design resume template
-│   └── generate-resume.js          # Template generation script
 ├── Config/                         # Configuration and career data
 │   ├── ResumeData/                 # User's career data sources
 │   │   ├── chat-gpt-career-related-memory-dump.md
 │   │   ├── nutkins cover letter template.txt
 │   │   ├── resume1.txt             # Resume data file
 │   │   └── resume2.txt             # Resume data file
+│   │   └── resume.json             # Required for templatized resumes
 │   ├── personal-information.txt    # Contact information
 │   └── custom-resume-instructions.txt # AI processing guidelines
 ├── Cache/                          # Session tracking and temp files
@@ -228,15 +287,18 @@ The system features a modern React-based web interface (Stashboard) with real-ti
 - **Smart Controls**: Collapse/expand, delete, and direct links to original postings
 - **Real-time Sync**: File watching ensures UI stays perfectly synchronized with backend changes
 
-### 3. **Hybrid Resume Generation**: AI and template-based options
+### 3. **Hybrid Resume Generation**: AI and template-based options with ATS optimization
 - **"🚀 Resume & Cover Letter" button**: Opens unified generation dialog
 - **AI-Generated Resumes**: Claude's creative intelligence for unique, tailored content
-- **Template-Based Resumes**: Clean, consistent, ATS-friendly formatting with Handlebars
+- **Template-Based Resumes**: Clean, consistent, ATS-friendly formatting with Handlebars and automatic skills optimization
+- **ATS Skills Integration**: Template generation automatically detects and incorporates job-specific keywords
+- **Skills Approval Workflow**: New skills trigger professional approval dialog with smart highlighting
+- **Dynamic Job Title Matching**: Resume titles automatically use job posting titles for perfect ATS alignment
 - **Template Selection**: Choose between "ATS Friendly" or "Enhanced Design" templates
 - **Multiple Versions**: Each generation appends to HTML array (Resume 1, Resume 2, etc.)
 - **Live Streaming**: Real-time Claude output visible in dedicated panel with expandable content
 - **Tabbed Interface**: Switch between different resume versions seamlessly
-- **Cover Letter Generation**: Automatic cover letter creation alongside resume
+- **Cover Letter Generation**: Automatic cover letter creation alongside resume with same ATS optimization
 
 ### 4. **Revolutionary Creative Variations**: The Remix Feature 🎨
 - **"🎨 Remix" button**: Opens remix dialog for existing resumes
@@ -252,14 +314,22 @@ The system features a modern React-based web interface (Stashboard) with real-ti
 - **Guidelines Compliance**: Reviews resume against custom instructions for quality assurance
 - **Version Creation**: Creates new improved version while preserving original
 
-### 6. **Professional PDF Creation**: Precision output generation
+### 6. **ATS Skills Optimization**: Intelligent keyword management 🎯
+- **Automatic Detection**: System identifies job-specific skills missing from resume during template generation
+- **Smart Approval Dialog**: Professional interface shows all skills with new ones highlighted and badged
+- **Hamburger Menu Access**: "🎯 Manage ATS Skills" for ongoing library management and review
+- **Skill Matrix Interface**: Responsive grid layout with checkboxes for easy selection
+- **Persistent Skills Library**: Approved skills automatically included in all future generations
+- **Dynamic Integration**: `[...resumeData.skills, ...approvedATSSkills]` for optimal keyword coverage
+
+### 7. **Professional PDF Creation**: Precision output generation
 - **Customizable Margins**: 0-2 inch margin control with 0.1-inch precision
 - **One-Click Generation**: Instant PDF creation from any resume version
 - **Clean Naming**: Professional filename format ready for HR submission
 - **Instant Preview**: PDF opens in new tab for immediate review
 - **Automatic Management**: File overwriting prevents version clutter
 
-### 7. **Complete Real-time Monitoring**: Full transparency
+### 8. **Complete Real-time Monitoring**: Full transparency
 - **Claude Output Panel**: Live streaming of AI reasoning and generation process
 - **Event Monitor**: System-wide operation tracking with timestamped events
 - **Expandable Content**: Click to view full responses and detailed information

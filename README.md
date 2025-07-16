@@ -24,9 +24,28 @@
 ## ✨ Key Features
 
 ### 🎯 **Hybrid Resume Generation System**
-- **AI-Generated Resumes**: Claude's creative intelligence for unique, tailored content
-- **Template-Based Resumes**: Clean, consistent, ATS-friendly formatting with Handlebars
-- Unified interface with comprehensive generation options
+JobSquirrel offers two powerful resume generation approaches - choose based on your needs:
+
+#### **🤖 AI-Generated Resumes** 
+**"Claude Chooses Its Own Adventure"**
+- **What it does**: Claude AI creates completely custom resumes from scratch using your career data
+- **Best for**: Creative positions, unique layouts, highly personalized content
+- **How to use**: Click "🚀 Generate AI Resume" button - Claude will analyze the job and create a tailored resume
+- **Output**: Creative, unique designs with personalized content and styling
+
+#### **📋 Template-Based Resumes**
+**"Structured & ATS-Optimized"**  
+- **What it does**: Uses professional Handlebars templates with your data for consistent, clean formatting
+- **Best for**: Corporate positions, ATS systems, professional consistency
+- **How to use**: Click "📋 Generate Template Resume" → Select template style → Automatic ATS skills optimization
+- **Output**: Clean, professional, ATS-friendly resumes with automatic keyword optimization
+- **Bonus**: Includes ATS Skills system that detects job-specific keywords and lets you approve them for better matching
+
+#### **🎯 ATS Skills Optimization** (Template Generation Only)
+- **Automatic Detection**: System finds job-specific skills you don't have yet
+- **Approval Dialog**: Review and approve new skills with professional interface  
+- **Hamburger Menu**: Access "🎯 Manage ATS Skills" anytime to review your skills library
+- **Perfect Matching**: Approved skills automatically added to all future resumes
 
 ### 🎯 **Multi-Version Resume Management**
 - Generate multiple resume versions per job for iterative improvement
@@ -132,7 +151,8 @@ JobSquirrel/
 │   │   │   ├── JobListings.jsx     # Job cards + multi-version resume + remix + double check
 │   │   │   ├── EventMonitor.jsx    # Real-time system event display
 │   │   │   ├── ClaudeAssistant.jsx # Live Claude output streaming
-│   │   │   ├── Header.jsx          # Squirrel-themed navigation
+│   │   │   ├── Header.jsx          # Squirrel-themed navigation with ATS skills access
+│   │   │   ├── ATSSkillsDialog.jsx # ATS skills approval and management dialog
 │   │   │   └── ClipboardMonitor.jsx # Clipboard monitoring component
 │   │   └── hooks/                  # Custom React hooks
 │   │       └── useEventStream.js   # SSE integration with queue mechanism
@@ -147,7 +167,8 @@ JobSquirrel/
 │   │   ├── generators/             # Resume generation engines
 │   │   │   ├── common.js           # Shared generation utilities
 │   │   │   ├── noTemplate.js       # AI-based resume generation
-│   │   │   └── templatized.js      # Template-based resume generation
+│   │   │   └── templatized.js      # Template-based resume generation with ATS skills
+│   │   ├── atsAddOnSkills.js       # ATS skills management service
 │   │   ├── pdf.js                  # PDF generation service
 │   │   ├── hoard.js                # Job data management
 │   │   ├── eventBroadcaster.js     # Real-time event system
@@ -162,28 +183,31 @@ JobSquirrel/
 │   │   ├── index.js                # Route registration hub
 │   │   ├── hoard.js                # Job listing endpoints
 │   │   ├── generation.js           # Resume/cover letter generation endpoints
+│   │   ├── atsSkills.js            # ATS skills management endpoints
 │   │   ├── pdf.js                  # PDF generation endpoints
 │   │   ├── config.js               # Configuration endpoints
 │   │   └── events.js               # SSE and monitoring endpoints
 │   ├── public/                     # Static web assets (built by Vite)
 │   │   └── assets/                 # Built CSS/JS assets
+│   ├── static/                     # Template files and static assets
+│   │   ├── resume-template-1.html  # ATS-friendly resume template
+│   │   ├── resume-template-2.html  # Enhanced design resume template
+│   │   └── cover-letter-template-1.txt # Professional cover letter template
 │   ├── queue/                      # Job queue storage
 │   ├── server.js                   # Express server with modular routes
-│   └── hoard.json                  # Job data storage with HTML arrays
+│   ├── hoard.json                  # Job data storage with HTML arrays
+│   └── ats-add-on-skills.json      # ATS skills library with approval flags
 ├── Scamper/                        # Browser extension
 │   ├── manifest.json               # Extension configuration
 │   ├── content.js                  # Job page interaction
 │   └── background.js               # Extension background tasks
-├── Static/                         # Template files and static assets
-│   ├── resume-template-1.html      # ATS-friendly resume template
-│   ├── resume-template-2.html      # Enhanced design resume template
-│   └── generate-resume.js          # Template generation script
 ├── Config/                         # Configuration and career data
 │   ├── ResumeData/                 # User's career data sources
 │   │   ├── chat-gpt-career-related-memory-dump.md
 │   │   ├── nutkins cover letter template.txt
 │   │   ├── resume1.txt             # Resume data file
 │   │   └── resume2.txt             # Resume data file
+│   │   └── resume.json             # Required for templatized resumes
 │   ├── personal-information.txt    # Contact information
 │   └── custom-resume-instructions.txt # AI processing guidelines
 ├── Cache/                          # Session tracking and temp files
