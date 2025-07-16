@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const Handlebars = require('handlebars');
 const { getResumeTemplatesDirectory, getResumeDataDirectory, getResumeJSONPath } = require('../jobSquirrelPaths');
-const { addSkills } = require('../atsAddOnSkills');
+const { addSkills, hasNewSkills, getApprovedSkills } = require('../atsAddOnSkills');
 const { addOrUpdateNutNote } = require('../hoard');
 const { generateSessionData } = require('./common');
 const { askOpenAI, getJSONAsync } = require('../llm/openai');
@@ -48,9 +48,13 @@ async function generateResume(nutNote, templateNumber = 1) {
     let sessionData = generateSessionData();
     nutNote.sessionData.push(sessionData);
 
-    //let unmatchedSkills = await (getUnmatchedSkills(nutNote)).unmatchedSkills;
     let unmatchedSkills = await getUnmatchedSkills(nutNote);
-    addSkills(unmatchedSkills);
+    
+    // Check if there are new skills that need approval
+    if (hasNewSkills(unmatchedSkills)) {
+        addSkills(unmatchedSkills);
+        throw new Error('NEW_SKILLS_NEED_APPROVAL');
+    }
 
     // Validate template number
     if (![1, 2].includes(templateNumber)) {
@@ -74,6 +78,10 @@ async function generateResume(nutNote, templateNumber = 1) {
     console.log('Reading resume data from:', resumeDataPath);
     const resumeData = JSON.parse(fs.readFileSync(resumeDataPath, 'utf8'));
 
+    // Get approved ATS skills and combine with resume skills
+    const approvedATSSkills = getApprovedSkills();
+    const combinedSkills = [...resumeData.skills, ...approvedATSSkills];
+
     // Compile the template
     const template = Handlebars.compile(templateSource);
 
@@ -90,7 +98,7 @@ async function generateResume(nutNote, templateNumber = 1) {
         website: resumeData.personal_information.website,
         github: resumeData.personal_information.github,
         experience: resumeData.experience,
-        skills: resumeData.skills,
+        skills: combinedSkills,
         education: resumeData.education,
         certifications_and_courses: resumeData.certifications_and_courses,
         projects: resumeData.projects,
@@ -104,9 +112,17 @@ async function generateResume(nutNote, templateNumber = 1) {
     addOrUpdateNutNote(nutNote);
 }
 
-function generateCoverLetter(nutNote, templateNumber = 1) {
+async function generateCoverLetter(nutNote, templateNumber = 1) {
     let sessionData = generateSessionData();
     nutNote.sessionData.push(sessionData);
+
+    let unmatchedSkills = await getUnmatchedSkills(nutNote);
+    
+    // Check if there are new skills that need approval
+    if (hasNewSkills(unmatchedSkills)) {
+        addSkills(unmatchedSkills);
+        throw new Error('NEW_SKILLS_NEED_APPROVAL');
+    }
 
     // Validate template number
     if (![1].includes(templateNumber)) {
@@ -130,6 +146,10 @@ function generateCoverLetter(nutNote, templateNumber = 1) {
     console.log('Reading resume data from:', resumeDataPath);
     const resumeData = JSON.parse(fs.readFileSync(resumeDataPath, 'utf8'));
 
+    // Get approved ATS skills and combine with resume skills
+    const approvedATSSkills = getApprovedSkills();
+    const combinedSkills = [...resumeData.skills, ...approvedATSSkills];
+
     // Compile the template
     const template = Handlebars.compile(templateSource);
 
@@ -151,7 +171,7 @@ function generateCoverLetter(nutNote, templateNumber = 1) {
         JOB_TITLE: nutNote.jobTitle,
         COMPANY_NAME: nutNote.company,
         experience: resumeData.experience,
-        skills: resumeData.skills,
+        skills: combinedSkills,
         education: resumeData.education,
         certifications_and_courses: resumeData.certifications_and_courses,
         projects: resumeData.projects,

@@ -31,6 +31,14 @@ router.post('/generate-template-resume', async (req, res) => {
         });
         
     } catch (error) {
+        if (error.message === 'NEW_SKILLS_NEED_APPROVAL') {
+            return res.json({
+                success: false,
+                needsSkillsApproval: true,
+                message: 'New ATS skills detected. Please review and approve them first.'
+            });
+        }
+        
         console.error('❌ Template resume generation failed:', error.message);
         res.status(500).json({ 
             success: false, 
@@ -74,6 +82,14 @@ router.post('/generate-template-cover-letter', async (req, res) => {
         });
         
     } catch (error) {
+        if (error.message === 'NEW_SKILLS_NEED_APPROVAL') {
+            return res.json({
+                success: false,
+                needsSkillsApproval: true,
+                message: 'New ATS skills detected. Please review and approve them first.'
+            });
+        }
+        
         console.error('❌ Template cover letter generation failed:', error.message);
         res.status(500).json({ 
             success: false, 

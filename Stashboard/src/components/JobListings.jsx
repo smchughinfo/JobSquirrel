@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import ATSSkillsDialog from './ATSSkillsDialog'
 
 function JobListings({ lastEvent }) {
   const [jobs, setJobs] = useState([]);
@@ -13,6 +14,7 @@ function JobListings({ lastEvent }) {
   const [selectedTemplateNumber, setSelectedTemplateNumber] = useState(1);
   const [selectedCoverLetterTemplateNumber, setSelectedCoverLetterTemplateNumber] = useState(1);
   const [templatePreview, setTemplatePreview] = useState({ show: false, x: 0, y: 0, type: 'resume' });
+  const [atsSkillsDialog, setAtsSkillsDialog] = useState({ open: false, pendingGeneration: null });
 
   // Fetch jobs from the API
   const fetchJobs = async () => {
@@ -273,16 +275,41 @@ function JobListings({ lastEvent }) {
         })
       });
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Failed to generate template resume:', errorData.error || 'Unknown error');
+      const result = await response.json();
+      
+      if (result.needsSkillsApproval) {
+        console.log('🎯 New ATS skills detected, showing approval dialog');
+        setAtsSkillsDialog({ 
+          open: true, 
+          pendingGeneration: { type: 'resume', job, templateNumber } 
+        });
+      } else if (result.success) {
+        console.log('✅ Template resume generation started:', result.message);
       } else {
-        const successData = await response.json();
-        console.log('✅ Template resume generation started:', successData.message);
+        console.error('Failed to generate template resume:', result.error || 'Unknown error');
       }
     } catch (error) {
       console.error('Error generating template resume:', error);
     }
+  };
+
+  const handleATSSkillsClose = () => {
+    setAtsSkillsDialog({ open: false, pendingGeneration: null });
+  };
+
+  const handleATSSkillsSave = async () => {
+    const { pendingGeneration } = atsSkillsDialog;
+    
+    if (pendingGeneration) {
+      // Retry the generation after skills have been approved
+      if (pendingGeneration.type === 'resume') {
+        await generateTemplateResume(pendingGeneration.job, pendingGeneration.templateNumber);
+      } else if (pendingGeneration.type === 'coverLetter') {
+        await generateTemplateCoverLetter(pendingGeneration.job, pendingGeneration.templateNumber);
+      }
+    }
+    
+    setAtsSkillsDialog({ open: false, pendingGeneration: null });
   };
 
   const generateTemplateCoverLetter = async (job, templateNumber) => {
@@ -300,12 +327,18 @@ function JobListings({ lastEvent }) {
         })
       });
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Failed to generate template cover letter:', errorData.error || 'Unknown error');
+      const result = await response.json();
+      
+      if (result.needsSkillsApproval) {
+        console.log('🎯 New ATS skills detected, showing approval dialog');
+        setAtsSkillsDialog({ 
+          open: true, 
+          pendingGeneration: { type: 'coverLetter', job, templateNumber } 
+        });
+      } else if (result.success) {
+        console.log('✅ Template cover letter generation started:', result.message);
       } else {
-        const successData = await response.json();
-        console.log('✅ Template cover letter generation started:', successData.message);
+        console.error('Failed to generate template cover letter:', result.error || 'Unknown error');
       }
     } catch (error) {
       console.error('Error generating template cover letter:', error);
@@ -2372,6 +2405,13 @@ function JobListings({ lastEvent }) {
         </div>
       )}
       
+      {/* ATS Skills Dialog */}
+      <ATSSkillsDialog
+        isOpen={atsSkillsDialog.open}
+        onClose={handleATSSkillsClose}
+        onSave={handleATSSkillsSave}
+      />
+
       {/* Template Preview Tooltip */}
       {templatePreview.show && (
         <div
