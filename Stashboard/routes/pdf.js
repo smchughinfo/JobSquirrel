@@ -1,35 +1,33 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
 const { htmlToPdf } = require('../services/pdf');
+const { getJobSquirrelRootDirectory } = require('../services/jobSquirrelPaths');
 
 // Generate PDF endpoint
 router.post('/generate-pdf', async (req, res) => {
     try {
-        const { nutNote, resumeIndex, marginInches } = req.body;
+        const { nutNote, resumeHtml, marginInches } = req.body;
         
-        if (!nutNote || resumeIndex === undefined) {
+        if (!nutNote || !resumeHtml) {
             return res.status(400).json({
-                error: 'Missing required parameters: nutNote, resumeIndex'
+                error: 'Missing required parameters: nutNote, resumeHtml'
             });
         }
         
-        // Validate that the resume index exists
-        if (!nutNote.html || !Array.isArray(nutNote.html) || resumeIndex >= nutNote.html.length) {
-            return res.status(400).json({
-                error: 'Invalid resume index or no resumes available'
-            });
-        }
-        
-        console.log(`📄 Generating PDF for ${nutNote.company} - ${nutNote.jobTitle}, resume version ${resumeIndex + 1}`);
+        console.log(`📄 Generating PDF for ${nutNote.company} - ${nutNote.jobTitle}`);
         console.log(`📏 Using margin: ${marginInches || 0} inches`);
         
-        // Generate PDF using the specified resume version
-        const resumeHtml = nutNote.html[resumeIndex];
+        // Generate PDF using the provided resume HTML
         const pdfPath = await htmlToPdf(resumeHtml, nutNote.company, nutNote.jobTitle, marginInches || 0);
+        
+        // Convert absolute path to relative URL for serving via static route
+        const filename = path.basename(pdfPath);
+        const pdfUrl = `/GeneratedResumes/${encodeURIComponent(filename)}`;
         
         res.json({
             success: true,
-            pdfPath,
+            pdfPath: pdfUrl,
             message: `PDF generated successfully with ${marginInches || 0} inch margins`
         });
         

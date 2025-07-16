@@ -3,6 +3,7 @@ const router = express.Router();
 const fs = require('fs');
 const { eventBroadcaster } = require('../services/eventBroadcaster');
 const { getResumeDataVectorStoreIdPath } = require('../services/jobSquirrelPaths');
+const { getGenerationQueueStatus } = require('../services/generators/noTemplate');
 
 // Function to broadcast resume data status
 function broadcastResumeDataStatus() {
@@ -58,6 +59,12 @@ router.get('/queue-status', (req, res) => {
 router.get('/events-status', (req, res) => {
     const stats = eventBroadcaster.getStats();
     res.json(stats);
+});
+
+// Generation queue status endpoint  
+router.get('/generation-queue-status', (req, res) => {
+    const status = getGenerationQueueStatus();
+    res.json(status);
 });
 
 // Test WSL endpoint (for debugging)
