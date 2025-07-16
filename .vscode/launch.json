@@ -5,13 +5,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "JobSpy",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}\\Scrapers\\JobSpy\\test_jobspy.py",
-            "console": "integratedTerminal"
-        },
-        {
             "type": "node",
             "request": "launch",
             "name": "Stashboard",

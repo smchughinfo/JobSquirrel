@@ -10,6 +10,7 @@ function JobListings({ lastEvent }) {
   const [deleteConfirmDialog, setDeleteConfirmDialog] = useState({ open: false, resumeIndex: null });
   const [marginInches, setMarginInches] = useState(0);
   const [editorDialog, setEditorDialog] = useState({ open: false, content: '', loading: false, resumeIndex: null, type: null });
+  const [selectedTemplateNumber, setSelectedTemplateNumber] = useState(1);
 
   // Fetch jobs from the API
   const fetchJobs = async () => {
@@ -194,24 +195,21 @@ function JobListings({ lastEvent }) {
   };
 
   const handleResumeClick = async (job) => {
-    // Check if resume HTML exists (array format)
-    if (job.html && Array.isArray(job.html) && job.html.length > 0) {
-      setResumeDialog({
-        open: true,
-        htmlArray: job.html,
-        pdfPath: job.pdfPath || null, // Load existing PDF path if available
-        coverLetterArray: Array.isArray(job.coverLetter) ? job.coverLetter : (job.coverLetter ? [job.coverLetter] : []), // Convert to array format
-        activeTab: job.html.length - 1, // Default to newest resume
-        activeCoverLetterTab: Array.isArray(job.coverLetter) && job.coverLetter.length > 0 ? job.coverLetter.length - 1 : 0, // Default to newest cover letter
-        activeType: job.pdfPath ? 'pdf' : 'html', // Default to PDF if available, otherwise HTML
-        jobTitle: job.jobTitle || 'N/A',
-        company: job.company || 'N/A',
-        job: job
-      });
-    } else {
-      // Otherwise, generate a new resume
-      await generateResume(job);
-    }
+    // Always open the dialog, regardless of existing content
+    setResumeDialog({
+      open: true,
+      htmlArray: job.html && Array.isArray(job.html) ? job.html : [],
+      pdfPath: job.pdfPath || null,
+      coverLetterArray: Array.isArray(job.coverLetter) ? job.coverLetter : (job.coverLetter ? [job.coverLetter] : []),
+      activeTab: job.html && Array.isArray(job.html) && job.html.length > 0 ? job.html.length - 1 : 0,
+      activeCoverLetterTab: Array.isArray(job.coverLetter) && job.coverLetter.length > 0 ? job.coverLetter.length - 1 : 0,
+      // Default to generate tab if no content exists, otherwise default to appropriate content tab
+      activeType: (job.html && Array.isArray(job.html) && job.html.length > 0) ? 
+        (job.pdfPath ? 'pdf' : 'html') : 'generate',
+      jobTitle: job.jobTitle || 'N/A',
+      company: job.company || 'N/A',
+      job: job
+    });
   };
 
   const generateResume = async (job) => {
@@ -255,6 +253,33 @@ function JobListings({ lastEvent }) {
       }
     } catch (error) {
       console.error('Error using static resume:', error);
+    }
+  };
+
+  const generateTemplateResume = async (job, templateNumber) => {
+    try {
+      console.log(`📋 Generating template resume (Template ${templateNumber}) for: ${job.company} - ${job.jobTitle}`);
+      
+      const response = await fetch('/api/generate-template-resume', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nutNote: job,
+          templateNumber: templateNumber
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Failed to generate template resume:', errorData.error || 'Unknown error');
+      } else {
+        const successData = await response.json();
+        console.log('✅ Template resume generation started:', successData.message);
+      }
+    } catch (error) {
+      console.error('Error generating template resume:', error);
     }
   };
 
@@ -840,7 +865,7 @@ function JobListings({ lastEvent }) {
                     <button
                       onClick={() => handleResumeClick(job)}
                       style={{
-                        background: (job.html && Array.isArray(job.html) && job.html.length > 0) ? '#17a2b8' : '#28a745',
+                        background: '#007bff',
                         color: 'white',
                         border: 'none',
                         padding: '0.4rem 0.8rem',
@@ -850,40 +875,12 @@ function JobListings({ lastEvent }) {
                         cursor: 'pointer',
                         transition: 'background-color 0.2s ease'
                       }}
-                      onMouseEnter={(e) => {
-                        if (job.html && Array.isArray(job.html) && job.html.length > 0) {
-                          e.target.style.backgroundColor = '#138496';
-                        } else {
-                          e.target.style.backgroundColor = '#218838';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (job.html && Array.isArray(job.html) && job.html.length > 0) {
-                          e.target.style.backgroundColor = '#17a2b8';
-                        } else {
-                          e.target.style.backgroundColor = '#28a745';
-                        }
-                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#0056b3'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = '#007bff'}
                     >
-                      {(job.html && Array.isArray(job.html) && job.html.length > 0) ? `👁️ View Resume (${job.html.length})` : '📄 Generate Resume'}
-                    </button>
-                    <button
-                      onClick={() => useStaticResume(job)}
-                      style={{
-                        background: '#6c757d',
-                        color: 'white',
-                        border: 'none',
-                        padding: '0.4rem 0.8rem',
-                        borderRadius: '5px',
-                        fontSize: '0.8rem',
-                        fontWeight: '500',
-                        cursor: 'pointer',
-                        transition: 'background-color 0.2s ease'
-                      }}
-                      onMouseEnter={(e) => e.target.style.backgroundColor = '#5a6268'}
-                      onMouseLeave={(e) => e.target.style.backgroundColor = '#6c757d'}
-                    >
-                      📋 Use Static Resume
+                      {(job.html && Array.isArray(job.html) && job.html.length > 0) || (job.coverLetter && Array.isArray(job.coverLetter) && job.coverLetter.length > 0) ? 
+                        `📋 Resume & Cover Letter${job.html && Array.isArray(job.html) ? ` (${job.html.length})` : ''}` : 
+                        '🚀 Resume & Cover Letter'}
                     </button>
                     {job.url && job.url !== 'N/A' && (
                       <a 
@@ -1539,88 +1536,301 @@ function JobListings({ lastEvent }) {
                   borderRadius: '5px',
                   padding: '2rem',
                   backgroundColor: '#fff',
-                  overflow: 'auto',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '2rem'
+                  overflow: 'auto'
                 }}
               >
-                {/* Generate Resume Section */}
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    textAlign: 'center'
-                  }}
-                >
-                  <p
-                    style={{
-                      color: '#6c757d',
-                      fontSize: '16px',
-                      marginBottom: '1rem'
-                    }}
-                  >
-                    Generate a new resume version
-                  </p>
-                  <button
-                    onClick={handleRegenerateResume}
-                    style={{
-                      background: '#8B4513',
-                      color: 'white',
-                      border: 'none',
-                      padding: '0.75rem 1.5rem',
-                      borderRadius: '5px',
-                      fontSize: '0.9rem',
-                      fontWeight: '500',
-                      cursor: 'pointer',
-                      transition: 'background-color 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = '#6d3510'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = '#8B4513'}
-                  >
-                    📄 Generate Resume
-                  </button>
-                </div>
+                <div style={{
+                  maxWidth: '800px',
+                  margin: '0 auto',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '2rem'
+                }}>
+                  {/* Resume Generation Section */}
+                  <div style={{
+                    padding: '1.5rem',
+                    border: '2px solid #8B4513',
+                    borderRadius: '10px',
+                    backgroundColor: '#fefefe'
+                  }}>
+                    <h4 style={{
+                      margin: '0 0 1rem 0',
+                      color: '#8B4513',
+                      fontSize: '1.2rem',
+                      fontWeight: '600'
+                    }}>📄 Resume Generation</h4>
+                    
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      gap: '1.5rem',
+                      marginBottom: '1.5rem'
+                    }}>
+                      {/* AI-Generated Resume */}
+                      <div style={{
+                        padding: '1rem',
+                        border: '1px solid #dee2e6',
+                        borderRadius: '8px',
+                        backgroundColor: '#f8f9fa'
+                      }}>
+                        <h5 style={{
+                          margin: '0 0 0.75rem 0',
+                          color: '#2c3e50',
+                          fontSize: '1rem'
+                        }}>🤖 AI-Generated Resume</h5>
+                        <p style={{
+                          margin: '0 0 1rem 0',
+                          color: '#6c757d',
+                          fontSize: '0.9rem',
+                          lineHeight: '1.4'
+                        }}>
+                          Claude AI creates a custom resume tailored to this specific job posting using your career data.
+                        </p>
+                        <button
+                          onClick={handleRegenerateResume}
+                          style={{
+                            background: '#8B4513',
+                            color: 'white',
+                            border: 'none',
+                            padding: '0.6rem 1.2rem',
+                            borderRadius: '5px',
+                            fontSize: '0.9rem',
+                            fontWeight: '500',
+                            cursor: 'pointer',
+                            transition: 'background-color 0.2s ease',
+                            width: '100%'
+                          }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#6d3510'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = '#8B4513'}
+                        >
+                          🚀 Generate AI Resume
+                        </button>
+                      </div>
 
-                {/* Generate Cover Letter Section */}
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    textAlign: 'center'
-                  }}
-                >
-                  <p
-                    style={{
-                      color: '#6c757d',
-                      fontSize: '16px',
-                      marginBottom: '1rem'
-                    }}
-                  >
-                    Generate a new cover letter version
-                  </p>
-                  <button
-                    onClick={handleGenerateCoverLetter}
-                    style={{
-                      background: '#28a745',
-                      color: 'white',
-                      border: 'none',
-                      padding: '0.75rem 1.5rem',
-                      borderRadius: '5px',
-                      fontSize: '0.9rem',
-                      fontWeight: '500',
-                      cursor: 'pointer',
-                      transition: 'background-color 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = '#218838'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = '#28a745'}
-                  >
-                    💌 Generate Cover Letter
-                  </button>
+                      {/* Template-Based Resume */}
+                      <div style={{
+                        padding: '1rem',
+                        border: '1px solid #dee2e6',
+                        borderRadius: '8px',
+                        backgroundColor: '#f8f9fa'
+                      }}>
+                        <h5 style={{
+                          margin: '0 0 0.75rem 0',
+                          color: '#2c3e50',
+                          fontSize: '1rem'
+                        }}>📋 Template-Based Resume</h5>
+                        <p style={{
+                          margin: '0 0 1rem 0',
+                          color: '#6c757d',
+                          fontSize: '0.9rem',
+                          lineHeight: '1.4'
+                        }}>
+                          Use pre-designed templates filled with your data for consistent, ATS-friendly formatting.
+                        </p>
+                        
+                        <div style={{ marginBottom: '1rem' }}>
+                          <label style={{
+                            display: 'block',
+                            marginBottom: '0.5rem',
+                            fontSize: '0.85rem',
+                            fontWeight: '500',
+                            color: '#495057'
+                          }}>Template Style:</label>
+                          <select 
+                            value={selectedTemplateNumber}
+                            onChange={(e) => setSelectedTemplateNumber(parseInt(e.target.value))}
+                            style={{
+                              width: '100%',
+                              padding: '0.4rem',
+                              border: '1px solid #ced4da',
+                              borderRadius: '4px',
+                              fontSize: '0.85rem',
+                              backgroundColor: 'white'
+                            }}>
+                            <option value="1">Template 1 - ATS Friendly</option>
+                            <option value="2">Template 2 - Enhanced Design</option>
+                          </select>
+                        </div>
+                        
+                        <button
+                          onClick={() => generateTemplateResume(resumeDialog.job, selectedTemplateNumber)}
+                          style={{
+                            background: '#6c757d',
+                            color: 'white',
+                            border: 'none',
+                            padding: '0.6rem 1.2rem',
+                            borderRadius: '5px',
+                            fontSize: '0.9rem',
+                            fontWeight: '500',
+                            cursor: 'pointer',
+                            transition: 'background-color 0.2s ease',
+                            width: '100%'
+                          }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#5a6268'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = '#6c757d'}
+                        >
+                          📋 Generate Template Resume
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Cover Letter Generation Section */}
+                  <div style={{
+                    padding: '1.5rem',
+                    border: '2px solid #28a745',
+                    borderRadius: '10px',
+                    backgroundColor: '#fefefe'
+                  }}>
+                    <h4 style={{
+                      margin: '0 0 1rem 0',
+                      color: '#28a745',
+                      fontSize: '1.2rem',
+                      fontWeight: '600'
+                    }}>💌 Cover Letter Generation</h4>
+                    
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      gap: '1.5rem'
+                    }}>
+                      {/* AI-Generated Cover Letter */}
+                      <div style={{
+                        padding: '1rem',
+                        border: '1px solid #dee2e6',
+                        borderRadius: '8px',
+                        backgroundColor: '#f8f9fa'
+                      }}>
+                        <h5 style={{
+                          margin: '0 0 0.75rem 0',
+                          color: '#2c3e50',
+                          fontSize: '1rem'
+                        }}>🤖 AI-Generated Cover Letter</h5>
+                        <p style={{
+                          margin: '0 0 1rem 0',
+                          color: '#6c757d',
+                          fontSize: '0.9rem',
+                          lineHeight: '1.4'
+                        }}>
+                          Claude AI creates a personalized cover letter that highlights relevant experience for this position.
+                        </p>
+                        <button
+                          onClick={handleGenerateCoverLetter}
+                          style={{
+                            background: '#28a745',
+                            color: 'white',
+                            border: 'none',
+                            padding: '0.6rem 1.2rem',
+                            borderRadius: '5px',
+                            fontSize: '0.9rem',
+                            fontWeight: '500',
+                            cursor: 'pointer',
+                            transition: 'background-color 0.2s ease',
+                            width: '100%'
+                          }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#218838'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = '#28a745'}
+                        >
+                          🚀 Generate AI Cover Letter
+                        </button>
+                      </div>
+
+                      {/* Template-Based Cover Letter */}
+                      <div style={{
+                        padding: '1rem',
+                        border: '1px solid #dee2e6',
+                        borderRadius: '8px',
+                        backgroundColor: '#f8f9fa'
+                      }}>
+                        <h5 style={{
+                          margin: '0 0 0.75rem 0',
+                          color: '#2c3e50',
+                          fontSize: '1rem'
+                        }}>📋 Template-Based Cover Letter</h5>
+                        <p style={{
+                          margin: '0 0 1rem 0',
+                          color: '#6c757d',
+                          fontSize: '0.9rem',
+                          lineHeight: '1.4'
+                        }}>
+                          Use structured cover letter templates with your information for professional consistency.
+                        </p>
+                        
+                        <button
+                          disabled
+                          style={{
+                            background: '#cccccc',
+                            color: '#666',
+                            border: 'none',
+                            padding: '0.6rem 1.2rem',
+                            borderRadius: '5px',
+                            fontSize: '0.9rem',
+                            fontWeight: '500',
+                            cursor: 'not-allowed',
+                            width: '100%'
+                          }}
+                        >
+                          📋 Template Cover Letter (Coming Soon)
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Actions */}
+                  <div style={{
+                    padding: '1rem',
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: '8px',
+                    border: '1px solid #dee2e6'
+                  }}>
+                    <h5 style={{
+                      margin: '0 0 0.75rem 0',
+                      color: '#495057',
+                      fontSize: '1rem'
+                    }}>⚡ Quick Actions</h5>
+                    <div style={{
+                      display: 'flex',
+                      gap: '1rem',
+                      flexWrap: 'wrap'
+                    }}>
+                      <button
+                        onClick={() => {
+                          handleRegenerateResume();
+                          setTimeout(() => handleGenerateCoverLetter(), 1000);
+                        }}
+                        style={{
+                          background: '#007bff',
+                          color: 'white',
+                          border: 'none',
+                          padding: '0.5rem 1rem',
+                          borderRadius: '5px',
+                          fontSize: '0.85rem',
+                          fontWeight: '500',
+                          cursor: 'pointer',
+                          transition: 'background-color 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#0056b3'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = '#007bff'}
+                      >
+                        🚀 Generate Both (AI)
+                      </button>
+                      <button
+                        disabled
+                        style={{
+                          background: '#cccccc',
+                          color: '#666',
+                          border: 'none',
+                          padding: '0.5rem 1rem',
+                          borderRadius: '5px',
+                          fontSize: '0.85rem',
+                          fontWeight: '500',
+                          cursor: 'not-allowed'
+                        }}
+                      >
+                        📋 Generate Both (Templates)
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             ) : (

@@ -15,7 +15,7 @@ let getCustomResumeInstructions = (wsl) => getJobSquirrelPath(wsl, ["Config", "c
 let getResumePersonalInformation = (wsl) => getJobSquirrelPath(wsl, ["Config", "personal-information.txt"]);
 let getSaveSessionIdInstructionsTemplatePath = (wsl) => getJobSquirrelPath(wsl, ["ScriptsForClaude", "save-session-id-instructions-template.txt"]);
 let getQueueDirectory = (wsl) => getJobSquirrelPath(wsl, ["Stashboard", "queue"]);
-let getResumeTemplatesDirectory = (wsl) => getJobSquirrelPath(wsl, ["Stashboard", "public", "resume-templates"]);
+let getResumeTemplatesDirectory = (wsl) => getJobSquirrelPath(wsl, ["Stashboard", "static"]);
 
 function getSessionIdData(wsl) {
     let rootDir = getJobSquirrelRootDirectory();
