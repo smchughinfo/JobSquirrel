@@ -88,7 +88,7 @@ async function generateResume(nutNote, templateNumber = 1) {
     // Prepare data for template
     const templateData = {
         name: resumeData.personal_information.name,
-        title: resumeData.personal_information.title,
+        title: nutNote.jobTitle,
         street: resumeData.personal_information.address.street,
         city: resumeData.personal_information.address.city,
         state: resumeData.personal_information.address.state,
@@ -156,7 +156,7 @@ async function generateCoverLetter(nutNote, templateNumber = 1) {
     // Prepare data for template
     const templateData = {
         name: resumeData.personal_information.name,
-        title: resumeData.personal_information.title,
+        title: nutNote.jobTitle,
         street: resumeData.personal_information.address.street,
         city: resumeData.personal_information.address.city,
         state: resumeData.personal_information.address.state,
