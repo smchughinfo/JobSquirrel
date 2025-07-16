@@ -11,6 +11,7 @@ function JobListings({ lastEvent }) {
   const [marginInches, setMarginInches] = useState(0);
   const [editorDialog, setEditorDialog] = useState({ open: false, content: '', loading: false, resumeIndex: null, type: null });
   const [selectedTemplateNumber, setSelectedTemplateNumber] = useState(1);
+  const [templatePreview, setTemplatePreview] = useState({ show: false, x: 0, y: 0 });
 
   // Fetch jobs from the API
   const fetchJobs = async () => {
@@ -1636,12 +1637,35 @@ function JobListings({ lastEvent }) {
                         
                         <div style={{ marginBottom: '1rem' }}>
                           <label style={{
-                            display: 'block',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
                             marginBottom: '0.5rem',
                             fontSize: '0.85rem',
                             fontWeight: '500',
                             color: '#495057'
-                          }}>Template Style:</label>
+                          }}>
+                            Template Style:
+                            <span 
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '1rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease'
+                              }}
+                              onMouseEnter={(e) => {
+                                setTemplatePreview({ show: true, x: e.clientX, y: e.clientY });
+                              }}
+                              onMouseLeave={() => {
+                                setTemplatePreview({ show: false, x: 0, y: 0 });
+                              }}
+                              title="Preview template"
+                            >
+                              👁️
+                            </span>
+                          </label>
                           <select 
                             value={selectedTemplateNumber}
                             onChange={(e) => setSelectedTemplateNumber(parseInt(e.target.value))}
@@ -2268,6 +2292,49 @@ function JobListings({ lastEvent }) {
               </div>
             </div>
           </div>
+        </div>
+      )}
+      
+      {/* Template Preview Tooltip */}
+      {templatePreview.show && (
+        <div
+          style={{
+            position: 'fixed',
+            left: templatePreview.x + 20,
+            top: templatePreview.y - 150,
+            width: '300px',
+            height: '400px',
+            backgroundColor: 'white',
+            border: '2px solid #8B4513',
+            borderRadius: '8px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+            zIndex: 10000,
+            overflow: 'hidden',
+            pointerEvents: 'none'
+          }}
+        >
+          <div style={{
+            backgroundColor: '#8B4513',
+            color: 'white',
+            padding: '0.5rem',
+            fontSize: '0.8rem',
+            fontWeight: '500',
+            textAlign: 'center'
+          }}>
+            Template {selectedTemplateNumber} Preview
+          </div>
+          <iframe
+            src={`/static/resume-template-${selectedTemplateNumber}.html`}
+            style={{
+              width: '1500px',
+              height: '2000px',
+              border: 'none',
+              transform: 'scale(0.33) translate(-20%, 0%)',
+              transformOrigin: 'top left',
+              backgroundColor: 'white'
+            }}
+            title={`Template ${selectedTemplateNumber} Preview`}
+          />
         </div>
       )}
     </div>

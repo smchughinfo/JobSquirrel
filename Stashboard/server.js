@@ -24,6 +24,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 const generatedResumesPath = path.join(getJobSquirrelRootDirectory(), 'GeneratedResumes');
 app.use('/GeneratedResumes', express.static(generatedResumesPath));
 
+// Serve static templates directory for template previews
+app.use('/static', express.static(path.join(__dirname, 'static')));
+
 // Basic route
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
