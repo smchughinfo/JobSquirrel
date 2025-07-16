@@ -19,7 +19,10 @@
             "type": "node",
             "request": "launch",
             "program": "${workspaceFolder}\\Stashboard\\node_modules\\npm\\bin\\npm-cli.js",
-            "args": ["run", "build"],
+            "args": [
+                "run",
+                "build"
+            ],
             "cwd": "${workspaceFolder}\\Stashboard",
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen"

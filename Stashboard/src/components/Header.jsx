@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 
-function Header() {
+function Header({ onOpenATSSkillsDialog }) {
   const [isUploading, setIsUploading] = useState(false);
   const [lastUpload, setLastUpload] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -182,6 +182,15 @@ function Header() {
                     onClick={handleContactInfoClick}
                   >
                     📞 Contact Information
+                  </button>
+                  <button 
+                    className="dropdown-item"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      onOpenATSSkillsDialog();
+                    }}
+                  >
+                    🎯 Manage ATS Skills
                   </button>
                 </div>
               )}

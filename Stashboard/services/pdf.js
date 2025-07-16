@@ -1,7 +1,16 @@
 const puppeteer = require('puppeteer');
 const fs = require("fs");
+const { getResumePDFPath } = require('./jobSquirrelPaths');
 
-async function htmlToPdf(htmlContent, outputPath, marginInches = 0) {
+async function htmlToPdf(htmlContent, companyName, jobTitle, marginInches = 0) {
+    const outputPath = getResumePDFPath(`Resume For ${jobTitle} - ${companyName}`);
+    
+    // Ensure the GeneratedResumes directory exists
+    const outputDir = require('path').dirname(outputPath);
+    if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir, { recursive: true });
+    }
+    
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
 
@@ -34,6 +43,8 @@ async function htmlToPdf(htmlContent, outputPath, marginInches = 0) {
     });
 
     await browser.close();
+    
+    return outputPath;
 }
 
 module.exports = {

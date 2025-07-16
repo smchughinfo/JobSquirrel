@@ -1,21 +1,23 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
-const { AskAssistant, CreateVectorStore } = require('./llm/openai');
-const { AskClaude } = require('./llm/anthropic');
-const { eventBroadcaster } = require('./eventBroadcaster');
-const { embedHiddenText } = require('./htmlUtilities');
-const { getResumeDataDirectory, getCustomResumeInstructions, getResumePersonalInformation, getSaveSessionIdInstructionsTemplatePath, getSessionIdData, getJobSquirrelRootDirectory, convertPathToWSL, getCoverLetterPath } = require('./jobSquirrelPaths');
-const { addOrUpdateNutNote } = require('./hoard');
+const { AskAssistant, CreateVectorStore } = require('../llm/openai');
+const { AskClaude } = require('../llm/anthropic');
+const { eventBroadcaster } = require('../eventBroadcaster');
+const { embedHiddenText } = require('../htmlUtilities');
+const { getResumeDataDirectory, getCustomResumeInstructions, getResumePersonalInformation, getJobSquirrelRootDirectory, convertPathToWSL, getCoverLetterPath } = require('../jobSquirrelPaths');
+const { addOrUpdateNutNote } = require('../hoard');
+const { generateSessionData } = require('./common');
+const { generationQueue } = require('./generationQueue');
 
 const RESUME_CLAMP_CLAUSE = `Do not include any preamble, commentary, or code block formatting. Output only the final html content, nothing else.`;
 
 async function generateResume(nutNote) {
-    await generateResumeAnthropic(nutNote);
+    return await generationQueue.add(generateResumeAnthropic, nutNote);
 }
 
 async function generateCoverLetter(nutNote) {
-    await generateCoverLetterAnthropic(nutNote);
+    return await generationQueue.add(generateCoverLetterAnthropic, nutNote);
 }
 
 async function generateResumeOpenAI(nutNote) {
@@ -24,21 +26,6 @@ async function generateResumeOpenAI(nutNote) {
     nutNote.html = response;
     addOrUpdateNutNote(nutNote);
     console.log("resume generated!");
-}
-
-function generateSessionData() {
-    let sessionIdData = getSessionIdData();
-
-    let sessionIdsDir = path.dirname(sessionIdData.sessionIdPath);
-    if (!fs.existsSync(sessionIdsDir)) {
-        fs.mkdirSync(sessionIdsDir, { recursive: true });
-    }
-
-    let templatePath = getSaveSessionIdInstructionsTemplatePath();
-    let instructions = fs.readFileSync(templatePath).toString();
-    instructions = instructions.replace("[SESSION ID PATH]", sessionIdData.sessionIdPath);
-    fs.writeFileSync(sessionIdData.sessionIdInstructionsPath, instructions);
-    return sessionIdData;
 }
 
 async function useStaticResume(nutNote) {
@@ -85,7 +72,8 @@ async function generateResumeAnthropic(nutNote) {
     console.log("resume generated!");
 }
 
-async function doubleCheckResume(nutNote, resumeIndex) {
+// Internal function - not queued since it will be called by the queued wrapper
+async function doubleCheckResumeInternal(nutNote, resumeIndex) {
     let sessionData = generateSessionData();
 
     let resumeCustomInstructionsPath = getCustomResumeInstructions(true);
@@ -140,7 +128,8 @@ async function generateCoverLetterAnthropic(nutNote) {
     console.log("cover letter generated!");
 }
 
-async function remixCoverLetterAnthropic(nutNote, remixInstructions, remixIndex) {
+// Internal function - not queued since it will be called by the queued wrapper
+async function remixCoverLetterAnthropicInternal(nutNote, remixInstructions, remixIndex) {
     let sessionData = generateSessionData();
 
     fs.writeFileSync(sessionData.jobListingPath, nutNote.markdown);
@@ -169,7 +158,8 @@ async function remixCoverLetterAnthropic(nutNote, remixInstructions, remixIndex)
     console.log("cover letter remixed!");
 }
 
-async function doubleCheckCoverLetterAnthropic(nutNote, coverLetterIndex) {
+// Internal function - not queued since it will be called by the queued wrapper
+async function doubleCheckCoverLetterAnthropicInternal(nutNote, coverLetterIndex) {
     let sessionData = generateSessionData();
 
     let resumeCustomInstructionsPath = getCustomResumeInstructions(true);
@@ -196,7 +186,8 @@ async function doubleCheckCoverLetterAnthropic(nutNote, coverLetterIndex) {
     console.log("cover letter double checked!");
 }
 
-async function remixResumeAnthropic(nutNote, remixInstructions, remixIndex) {
+// Internal function - not queued since it will be called by the queued wrapper
+async function remixResumeAnthropicInternal(nutNote, remixInstructions, remixIndex) {
     let sessionData = generateSessionData();
 
     fs.writeFileSync(sessionData.jobListingPath, nutNote.markdown);
@@ -237,6 +228,27 @@ function getResumeDataFiles() {
     let resumeDataFiles = fs.readdirSync(resumeDataDirectory);
     resumeDataFiles = resumeDataFiles.map(f => path.join(resumeDataDirectory, f));
     return resumeDataFiles;
+}
+
+// Queued wrapper functions to prevent concurrency issues
+async function doubleCheckResume(nutNote, resumeIndex) {
+    return await generationQueue.add(doubleCheckResumeInternal, nutNote, resumeIndex);
+}
+
+async function remixResumeAnthropic(nutNote, remixInstructions, remixIndex) {
+    return await generationQueue.add(remixResumeAnthropicInternal, nutNote, remixInstructions, remixIndex);
+}
+
+async function remixCoverLetterAnthropic(nutNote, remixInstructions, remixIndex) {
+    return await generationQueue.add(remixCoverLetterAnthropicInternal, nutNote, remixInstructions, remixIndex);
+}
+
+async function doubleCheckCoverLetterAnthropic(nutNote, coverLetterIndex) {
+    return await generationQueue.add(doubleCheckCoverLetterAnthropicInternal, nutNote, coverLetterIndex);
+}
+
+function getGenerationQueueStatus() {
+    return generationQueue.getStatus();
 }
 
 async function processPDFsInResumeData() {
@@ -352,4 +364,5 @@ module.exports = {
     doubleCheckCoverLetterAnthropic,
     UploadResumeData,
     processPDFsInResumeData,
+    getGenerationQueueStatus,
 };

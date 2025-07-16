@@ -4,12 +4,14 @@ import ClipboardMonitor from './components/ClipboardMonitor'
 import EventMonitor from './components/EventMonitor'
 import ClaudeAssistant from './components/ClaudeAssistant'
 import JobListings from './components/JobListings'
+import ATSSkillsDialog from './components/ATSSkillsDialog'
 import { useEventStream } from './hooks/useEventStream'
 import './App.css'
 
 function App() {
   const { isConnected, lastEvent } = useEventStream();
   const [claudeEvents, setClaudeEvents] = useState(null);
+  const [atsSkillsDialog, setAtsSkillsDialog] = useState({ open: false });
 
   // Function to log configuration file contents to browser console
   const logConfigContents = (fileLabel, content) => {
@@ -73,9 +75,22 @@ function App() {
     }
   }, [lastEvent]);
 
+  const openATSSkillsDialog = () => {
+    setAtsSkillsDialog({ open: true });
+  };
+
+  const closeATSSkillsDialog = () => {
+    setAtsSkillsDialog({ open: false });
+  };
+
+  const handleATSSkillsSave = () => {
+    // Just close the dialog, no need to retry generation from header
+    closeATSSkillsDialog();
+  };
+
   return (
     <div className="app">
-      <Header />
+      <Header onOpenATSSkillsDialog={openATSSkillsDialog} />
       <main className="main-layout">
         <aside className="sidebar-left">
           <EventMonitor isConnected={isConnected} lastEvent={lastEvent} />
@@ -86,6 +101,13 @@ function App() {
           <JobListings lastEvent={lastEvent} />
         </div>
       </main>
+      
+      {/* ATS Skills Dialog */}
+      <ATSSkillsDialog
+        isOpen={atsSkillsDialog.open}
+        onClose={closeATSSkillsDialog}
+        onSave={handleATSSkillsSave}
+      />
     </div>
   )
 }

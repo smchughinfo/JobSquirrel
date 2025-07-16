@@ -1,0 +1,302 @@
+"id","site","job_url","job_url_direct","title","company","location","date_posted","job_type","salary_source","interval","min_amount","max_amount","currency","is_remote","job_level","job_function","listing_type","emails","description","company_industry","company_url","company_logo","company_url_direct","company_addresses","company_num_employees","company_revenue","company_description","skills","experience_range","company_rating","company_reviews_count","vacancy_count","work_from_home_type"
+"in-7cbd56c2d6f1bf73","indeed","https://www.indeed.com/viewjob?jk=7cbd56c2d6f1bf73","https://jobs.ebayinc.com/us/en/job/R0068784/Software-Engineer-3","Software Engineer 3","eBay","San Jose, CA, US","2025-07-15","fulltime","direct_data","yearly",199534.0,262900.0,"USD",False,"","","","talent@ebay.com","San Jose, California
+
+Engineering
+
+R0068784
+
+Hybrid
+
+  
+
+At eBay, we're more than a global ecommerce leader — we’re changing the way the world shops and sells. Our platform empowers millions of buyers and sellers in more than 190 markets around the world. We’re committed to pushing boundaries and leaving our mark as we reinvent the future of ecommerce for enthusiasts.  
+  
+Our customers are our compass, authenticity thrives, bold ideas are welcome, and everyone can bring their unique selves to work — every day. We're in this together, sustaining the future of our customers, our company, and our planet.  
+  
+Join a team of passionate thinkers, innovators, and dreamers — and help us connect people and build communities to create economic opportunity for all.
+
+***About the team and the role:***
+
+*eBay, Inc. seeks* ***Software Engineer 3*** *in* ***San Jose, CA***
+
+**What you will accomplish:**
+
+Job Duties: Define, design, and implement complex, multi-tier distributed software systems. Apply expertise in all layers of multi-tier applications to design complete solutions and maintain products. Code using Java/J2EE, Design Patterns, Spring and Spring Boot frameworks, Web services and Caching mechanisms. Estimate engineering efforts, plan execution cycles, and rollout system changes. Drive architecture discussions, produce well-documented design documents, and participate in design and code reviews. Ensure code quality and maintainability by evolving architecture and tech stack, refactoring, standards and improving build and test systems. Share engineering support, release, and on-call responsibilities for an always-on 24x7 site. Telecommuting permitted – work can be performed from anywhere in the U.S.
+
+**What you will bring:**
+
+Minimum Requirements: Master’s degree, or foreign equivalent, in Computer Science, Engineering, Data/Business Analytics, or a closely related field plus three years of experience in the job offered or a related occupation.
+
+Special Skill Requirements:
+
+1. Experience designing and implementing complex software applications (3 years).  
+2. Experience with all layers of multi-tier applications to design complete solutions and maintain products (3 years).  
+3. Experience with front-end technologies (3 years).  
+4. Experience with React/Nodejs, Design Patterns, Web services and Caching mechanisms (3 years).  
+5. Experience with Java, Spring and Spring Boot frameworks (3 years).  
+6. Experience with distributed systems (3 years).  
+7. Experience with data structure algorithms (3 years).  
+8. Experience with database systems, including SQL and No-SQL (3 years).  
+9. Experience with Git and Github workflows (3 years).
+
+Salary: $199,534.00-262,900.00 per annum. 40 hours per week; M-F, 9:00 a.m. to 5:00 p.m.
+
+Must be legally authorized to work in the U.S. without sponsorship.
+
+Base pay offered may vary depending on multiple individualized factors, including location, skills, and experience. The total compensation package for this position may also include other elements, including a target bonus and restricted stock units (as applicable) in addition to a full range of medical, financial, and/or other benefits (including 401(k) eligibility and various paid time off benefits, such as PTO and parental leave). Details of participation in these benefit plans will be provided if an employee receives an offer of employment.
+
+If hired, employees will be in an “at-will position” and the Company reserves the right to modify base salary (as well as any other discretionary payment or compensation program) at any time, including for reasons related to individual performance, Company or individual department/team performance, and market factors.
+
+Please see the Talent Privacy Notice for information regarding how eBay handles your personal data collected when you use the eBay Careers website or apply for a job with eBay.
+
+eBay is an equal opportunity employer. All qualified applicants will receive consideration for employment without regard to race, color, religion, national origin, sex, sexual orientation, gender identity, veteran status, and disability, or other legally protected status. If you have a need that requires accommodation, please contact us at talent@ebay.com. We will make every effort to respond to your request for accommodation as soon as possible. View our accessibility statement to learn more about eBay's commitment to ensuring digital accessibility for people with disabilities.
+
+The eBay Jobs website uses cookies to enhance your experience. By continuing to browse the site, you agree to our use of cookies. Visit our Privacy Center for more information.","","https://www.indeed.com/cmp/Ebay","https://d2q79iu7y748jz.cloudfront.net/s/_squarelogo/256x256/41fd62c4347046cdc16b1cc7cc7b5f7e","http://www.ebayinc.com","San Jose, CA","10,000+","more than $10B (USD)","We connect people and build communities to create economic opportunity for all.","","","","","",""
+"in-1d998e3e87a8b16a","indeed","https://www.indeed.com/viewjob?jk=1d998e3e87a8b16a","https://jobs.bytedance.com/en/position/7515574615440361736/detail","Machine Learning Engineer Graduate (E-Commerce Risk Control)- 2026 Start (Phd)","ByteDance","San Jose, CA, US","2025-07-15","","direct_data","yearly",145000.0,250000.0,"USD",False,"","","","","**Machine Learning Engineer Graduate (E-Commerce Risk Control)- 2026 Start (Phd)**
+
+San Jose
+
+Regular
+
+R&D
+
+PhD Graduates- 2026 Start
+
+Job ID: A16763
+
+**Responsibilities**
+
+Team Introduction:
+The E-Commerce Risk Control (ECRC) team's mission is :
+- To protect TikTok e-commerce users, including and beyond buyer, seller, creator;
+- To make Tiktok e-commerce the safest and most trusted place worldwide to transact online by securing the integrity of the e-commerce ecosystem and providing a safe shopping experience on the platform;
+- Through building software systems, risk models and operational processes, as well as collaborating with many cross-functional teams and stakeholders.
+The ECRC team works to prevent and detect any risk attempts in Tiktok e-commerce platforms (e.g. TikTok Shop) and to mitigate the negative impact on our customers and Selling Partners (Sps), covering multiple classical and novel business risk areas such as account integrity, incentive abuse, malicious activities, brushing, click-farm, information leakage etc.
+We achieve our mission by a) developing state-of-art Machine Learning (ML) solutions to prevent customers, SPs, and Tiktok from being impacted by bad actors’ actions and practices to gain unfair business advantages; b) empowering Tiktok teams, both internal to GNE and external, to reduce risk attempts by utilizing our mechanisms.
+We are looking for talented individuals to join our team in 2026. As a graduate, you will get unparalleled opportunities for you to kickstart your career, pursue bold ideas and explore limitless growth opportunities. Co-create a future driven by your inspiration with ByteDance
+Successful candidates must be able to commit to an onboarding date by end of year 2026.
+Please state your availability and graduation date clearly in your resume.
+Applications will be reviewed on a rolling basis - we encourage you to apply early.
+Responsibilities:
+- Develop and implement innovative machine learning algorithms to manage business risks in TikTok's products and platforms.
+- Prototype and explore novel solutions, conduct experiments to validate hypotheses, and provide insights to Product and Tech teams.
+- Collaborate with multidisciplinary teams to enhance current automation processes.
+- Build efficient data querying infrastructure for real-time and offline analysis. Identify opportunities to strengthen risk defense solutions.
+- Define risk control metrics and promote data-driven practices. Align teams and stakeholders on numeric goals for risk control.
+- Document technical processes and effectively communicate results through writing, visualizations, and presentations.
+
+**Qualifications**
+
+Minimum Qualifications
+- Master's or PhD degree in Computer Science, Engineering, Operations Research, or related fields.
+- Final year or recent graduate with a background in Computer Science, Computer Engineering, or a related technical discipline
+- Proficiency in modern machine learning theories and applications, including ensemble trees, deep neural networks, transfer/multi-task learning, reinforcement learning, graph theory, and unsupervised learning.
+- Experience with Python, SQL/Hive, and Hadoop
+- Strong understanding of data structures and algorithms, with excellent problem-solving ability
+- Detail oriented, effective time management, and strong analytical skills
+Preferred Qualifications
+- Demonstrated software engineering experience from previous internship, work experience, coding competitions, or publications
+- Internship experience or research experience, especially in e-commerce, risk control domian
+- Curiosity towards new technologies and entrepreneurship
+- High levels of creativity and quick problem-solving capabilities
+
+**Job Information**
+
+【For Pay Transparency】Compensation Description (Annually)
+
+The base salary range for this position in the selected city is $145000 - $250000 annually.
+
+Compensation may vary outside of this range depending on a number of factors, including a candidate’s qualifications, skills, competencies and experience, and location. Base pay is one part of the Total Package that is provided to compensate and recognize employees for their work, and this role may be eligible for additional discretionary bonuses/incentives, and restricted stock units.
+
+Benefits may vary depending on the nature of employment and the country work location. Employees have day one access to medical, dental, and vision insurance, a 401(k) savings plan with company match, paid parental leave, short-term and long-term disability coverage, life insurance, wellbeing benefits, among others. Employees also receive 10 paid holidays per year, 10 paid sick days per year and 17 days of Paid Personal Time (prorated upon hire with increasing accruals by tenure).
+
+The Company reserves the right to modify or change these benefits programs at any time, with or without notice.
+
+For Los Angeles County (unincorporated) Candidates:
+
+Qualified applicants with arrest or conviction records will be considered for employment in accordance with all federal, state, and local laws including the Los Angeles County Fair Chance Ordinance for Employers and the California Fair Chance Act. Our company believes that criminal history may have a direct, adverse and negative relationship on the following job duties, potentially resulting in the withdrawal of the conditional offer of employment:
+
+1. Interacting and occasionally having unsupervised contact with internal/external clients and/or colleagues;
+
+2. Appropriately handling and managing confidential information including proprietary and trade secret information and access to information technology systems; and
+
+3. Exercising sound judgment.
+
+About Us
+
+Founded in 2012, ByteDance's mission is to inspire creativity and enrich life. With a suite of more than a dozen products, including TikTok, Lemon8, CapCut and Pico as well as platforms specific to the China market, including Toutiao, Douyin, and Xigua, ByteDance has made it easier and more fun for people to connect with, consume, and create content.
+
+Why Join ByteDance
+
+Inspiring creativity is at the core of ByteDance's mission. Our innovative products are built to help people authentically express themselves, discover and connect – and our global, diverse teams make that possible. Together, we create value for our communities, inspire creativity and enrich life - a mission we work towards every day.
+
+As ByteDancers, we strive to do great things with great people. We lead with curiosity, humility, and a desire to make impact in a rapidly growing tech company. By constantly iterating and fostering an ""Always Day 1"" mindset, we achieve meaningful breakthroughs for ourselves, our Company, and our users. When we create and grow together, the possibilities are limitless. Join us.
+
+Diversity & Inclusion
+
+ByteDance is committed to creating an inclusive space where employees are valued for their skills, experiences, and unique perspectives. Our platform connects people from across the globe and so does our workplace. At ByteDance, our mission is to inspire creativity and enrich life. To achieve that goal, we are committed to celebrating our diverse voices and to creating an environment that reflects the many communities we reach. We are passionate about this and hope you are too.
+
+Reasonable Accommodation
+
+ByteDance is committed to providing reasonable accommodations in our recruitment processes for candidates with disabilities, pregnancy, sincerely held religious beliefs or other reasons protected by applicable laws. If you need assistance or a reasonable accommodation, please reach out to us at https://tinyurl.com/RA-request","","https://www.indeed.com/cmp/Bytedance","https://d2q79iu7y748jz.cloudfront.net/s/_squarelogo/256x256/8f4d80ac074d9a65cbadcaa7d49cd411","http://www.bytedance.com","Beijing, Beijing","10,000+","Decline to state","ByteDance is a global incubator of platforms at the cutting edge of commerce, content and entertainment services - over 1.9 billion people interact with ByteDance products monthly.","","","","","",""
+"in-f3769558fc3d082e","indeed","https://www.indeed.com/viewjob?jk=f3769558fc3d082e","https://jobs.ebayinc.com/us/en/job/R0068783/Software-Engineer-3","Software Engineer 3","eBay","San Jose, CA, US","2025-07-15","fulltime","direct_data","yearly",172931.0,234850.0,"USD",False,"","","","talent@ebay.com","San Jose, California
+
+Engineering
+
+R0068783
+
+Hybrid
+
+  
+
+At eBay, we're more than a global ecommerce leader — we’re changing the way the world shops and sells. Our platform empowers millions of buyers and sellers in more than 190 markets around the world. We’re committed to pushing boundaries and leaving our mark as we reinvent the future of ecommerce for enthusiasts.  
+  
+Our customers are our compass, authenticity thrives, bold ideas are welcome, and everyone can bring their unique selves to work — every day. We're in this together, sustaining the future of our customers, our company, and our planet.  
+  
+Join a team of passionate thinkers, innovators, and dreamers — and help us connect people and build communities to create economic opportunity for all.
+
+*eBay, Inc. seeks* ***Software Engineer 3*** *in* ***San Jose, CA***
+
+Job Duties: Design, develop, and implement core, robust and scalable software applications, including cloud-based, internet-related tools. Participate in brainstorming sessions and supply ideas to eBay's technology, algorithms, and products that will improve software code services and system architecture. Work with the software product and design teams to analyze end-user requirements, formulate use cases, and deliver actionable designs. Estimate engineering efforts, prioritize projects, plan implementations, and triage production issues. Perform full life-cycle software development and building solutions for the eBay payments domain. Research, design, develop, and test software solutions that are appropriate for business and technology strategies. Contribute to regular tasks like bug fixes, enhancing current code, and developing new software product features. Utilize experience with object-oriented programming concepts, design patterns, and software development life cycle phases, as well as with algorithms and data structures, such as a dynamic array, linked list, stack, queue, binary search, binary search tree, hash map, depth-first search, breadth-first search, and merge sort. Partial telecommuting permitted from within commutable distance.
+
+Minimum Requirements: Master’s degree, or foreign equivalent, in Computer Science, Engineering, or a closely related field plus 6 months of experience in the job offered or a related occupation.
+
+Special Skill Requirements:
+
+1. Machine Learning  
+2. AI  
+3. Git  
+4. Java  
+5. Javascript  
+6. RDBMS such as MySQL, PostgreSQL or NoSQL databases  
+7. Distributed systems  
+8. PyTorch  
+9. Tensorflow  
+10. Python
+
+Salary: $172,931.00-234,850.00 per annum. 40 hours per week; M-F, 9:00 a.m. to 5:00 p.m.
+
+Must be legally authorized to work in the U.S. without sponsorship.
+
+Base pay offered may vary depending on multiple individualized factors, including location, skills, and experience. The total compensation package for this position may also include other elements, including a target bonus and restricted stock units (as applicable) in addition to a full range of medical, financial, and/or other benefits (including 401(k) eligibility and various paid time off benefits, such as PTO and parental leave). Details of participation in these benefit plans will be provided if an employee receives an offer of employment.
+
+If hired, employees will be in an “at-will position” and the Company reserves the right to modify base salary (as well as any other discretionary payment or compensation program) at any time, including for reasons related to individual performance, Company or individual department/team performance, and market factors.
+
+Please see the Talent Privacy Notice for information regarding how eBay handles your personal data collected when you use the eBay Careers website or apply for a job with eBay.
+
+eBay is an equal opportunity employer. All qualified applicants will receive consideration for employment without regard to race, color, religion, national origin, sex, sexual orientation, gender identity, veteran status, and disability, or other legally protected status. If you have a need that requires accommodation, please contact us at talent@ebay.com. We will make every effort to respond to your request for accommodation as soon as possible. View our accessibility statement to learn more about eBay's commitment to ensuring digital accessibility for people with disabilities.
+
+The eBay Jobs website uses cookies to enhance your experience. By continuing to browse the site, you agree to our use of cookies. Visit our Privacy Center for more information.","","https://www.indeed.com/cmp/Ebay","https://d2q79iu7y748jz.cloudfront.net/s/_squarelogo/256x256/41fd62c4347046cdc16b1cc7cc7b5f7e","http://www.ebayinc.com","San Jose, CA","10,000+","more than $10B (USD)","We connect people and build communities to create economic opportunity for all.","","","","","",""
+"in-b3ac3134a91d4125","indeed","https://www.indeed.com/viewjob?jk=b3ac3134a91d4125","https://jobs.ebayinc.com/us/en/job/R0068785/Manager-Software-Development-2","Manager, Software Development 2","eBay","San Jose, CA, US","2025-07-15","fulltime","direct_data","yearly",226158.0,262900.0,"USD",False,"","","","talent@ebay.com","San Jose, California
+
+Engineering
+
+R0068785
+
+Hybrid
+
+  
+
+At eBay, we're more than a global ecommerce leader — we’re changing the way the world shops and sells. Our platform empowers millions of buyers and sellers in more than 190 markets around the world. We’re committed to pushing boundaries and leaving our mark as we reinvent the future of ecommerce for enthusiasts.  
+  
+Our customers are our compass, authenticity thrives, bold ideas are welcome, and everyone can bring their unique selves to work — every day. We're in this together, sustaining the future of our customers, our company, and our planet.  
+  
+Join a team of passionate thinkers, innovators, and dreamers — and help us connect people and build communities to create economic opportunity for all.
+
+**About the team and the role:**
+
+eBay, Inc. seeks **Manager, Software Development 2** in San Jose, CA
+
+**What you will accomplish:**
+
+Job Duties: Lead or manage the eBay Motors vehicle and VMP. Lead a talented Full Stack team of Backend, Front End, and Quality Engineers. Lead or manage a small to medium-sized team of developers. Build collaborative and inclusive teams. Mentor and guide the development of team members in a tailored empathetic manner suited for everyone. Layout technical vision for the team. Develop object-oriented software and design, code, and test complex software features. Identify and fix performance, scalability, and other software live issues in a very time-critical environment. Drive architecture discussions, produce well-documented design docs, and participate in design and code reviews. Ensure code quality and maintainability by evolving architecture and tech stack, refactoring, standards, and improving build and test systems. Develop automated tests and deliver high-quality software code to production within a short development cycle in the continuous integration and delivery environment. Develop best-in-class test automation code for software, and carry out functional and non-functional testing including web accessibility, product app security, server-side load, and performance. Telecommuting permitted - work can be performed from anywhere in the US
+
+**What you will bring:**
+
+Minimum Requirements: Master’s degree, or foreign equivalent, in Computer Science, Engineering, or a closely related field plus two years of experience in the job offered or a related occupation.
+
+Special Skill Requirements:
+
+1. Project Management Skills (2 year/s)  
+2. Technical Architecture and Design (2 year/s)  
+3. Core API (2 year/s)  
+4. Cloud Computing open source cloud (2 year/s)  
+5. AWS (2 year/s)  
+6. Jenkins (2 year/s)  
+7. Pipeline (2 year/s)  
+8. Groovy (2 year/s)  
+9. Kubernetes (2 year/s)  
+10. Java, J2EE (2 year/s)
+
+Salary: $226,158.00-262,900.00 per annum. 40 hours per week; M-F, 9:00 a.m. to 5:00 p.m.
+
+Must be legally authorized to work in the U.S. without sponsorship.
+
+Base pay offered may vary depending on multiple individualized factors, including location, skills, and experience. The total compensation package for this position may also include other elements, including a target bonus and restricted stock units (as applicable) in addition to a full range of medical, financial, and/or other benefits (including 401(k) eligibility and various paid time off benefits, such as PTO and parental leave). Details of participation in these benefit plans will be provided if an employee receives an offer of employment.
+
+If hired, employees will be in an “at-will position” and the Company reserves the right to modify base salary (as well as any other discretionary payment or compensation program) at any time, including for reasons related to individual performance, Company or individual department/team performance, and market factors.
+
+Please see the Talent Privacy Notice for information regarding how eBay handles your personal data collected when you use the eBay Careers website or apply for a job with eBay.
+
+eBay is an equal opportunity employer. All qualified applicants will receive consideration for employment without regard to race, color, religion, national origin, sex, sexual orientation, gender identity, veteran status, and disability, or other legally protected status. If you have a need that requires accommodation, please contact us at talent@ebay.com. We will make every effort to respond to your request for accommodation as soon as possible. View our accessibility statement to learn more about eBay's commitment to ensuring digital accessibility for people with disabilities.
+
+The eBay Jobs website uses cookies to enhance your experience. By continuing to browse the site, you agree to our use of cookies. Visit our Privacy Center for more information.","","https://www.indeed.com/cmp/Ebay","https://d2q79iu7y748jz.cloudfront.net/s/_squarelogo/256x256/41fd62c4347046cdc16b1cc7cc7b5f7e","http://www.ebayinc.com","San Jose, CA","10,000+","more than $10B (USD)","We connect people and build communities to create economic opportunity for all.","","","","","",""
+"in-1a3479361896d09e","indeed","https://www.indeed.com/viewjob?jk=1a3479361896d09e","https://www.sofarocean.com/company/careers?gh_jid=6650255003","Staff Software Engineer, Vessel Performance Modeling","Sofar Ocean","San Francisco, CA, US","2025-07-15","","direct_data","yearly",170000.0,220000.0,"USD",False,"","","","","**The Company**
+---------------
+
+Sofar is on a mission to connect the world’s oceans. We design, build, and deploy the largest privately owned network of marine weather sensors to power the world’s best marine weather forecasts. Our data helps our customers to increase efficiency and reduce emissions, delivering tools to governments and other stakeholders to understand impacts of climate change on extreme weather and ocean health. We live on Planet Ocean, and our goal is to create the ocean intelligence needed to ensure a sustainable future.
+
+### **The Role**
+
+You will be responsible for developing on our vessel performance modeling system designed to scalably model a full diversity of real world vessels at scale with our blend of physics-based principles with data-driven techniques. You will be partnering with our existing team of data scientists and software engineers directly improving our understanding of how vessels interact with the ocean environment, enabling decarbonization, cost savings, and safer maritime navigation.
+
+**Impact You’ll Own:**
+
+* Architect and engineer robust, scalable systems for modeling vessel performance under real-world conditions, including hydrodynamics, engine characteristics, weather impacts, and operational constraints.
+* Set technical strategy and modeling direction in collaboration with Product teams to meaningfully impact our customers daily operations.
+* Lead the development of hybrid models that combine physical simulation with machine learning and observational data from ships and sensors.
+* Ensure models are well-tested, explainable, and production-ready, enabling reliable integration into customer-facing applications and APIs.
+* Mentor team members and establish best practices for the balance of physical modeling, numerical methods, product scope and system reliability.
+
+**About You**
+
+* 10+ years of experience building production-grade modeling or simulation systems utilizing a hybrid of physics and data methods.
+* Strong programming skills in Python and a system level language such as C++ or Rust.
+* Track record of designing and owning large-scale modeling pipelines, preferably in real-world noisy data environments.
+* Skilled at balancing scientific rigor with practical engineering constraints.
+* Excellent communication skills, you can work across disciplines and explain complex systems to varied audiences.
+* A physics or natural sciences undergraduate experience or equivalent.
+* Passionate about the ocean, sustainability, and making a tangible impact on climate and logistics.
+
+**Bonus Points**
+
+* Experience in vessel performance modeling in the shipping industry.
+* Experience in hydrodynamics or vessel dynamics.
+
+### **Estimated Salary Range**
+
+* $170,000 - $220,000
+* The range listed is what we reasonably expect to pay for this role at the time of this posting. We may ultimately pay more or less than the posted range and may be modified in the future. Actual compensation packages are based on several factors that are unique to each candidate, including but not limited to skill set, experience, and equity package.
+
+### **Sofar's Commitment to Climate Justice**
+
+We at Sofar Ocean acknowledge that careers in the marine sciences “... have traditionally been, and remain, non-diverse work environments”, thereby limiting the entry and prosperity of underrepresented groups in the space. (**Johri et al.**, 2021) Many of these same groups are disproportionately affected by climate change, and are often excluded from decision making that directly address their interests and needs.
+
+We are committed to addressing these climate injustices and highly encourage people who identify as women, LGBTQ+, Black, Indigenous, and people of color (BIPOC) to apply.
+
+  
+
+**Employee Conduct**
+--------------------
+
+It is the responsibility of every employee to contribute to a positive work environment through cooperative and professional interactions with co-workers, customers, and vendors.
+
+**Equal Employment Opportunity**
+--------------------------------
+
+All qualified applicants will receive consideration for employment without discrimination on the basis of race, color, religion, sex, sexual orientation, gender identity, national origin, protected veteran status, disability, or any other factors prohibited by law.","","https://www.indeed.com/cmp/Sofar-Ocean","","","","","","","","","","","",""
+"li-4266577266","linkedin","https://www.linkedin.com/jobs/view/4266577266","","Software Engineer, Systems and Infrastructure","LinkedIn","Mountain View, CA","2025-07-14","","","","","","",False,"","","","","","","https://www.linkedin.com/company/linkedin","","","","","","","","","","","",""
+"li-4266565575","linkedin","https://www.linkedin.com/jobs/view/4266565575","","Software Engineer I (San Francisco)","Jerry","San Francisco, CA","2025-07-14","","","","","","",False,"","","","","","","https://www.linkedin.com/company/jerryinc","","","","","","","","","","","",""
+"li-4148466280","linkedin","https://www.linkedin.com/jobs/view/4148466280","","Software Development Engineer","Adobe","San Jose, CA","2025-07-13","","","","","","",False,"","","","","","","https://www.linkedin.com/company/adobe","","","","","","","","","","","",""
+"li-4235587612","linkedin","https://www.linkedin.com/jobs/view/4235587612","","Software Engineer - Front End","Nextdoor","San Francisco, CA","","","","","","","",False,"","","","","","","https://www.linkedin.com/company/nextdoor-com","","","","","","","","","","","",""
+"li-4265475646","linkedin","https://www.linkedin.com/jobs/view/4265475646","","Full Stack Software Engineer","Largeton Group","San Francisco, CA","","","","","","","",False,"","","","","","","https://www.linkedin.com/company/largeton-inc","","","","","","","","","","","",""

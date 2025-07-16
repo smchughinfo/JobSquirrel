@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{name}} - Resume</title>
+    <style>
+        /* ATS-friendly styles - simple, clean, and readable */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11pt;
+            line-height: 1.4;
+            color: #000;
+            background-color: #fff;
+            max-width: 8.5in;
+            margin: 0 auto;
+            padding: 0.5in;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #000;
+            padding-bottom: 10px;
+        }
+        
+        .name {
+            font-size: 18pt;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .title {
+            font-size: 12pt;
+            margin-bottom: 5px;
+        }
+        
+        .contact-info {
+            font-size: 10pt;
+            margin-bottom: 5px;
+        }
+        
+        .section {
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 12pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-bottom: 1px solid #000;
+            margin-bottom: 10px;
+            padding-bottom: 2px;
+        }
+        
+        .job {
+            margin-bottom: 15px;
+        }
+        
+        .job-header {
+            margin-bottom: 5px;
+        }
+        
+        .job-title {
+            font-weight: bold;
+            font-size: 11pt;
+        }
+        
+        .company {
+            font-weight: bold;
+            font-size: 11pt;
+        }
+        
+        .location {
+            font-style: italic;
+        }
+        
+        .duration {
+            font-style: italic;
+        }
+        
+        .responsibilities {
+            margin-left: 20px;
+        }
+        
+        .responsibilities li {
+            margin-bottom: 5px;
+        }
+        
+        .skills-list {
+            line-height: 1.6;
+        }
+        
+        .education {
+            margin-bottom: 10px;
+        }
+        
+        .degree {
+            font-weight: bold;
+        }
+        
+        .institution {
+            font-style: italic;
+        }
+        
+        .coursework {
+            margin-left: 20px;
+        }
+        
+        .coursework li {
+            margin-bottom: 3px;
+        }
+        
+        .certifications li {
+            margin-bottom: 5px;
+        }
+        
+        .projects {
+            margin-bottom: 10px;
+        }
+        
+        .project-name {
+            font-weight: bold;
+        }
+        
+        .peripherals li {
+            margin-bottom: 5px;
+        }
+        
+        /* Print styles */
+        @media print {
+            body {
+                margin: 0;
+                padding: 0.5in;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="name">{{name}}</div>
+        <div class="title">{{title}}</div>
+        <div class="contact-info">
+            {{street}} • {{city}}, {{state}} {{zip}} • {{phone}} • {{email}} • {{website}} • {{github}} 
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Professional Experience</div>
+        {{#each experience}}
+        <div class="job">
+            <div class="job-header">
+                <div class="job-title">{{title}}</div>
+                <div class="company">{{company}} • <span class="location">{{location}}</span> • <span class="duration">{{duration}}</span></div>
+            </div>
+            <ul class="responsibilities">
+                {{#each responsibilities}}
+                <li>{{this}}</li>
+                {{/each}}
+            </ul>
+        </div>
+        {{/each}}
+    </div>
+
+    <div class="section">
+        <div class="section-title">Technical Skills</div>
+        <div class="skills-list">
+            {{#each skills}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Education</div>
+        <div class="education">
+            <div class="degree">{{education.degree}}</div>
+            <div class="institution">{{education.institution}} • {{education.duration}}</div>
+            {{#if education.coursework}}
+            <div style="margin-top: 5px; font-weight: bold;">Relevant Coursework:</div>
+            <ul class="coursework">
+                {{#each education.coursework}}
+                <li>{{this}}</li>
+                {{/each}}
+            </ul>
+            {{/if}}
+        </div>
+    </div>
+
+    {{#if certifications_and_courses}}
+    <div class="section">
+        <div class="section-title">Certifications & Professional Development</div>
+        <ul class="certifications">
+            {{#each certifications_and_courses}}
+            <li>{{this}}</li>
+            {{/each}}
+        </ul>
+    </div>
+    {{/if}}
+
+    {{#if projects}}
+    <div class="section">
+        <div class="section-title">Notable Projects</div>
+        {{#each projects}}
+        <div class="projects">
+            <span class="project-name">{{@key}}:</span> {{this}}
+        </div>
+        {{/each}}
+    </div>
+    {{/if}}
+
+    {{#if peripherals}}
+    <div class="section">
+        <div class="section-title">Additional Technical Experience</div>
+        <ul class="peripherals">
+            {{#each peripherals}}
+            <li>{{this}}</li>
+            {{/each}}
+        </ul>
+    </div>
+    {{/if}}
+</body>
+</html>
