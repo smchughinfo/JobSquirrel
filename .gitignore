@@ -6,6 +6,12 @@ ats-add-on-skills.json
 /Stashboard/queue/
 .claude
 
+# ProjectNutcracker
+/ProjectNutcracker/node_modules/
+/ProjectNutcracker/package-lock.json
+/ProjectNutcracker/screenshots/
+/ProjectNutcracker/*.png
+
 # POSSIBLY ANTIQUATED STUFF
 # for openai assistant resume generation
 resume-data-vector-store.txt 
