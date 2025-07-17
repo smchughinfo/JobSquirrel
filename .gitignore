@@ -9,8 +9,11 @@ ats-add-on-skills.json
 # ProjectNutcracker
 /ProjectNutcracker/node_modules/
 /ProjectNutcracker/package-lock.json
+/ProjectNutcracker/nutcracker-profile/
 /ProjectNutcracker/screenshots/
 /ProjectNutcracker/*.png
+/ProjectNutcracker/*.jpg
+/ProjectNutcracker/*.jpeg
 
 # POSSIBLY ANTIQUATED STUFF
 # for openai assistant resume generation

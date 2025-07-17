@@ -1,248 +1,304 @@
 #!/usr/bin/env node
 
 /**
- * 🥜 ProjectNutcracker - Web Automation for Job Discovery
- * 
- * Main module that demonstrates the three core capabilities:
- * 1. Browse to any URL
- * 2. Read the current state of the page (live DOM)
- * 3. Interact with page controls
+ * 🥜 ProjectNutcracker - Dynamic Web Automation
+ * Runtime script generation and injection for adaptive web interaction
  */
 
 const puppeteer = require('puppeteer');
 
 class ProjectNutcracker {
-    constructor() {
+    constructor(options = {}) {
         this.browser = null;
         this.page = null;
         this.connected = false;
+        this.headless = options.headless !== undefined ? options.headless : false;  // Default to visible
+        this.debug = options.debug || false;
     }
 
     /**
-     * Connect to Chrome debugging session
+     * Launch Chrome autonomously with dedicated profile
      */
     async connect() {
-        console.log('🥜 ProjectNutcracker - Initializing...');
+        console.log('🥜 ProjectNutcracker - Launching autonomous Chrome...');
         
-        const connectionURLs = [
-            'http://localhost:9222',
-            'http://127.0.0.1:9222',
-            'http://172.29.64.1:9222'
+        // Try different Chrome options for WSL
+        const chromeOptions = [
+            {
+                name: 'System Chromium',
+                executablePath: '/usr/bin/chromium-browser',
+                userDataDir: './nutcracker-profile'
+            },
+            {
+                name: 'Bundled Chromium',
+                executablePath: undefined,  // Use Puppeteer's bundled Chromium
+                userDataDir: './nutcracker-profile'
+            }
         ];
 
-        for (const browserURL of connectionURLs) {
+        let lastError = null;
+        
+        for (const config of chromeOptions) {
             try {
-                console.log(`🔌 Trying to connect to: ${browserURL}...`);
-                this.browser = await puppeteer.connect({
-                    browserURL: browserURL,
-                    defaultViewport: null
-                });
-                console.log(`✅ Connected successfully to: ${browserURL}`);
-                this.connected = true;
+                console.log(`🔧 Trying: ${config.name}...`);
+                
+                const launchOptions = {
+                    headless: this.headless,  // Use the headless setting from constructor
+                    userDataDir: config.userDataDir,
+                    args: [
+                        '--no-sandbox',
+                        '--disable-setuid-sandbox',
+                        '--disable-dev-shm-usage',
+                        '--no-first-run',
+                        '--no-default-browser-check',
+                        '--disable-sync',
+                        '--disable-background-timer-throttling',
+                        '--disable-renderer-backgrounding',
+                        '--disable-backgrounding-occluded-windows',
+                        '--disable-translate',
+                        '--disable-web-security',
+                        '--disable-gpu-sandbox',
+                        '--use-gl=swiftshader',
+                        '--disable-background-networking',
+                        '--disable-default-apps',
+                        '--disable-extensions',
+                        '--disable-features=TranslateUI',
+                        '--disable-ipc-flooding-protection',
+                        '--enable-features=NetworkService,NetworkServiceLogging',
+                        '--remote-debugging-port=0'  // Let Puppeteer choose the port
+                    ]
+                };
+                
+                if (config.executablePath) {
+                    launchOptions.executablePath = config.executablePath;
+                }
+                
+                this.browser = await puppeteer.launch(launchOptions);
+                console.log(`✅ Success with: ${config.name}`);
                 break;
-            } catch (e) {
-                console.log(`❌ Failed to connect to: ${browserURL}`);
+                
+            } catch (error) {
+                console.log(`❌ Failed with ${config.name}: ${error.message}`);
+                lastError = error;
+                continue;
             }
         }
-
-        if (!this.connected) {
-            throw new Error('❌ Could not connect to Chrome. Make sure Chrome is running with debugging enabled.');
+        
+        if (!this.browser) {
+            throw new Error(`Failed to launch Chrome with any method. Last error: ${lastError.message}`);
         }
+        
+        console.log(`✅ Chrome launched ${this.headless ? 'headless' : 'with GUI'}`);
+        this.connected = true;
 
-        // Get or create a page
+        // Get the default page
         const pages = await this.browser.pages();
-        if (pages.length > 0) {
-            this.page = pages[0];
-            console.log('📄 Using existing tab');
-        } else {
-            this.page = await this.browser.newPage();
-            console.log('📄 Created new tab');
-        }
+        this.page = pages[0];
+        console.log('📄 Using default page');
 
+        // Utilities will be injected after first navigation
+        
         return this;
     }
 
     /**
-     * Capability 1: Browse to any URL
+     * Inject utility functions into the page context
      */
-    async browseToURL(url) {
-        if (!this.connected) {
-            throw new Error('Not connected to Chrome. Call connect() first.');
-        }
+    async injectUtilities() {
+        await this.page.addScriptTag({
+            content: `
+                window.nutcrackerUtils = {
+                    // Find interactive elements by type and characteristics
+                    findElements: (criteria) => {
+                        const elements = [];
+                        const all = document.querySelectorAll('*');
+                        
+                        for (let el of all) {
+                            if (criteria.type === 'clickable' && (
+                                el.tagName === 'BUTTON' || 
+                                el.tagName === 'A' || 
+                                el.onclick ||
+                                el.style.cursor === 'pointer' ||
+                                getComputedStyle(el).cursor === 'pointer'
+                            )) {
+                                elements.push({
+                                    element: el,
+                                    text: el.innerText?.trim(),
+                                    tag: el.tagName,
+                                    href: el.href,
+                                    classes: el.className,
+                                    id: el.id
+                                });
+                            }
+                        }
+                        return elements;
+                    },
 
+                    // Get page structure analysis
+                    analyzePage: () => {
+                        return {
+                            title: document.title,
+                            url: window.location.href,
+                            links: Array.from(document.links).map(link => ({
+                                text: link.innerText?.trim(),
+                                href: link.href,
+                                target: link.target
+                            })),
+                            clickableElements: window.nutcrackerUtils.findElements({ type: 'clickable' }),
+                            forms: Array.from(document.forms).length,
+                            images: Array.from(document.images).length
+                        };
+                    },
+
+                    // Smart clicking with fallbacks
+                    smartClick: (element) => {
+                        if (element.click) {
+                            element.click();
+                        } else {
+                            element.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+                        }
+                    }
+                };
+            `
+        });
+        console.log('🛠️ Utility toolkit injected');
+    }
+
+    /**
+     * Navigate to URL
+     */
+    async goto(url) {
         console.log(`🌐 Navigating to: ${url}`);
         await this.page.goto(url, { waitUntil: 'networkidle2' });
+        
+        // Inject utilities after navigation
+        await this.injectUtilities();
         
         const title = await this.page.title();
         console.log(`📄 Page loaded: ${title}`);
         
-        return {
-            url: this.page.url(),
-            title: title
-        };
+        return title;
     }
 
     /**
-     * Capability 2: Read the current state of the page (live DOM)
+     * Analyze current page structure
      */
-    async readCurrentPageState() {
-        if (!this.connected) {
-            throw new Error('Not connected to Chrome. Call connect() first.');
-        }
+    async analyzePage() {
+        console.log('📊 Analyzing page structure...');
+        
+        const analysis = await this.page.evaluate(() => {
+            return window.nutcrackerUtils.analyzePage();
+        });
+        
+        console.log(`📋 Found: ${analysis.links.length} links, ${analysis.clickableElements.length} clickable elements`);
+        return analysis;
+    }
 
-        console.log('📖 Reading current page state...');
-
-        const pageState = await this.page.evaluate(() => {
-            return {
-                url: window.location.href,
-                title: document.title,
-                bodyText: document.body.innerText.substring(0, 500),
-                forms: Array.from(document.forms).map(form => ({
-                    action: form.action,
-                    method: form.method,
-                    inputs: Array.from(form.elements).map(el => ({
-                        type: el.type,
-                        name: el.name,
-                        placeholder: el.placeholder,
-                        value: el.value
-                    }))
-                })),
-                links: Array.from(document.links).slice(0, 10).map(link => ({
-                    text: link.innerText.trim(),
-                    href: link.href
-                })),
-                inputs: Array.from(document.querySelectorAll('input, textarea, select')).map(el => ({
-                    type: el.type,
-                    name: el.name,
-                    placeholder: el.placeholder,
-                    id: el.id,
-                    className: el.className
-                })),
-                buttons: Array.from(document.querySelectorAll('button, input[type="submit"]')).map(btn => ({
-                    text: btn.innerText || btn.value,
-                    type: btn.type,
-                    name: btn.name
-                }))
-            };
+    /**
+     * Click around intelligently - find interesting links and click them
+     */
+    async exploreAndClick() {
+        const analysis = await this.analyzePage();
+        
+        // Find interesting links to click (filter out common navigation)
+        const interestingLinks = analysis.clickableElements.filter(el => {
+            const text = el.text?.toLowerCase() || '';
+            const isNavigationJunk = ['home', 'contact', 'about', 'privacy', 'terms', 'login', 'sign up'].includes(text);
+            const hasText = text.length > 0 && text.length < 50;
+            return hasText && !isNavigationJunk;
         });
 
-        console.log('✅ Page state captured');
-        return pageState;
-    }
-
-    /**
-     * Capability 3: Interact with page controls
-     */
-    async interactWithPage(actions) {
-        if (!this.connected) {
-            throw new Error('Not connected to Chrome. Call connect() first.');
-        }
-
-        console.log('🎮 Interacting with page controls...');
-
-        for (const action of actions) {
-            console.log(`   → ${action.type}: ${action.selector || action.text || action.url}`);
-
-            switch (action.type) {
-                case 'click':
-                    await this.page.click(action.selector);
-                    break;
+        console.log(`🎯 Found ${interestingLinks.length} interesting clickable elements`);
+        
+        for (let i = 0; i < Math.min(3, interestingLinks.length); i++) {
+            const link = interestingLinks[i];
+            console.log(`🖱️ Clicking: "${link.text}" (${link.tag})`);
+            
+            try {
+                // Generate and execute click script
+                await this.page.evaluate((linkData) => {
+                    const elements = document.querySelectorAll('*');
+                    for (let el of elements) {
+                        if (el.innerText?.trim() === linkData.text && 
+                            el.tagName === linkData.tag) {
+                            window.nutcrackerUtils.smartClick(el);
+                            break;
+                        }
+                    }
+                }, link);
                 
-                case 'type':
-                    await this.page.type(action.selector, action.text);
-                    break;
+                // Wait for page changes
+                await new Promise(resolve => setTimeout(resolve, 2000));
                 
-                case 'select':
-                    await this.page.select(action.selector, action.value);
-                    break;
+                // Check if we're on a new page
+                const newTitle = await this.page.title();
+                console.log(`📄 Now on: ${newTitle}`);
                 
-                case 'wait':
-                    await this.page.waitForTimeout(action.milliseconds || 1000);
-                    break;
+                // Go back if it's a different page
+                if (newTitle !== analysis.title) {
+                    console.log('⬅️ Going back...');
+                    await this.page.goBack();
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
                 
-                case 'wait_for_selector':
-                    await this.page.waitForSelector(action.selector);
-                    break;
-                
-                case 'screenshot':
-                    await this.page.screenshot({ path: action.filename || 'screenshot.png' });
-                    console.log(`📸 Screenshot saved: ${action.filename || 'screenshot.png'}`);
-                    break;
-
-                default:
-                    console.log(`⚠️  Unknown action type: ${action.type}`);
+            } catch (error) {
+                console.log(`❌ Failed to click "${link.text}": ${error.message}`);
             }
-
-            // Small delay between actions for visibility
-            await this.page.waitForTimeout(500);
         }
-
-        console.log('✅ Page interactions completed');
     }
 
     /**
-     * Disconnect from Chrome (but leave it running)
+     * Take a screenshot
      */
-    disconnect() {
+    async screenshot(filename) {
+        const path = `screenshots/${filename}`;
+        await this.page.screenshot({ path });
+        console.log(`📸 Screenshot saved: ${path}`);
+        return path;
+    }
+
+    /**
+     * Close Chrome completely
+     */
+    async disconnect() {
         if (this.browser) {
-            console.log('🔌 Disconnecting from Chrome...');
-            this.browser.disconnect();
+            console.log('🔌 Closing Chrome...');
+            await this.browser.close();
             this.connected = false;
-        }
-    }
-
-    /**
-     * Demo function that showcases all three capabilities
-     */
-    async runDemo() {
-        try {
-            // Connect to Chrome
-            await this.connect();
-
-            // Capability 1: Browse to URL
-            await this.browseToURL('https://www.google.com');
-
-            // Capability 2: Read page state
-            const pageState = await this.readCurrentPageState();
-            console.log('\n📊 Page State Summary:');
-            console.log(`   Title: ${pageState.title}`);
-            console.log(`   Inputs found: ${pageState.inputs.length}`);
-            console.log(`   Buttons found: ${pageState.buttons.length}`);
-            console.log(`   Links found: ${pageState.links.length}`);
-
-            // Capability 3: Interact with page
-            await this.interactWithPage([
-                { type: 'type', selector: 'textarea[name="q"]', text: 'ProjectNutcracker job search automation' },
-                { type: 'wait', milliseconds: 1000 },
-                { type: 'click', selector: 'input[name="btnK"]' },
-                { type: 'wait_for_selector', selector: '#search' },
-                { type: 'wait', milliseconds: 2000 }
-            ]);
-
-            // Read page state after interaction
-            const searchResults = await this.readCurrentPageState();
-            console.log('\n🔍 Search Results Summary:');
-            console.log(`   New title: ${searchResults.title}`);
-            console.log(`   Found ${searchResults.links.length} result links`);
-
-            console.log('\n🎉 ProjectNutcracker demo completed successfully!');
-            console.log('All three capabilities working:');
-            console.log('   ✅ 1. Browse to any URL');
-            console.log('   ✅ 2. Read live DOM state');
-            console.log('   ✅ 3. Interact with page controls');
-
-        } catch (error) {
-            console.error('❌ Demo failed:', error.message);
-        } finally {
-            this.disconnect();
         }
     }
 }
 
-// If this script is run directly, run the demo
+// Demo: Navigate to Sean's site and click around
+async function demo() {
+    console.log('🎬 Running ProjectNutcracker demo...');
+    console.log('🤖 Headless mode with screenshots for visibility');
+    console.log('');
+    
+    // Headless with screenshots for visibility
+    const nutcracker = new ProjectNutcracker({ headless: true, debug: true });
+    
+    try {
+        await nutcracker.connect();
+        await nutcracker.goto('https://seanmchugh.dev');
+        
+        // Take screenshot of the page
+        await nutcracker.screenshot('demo-page.png');
+        
+        await nutcracker.exploreAndClick();
+        
+        console.log('🎉 Demo completed!');
+        
+    } catch (error) {
+        console.error('❌ Demo failed:', error.message);
+    } finally {
+        await nutcracker.disconnect();
+    }
+}
+
+// Run demo if called directly
 if (require.main === module) {
-    const nutcracker = new ProjectNutcracker();
-    nutcracker.runDemo();
+    demo();
 }
 
 module.exports = ProjectNutcracker;
