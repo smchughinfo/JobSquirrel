@@ -38,12 +38,16 @@
         
         .title {
             font-size: 12pt;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
         
         .contact-info {
             font-size: 10pt;
             margin-bottom: 5px;
+        }
+        
+        .contact-line {
+            margin-bottom: 3px;
         }
         
         .section {
@@ -147,7 +151,8 @@
         <div class="name">{{name}}</div>
         <div class="title">{{title}}</div>
         <div class="contact-info">
-            {{street}} • {{city}}, {{state}} {{zip}} • {{phone}} • {{email}} • {{website}} • {{github}} 
+            <div class="contact-line">{{city}}, {{state}} {{zip}} • {{phone}}</div>
+            <div class="contact-line">{{email}} • {{website}} • {{github}}</div>
         </div>
     </div>
 
