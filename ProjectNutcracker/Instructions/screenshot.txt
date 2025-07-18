@@ -1,0 +1,1 @@
+navigate to https://www.google.com, wait for the page to load, and take a screenshot.

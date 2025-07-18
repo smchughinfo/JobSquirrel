@@ -152,6 +152,18 @@ function Header({ onOpenATSSkillsDialog }) {
     handleConfigDialogClose();
   };
 
+  const handleProjectNutcrackerClick = async () => {
+    setIsMenuOpen(false);
+    console.log('🥜 ProjectNutcracker: Starting browser instructions...');
+    try {
+      const response = await fetch('/api/nutcracker/execute', { method: 'POST' });
+      const result = await response.json();
+      console.log('ProjectNutcracker result:', result);
+    } catch (error) {
+      console.error('ProjectNutcracker error:', error);
+    }
+  };
+
 
   return (
     <>
@@ -191,6 +203,12 @@ function Header({ onOpenATSSkillsDialog }) {
                     }}
                   >
                     🎯 Manage ATS Skills
+                  </button>
+                  <button 
+                    className="dropdown-item"
+                    onClick={handleProjectNutcrackerClick}
+                  >
+                    🥜 ProjectNutcracker
                   </button>
                 </div>
               )}

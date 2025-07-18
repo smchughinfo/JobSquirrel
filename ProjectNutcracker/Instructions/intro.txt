@@ -1,0 +1,17 @@
+You have access to a puppeteer instance through the script located at "/ScriptsForClaude/puppeteer.js".
+
+It contains the following functions:
+
+1. openBrowser() - Opens a headless Chrome browser
+2. closeBrowser() - Closes the browser and cleans up
+3. navigate(url) - Navigate to any URL
+4. screenshot(filename) - Take a screenshot (optional custom filename)
+5. getDOM() - Save current page DOM to /Cache/current-dom.html
+6. getConsole() - Save console logs to /Cache/current-console.txt (last 100 lines)
+7. injectJavaScript(code) - Execute any JavaScript on the current page
+
+The browser stays open between function calls, so you can navigate around and maintain state.
+
+DOM and console outputs are saved to files so you can read them when needed without size limits.
+
+Always call openBrowser() first and closeBrowser() when done.

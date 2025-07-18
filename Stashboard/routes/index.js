@@ -8,6 +8,7 @@ const generationRoutes = require('./generation');
 const pdfRoutes = require('./pdf');
 const configRoutes = require('./config');
 const atsSkillsRoutes = require('./atsSkills');
+const nutcrackerRoutes = require('./nutcracker');
 
 // Register route modules
 router.use('/api', eventsRoutes);
@@ -16,5 +17,6 @@ router.use('/api', generationRoutes);
 router.use('/api', pdfRoutes);
 router.use('/api', configRoutes);
 router.use('/api', atsSkillsRoutes);
+router.use('/api/nutcracker', nutcrackerRoutes);
 
 module.exports = router;
