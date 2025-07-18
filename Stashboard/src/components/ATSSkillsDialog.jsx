@@ -18,10 +18,10 @@ function ATSSkillsDialog({ isOpen, onClose, onSave }) {
       const data = await response.json();
       
       if (data.success) {
-        // Sort skills: new ones first (those with include: false), then existing ones
+        // Sort skills: truly new ones first (those with isNew: true), then existing ones
         const sortedSkills = data.skills.sort((a, b) => {
-          if (a.include === false && b.include === true) return -1;
-          if (a.include === true && b.include === false) return 1;
+          if (a.isNew === true && b.isNew !== true) return -1;
+          if (a.isNew !== true && b.isNew === true) return 1;
           return a.name.localeCompare(b.name);
         });
         setSkills(sortedSkills);
@@ -45,14 +45,27 @@ function ATSSkillsDialog({ isOpen, onClose, onSave }) {
     );
   };
 
+  const handlePreferredSpellingChange = (skillName, newSpelling) => {
+    setSkills(prevSkills => 
+      prevSkills.map(skill => 
+        skill.name === skillName 
+          ? { ...skill, preferredSpelling: newSpelling }
+          : skill
+      )
+    );
+  };
+
   const handleSave = async () => {
     try {
       setSaving(true);
       
-      // Create skillUpdates object
+      // Create skillUpdates object with both include status and preferred spelling
       const skillUpdates = {};
+      const preferredSpellings = {};
+      
       skills.forEach(skill => {
         skillUpdates[skill.name] = skill.include;
+        preferredSpellings[skill.name] = skill.preferredSpelling || skill.name;
       });
       
       const response = await fetch('/api/ats-skills', {
@@ -60,7 +73,7 @@ function ATSSkillsDialog({ isOpen, onClose, onSave }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ skillUpdates })
+        body: JSON.stringify({ skillUpdates, preferredSpellings })
       });
       
       const data = await response.json();
@@ -153,58 +166,81 @@ function ATSSkillsDialog({ isOpen, onClose, onSave }) {
               </p>
 
               <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '0.5rem'
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.75rem'
               }}>
                 {skills.map((skill, index) => (
-                  <label
+                  <div
                     key={skill.name}
                     style={{
+                      padding: '1rem',
+                      backgroundColor: skill.isNew === true ? '#fff3cd' : '#f8f9fa',
+                      border: skill.isNew === true ? '1px solid #ffeaa7' : '1px solid #dee2e6',
+                      borderRadius: '5px',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <div style={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: '0.5rem',
-                      padding: '0.75rem',
-                      backgroundColor: skill.include === false ? '#fff3cd' : '#f8f9fa',
-                      border: skill.include === false ? '1px solid #ffeaa7' : '1px solid #dee2e6',
-                      borderRadius: '5px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.backgroundColor = skill.include === false ? '#fff3cd' : '#e9ecef';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.backgroundColor = skill.include === false ? '#fff3cd' : '#f8f9fa';
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={skill.include}
-                      onChange={() => handleSkillToggle(skill.name)}
-                      style={{
-                        marginRight: '0.5rem'
-                      }}
-                    />
-                    <span style={{
-                      fontSize: '0.9rem',
-                      fontWeight: skill.include === false ? '600' : '400'
+                      marginBottom: '0.5rem'
                     }}>
-                      {skill.name}
-                    </span>
-                    {skill.include === false && (
+                      <input
+                        type="checkbox"
+                        checked={skill.include}
+                        onChange={() => handleSkillToggle(skill.name)}
+                        style={{
+                          marginRight: '0.5rem'
+                        }}
+                      />
                       <span style={{
-                        fontSize: '0.7rem',
-                        color: '#856404',
-                        backgroundColor: '#fff3cd',
-                        padding: '0.2rem 0.4rem',
-                        borderRadius: '3px',
-                        marginLeft: 'auto'
+                        fontSize: '0.9rem',
+                        fontWeight: skill.isNew === true ? '600' : '400',
+                        flex: 1
                       }}>
-                        NEW
+                        {skill.name}
                       </span>
-                    )}
-                  </label>
+                      {skill.isNew === true && (
+                        <span style={{
+                          fontSize: '0.7rem',
+                          color: '#856404',
+                          backgroundColor: '#fff3cd',
+                          padding: '0.2rem 0.4rem',
+                          borderRadius: '3px'
+                        }}>
+                          NEW
+                        </span>
+                      )}
+                    </div>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem'
+                    }}>
+                      <label style={{
+                        fontSize: '0.8rem',
+                        color: '#666',
+                        minWidth: '120px'
+                      }}>
+                        Preferred Spelling:
+                      </label>
+                      <input
+                        type="text"
+                        value={skill.preferredSpelling || skill.name}
+                        onChange={(e) => handlePreferredSpellingChange(skill.name, e.target.value)}
+                        style={{
+                          flex: 1,
+                          padding: '0.25rem 0.5rem',
+                          border: '1px solid #ccc',
+                          borderRadius: '3px',
+                          fontSize: '0.8rem'
+                        }}
+                        placeholder={skill.name}
+                      />
+                    </div>
+                  </div>
                 ))}
               </div>
 

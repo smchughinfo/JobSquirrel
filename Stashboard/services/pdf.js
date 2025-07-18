@@ -3,7 +3,7 @@ const fs = require("fs");
 const { getResumePDFPath } = require('./jobSquirrelPaths');
 
 async function htmlToPdf(htmlContent, companyName, jobTitle, marginInches = 0) {
-    const outputPath = getResumePDFPath(`Resume For ${jobTitle} - ${companyName}`);
+    const outputPath = getResumePDFPath(companyName);
     
     // Ensure the GeneratedResumes directory exists
     const outputDir = require('path').dirname(outputPath);

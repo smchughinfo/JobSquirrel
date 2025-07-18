@@ -16,7 +16,7 @@ router.get('/ats-skills', (req, res) => {
 // Update ATS skills
 router.post('/ats-skills', (req, res) => {
     try {
-        const { skillUpdates } = req.body;
+        const { skillUpdates, preferredSpellings } = req.body;
         
         if (!skillUpdates || typeof skillUpdates !== 'object') {
             return res.status(400).json({ 
@@ -25,7 +25,7 @@ router.post('/ats-skills', (req, res) => {
             });
         }
         
-        updateSkills(skillUpdates);
+        updateSkills(skillUpdates, preferredSpellings);
         res.json({ success: true });
     } catch (error) {
         console.error('❌ Error updating ATS skills:', error);

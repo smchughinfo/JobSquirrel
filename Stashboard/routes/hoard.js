@@ -13,6 +13,13 @@ router.get('/hoard', (req, res) => {
 router.patch('/nut-note', (req, res) => {
     const nutNote = req.body;
     addOrUpdateNutNote(nutNote);
+    
+    // Broadcast hoard update event
+    eventBroadcaster.broadcast('hoard-updated', {
+        type: 'nut-note-updated',
+        content: `Job updated: ${nutNote.company} - ${nutNote.jobTitle}`
+    });
+    
     res.sendStatus(200);
 });
 

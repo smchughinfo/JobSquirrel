@@ -300,16 +300,22 @@ function JobListings({ lastEvent }) {
   const handleATSSkillsSave = async () => {
     const { pendingGeneration } = atsSkillsDialog;
     
+    // Close the dialog immediately so user sees the processing
+    setAtsSkillsDialog({ open: false, pendingGeneration: null });
+    
     if (pendingGeneration) {
       // Retry the generation after skills have been approved
-      if (pendingGeneration.type === 'resume') {
-        await generateTemplateResume(pendingGeneration.job, pendingGeneration.templateNumber);
-      } else if (pendingGeneration.type === 'coverLetter') {
-        await generateTemplateCoverLetter(pendingGeneration.job, pendingGeneration.templateNumber);
+      // This time it should succeed since skills are now approved
+      try {
+        if (pendingGeneration.type === 'resume') {
+          await generateTemplateResume(pendingGeneration.job, pendingGeneration.templateNumber);
+        } else if (pendingGeneration.type === 'coverLetter') {
+          await generateTemplateCoverLetter(pendingGeneration.job, pendingGeneration.templateNumber);
+        }
+      } catch (error) {
+        console.error('Error retrying generation after skills approval:', error);
       }
     }
-    
-    setAtsSkillsDialog({ open: false, pendingGeneration: null });
   };
 
   const generateTemplateCoverLetter = async (job, templateNumber) => {

@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const Handlebars = require('handlebars');
 const { getResumeTemplatesDirectory, getResumeDataDirectory, getResumeJSONPath } = require('../jobSquirrelPaths');
-const { addSkills, hasNewSkills, getApprovedSkills } = require('../atsAddOnSkills');
+const { addSkills, hasNewSkills, getApprovedSkills, getApprovedSkillsFromList } = require('../atsAddOnSkills');
 const { addOrUpdateNutNote } = require('../hoard');
 const { generateSessionData } = require('./common');
 const { askOpenAI, getJSONAsync } = require('../llm/openai');
@@ -41,7 +41,18 @@ async function getUnmatchedSkills(nutNote) {
         jobListingSkills: nutNote.requirements
     };
 
-    return (await getJSONAsync(prompt, schema, JSON.stringify(data))).skillDiffs.unmatchedSkills;
+    const aiResult = (await getJSONAsync(prompt, schema, JSON.stringify(data))).skillDiffs.unmatchedSkills;
+    
+    // Post-process to ensure we don't include skills that are already in resume.json
+    // Sometimes AI doesn't perfectly filter, so we do a final check
+    const aiSkills = aiResult.split(',').map(skill => skill.trim()).filter(skill => skill.length > 0);
+    const resumeSkills = resumeData.skills.map(skill => skill.toLowerCase());
+    
+    const trulyUnmatchedSkills = aiSkills.filter(skill => 
+        !resumeSkills.includes(skill.toLowerCase())
+    );
+    
+    return trulyUnmatchedSkills.join(', ');
 }
 
 async function generateResume(nutNote, templateNumber = 1) {
@@ -55,6 +66,9 @@ async function generateResume(nutNote, templateNumber = 1) {
         addSkills(unmatchedSkills);
         throw new Error('NEW_SKILLS_NEED_APPROVAL');
     }
+    
+    // Get only the approved skills from the current job's unmatched skills
+    const approvedCurrentJobSkills = getApprovedSkillsFromList(unmatchedSkills);
 
     // Validate template number
     if (![1, 2].includes(templateNumber)) {
@@ -78,9 +92,8 @@ async function generateResume(nutNote, templateNumber = 1) {
     console.log('Reading resume data from:', resumeDataPath);
     const resumeData = JSON.parse(fs.readFileSync(resumeDataPath, 'utf8'));
 
-    // Get approved ATS skills and combine with resume skills
-    const approvedATSSkills = getApprovedSkills();
-    const combinedSkills = [...resumeData.skills, ...approvedATSSkills];
+    // Get approved ATS skills from current job only and combine with resume skills
+    const combinedSkills = [...resumeData.skills, ...approvedCurrentJobSkills];
 
     // Compile the template
     const template = Handlebars.compile(templateSource);
@@ -123,6 +136,9 @@ async function generateCoverLetter(nutNote, templateNumber = 1) {
         addSkills(unmatchedSkills);
         throw new Error('NEW_SKILLS_NEED_APPROVAL');
     }
+    
+    // Get only the approved skills from the current job's unmatched skills
+    const approvedCurrentJobSkills = getApprovedSkillsFromList(unmatchedSkills);
 
     // Validate template number
     if (![1].includes(templateNumber)) {
@@ -146,9 +162,8 @@ async function generateCoverLetter(nutNote, templateNumber = 1) {
     console.log('Reading resume data from:', resumeDataPath);
     const resumeData = JSON.parse(fs.readFileSync(resumeDataPath, 'utf8'));
 
-    // Get approved ATS skills and combine with resume skills
-    const approvedATSSkills = getApprovedSkills();
-    const combinedSkills = [...resumeData.skills, ...approvedATSSkills];
+    // Get approved ATS skills from current job only and combine with resume skills
+    const combinedSkills = [...resumeData.skills, ...approvedCurrentJobSkills];
 
     // Compile the template
     const template = Handlebars.compile(templateSource);

@@ -84,7 +84,7 @@ The system features a modern React-based web interface (Stashboard) with real-ti
 **Technical Implementation**:
 - **Puppeteer-based PDF engine** for consistent, high-quality output
 - **User-configurable margin controls** (0-2 inches with 0.1-inch precision)
-- **Clean filename format** without version suffixes: "Sean McHugh - Resume For [Job] - [Company].pdf"
+- **Clean filename format** without version suffixes: "Sean McHugh - [Company].pdf"
 - **Automatic file overwriting** for clean file management
 - **Instant preview** in new browser tab
 
