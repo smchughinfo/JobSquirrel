@@ -11,6 +11,14 @@ Job Discovery → AI Processing → Multiple Resume Versions → Creative Remix 
 
 The system features a modern React-based web interface (Stashboard) with real-time streaming, tabbed resume management, revolutionary remix functionality, comprehensive double check system, and professional PDF generation with customizable margins.
 
+## ⚠️ Critical Technical Issue Documentation
+
+**EventSource + React.StrictMode Bug**: A critical issue was discovered and resolved involving React.StrictMode causing dual EventSource connections that overwhelmed the Node.js event loop, making the entire application unresponsive. Full technical analysis and resolution details are documented in:
+
+📄 **[EventSource-StrictMode-Issue.md](Documentation/EventSource-StrictMode-Issue.md)**
+
+*This reference will be removed once the issue is fully behind us, but serves as important technical documentation for understanding React.StrictMode interactions with persistent connections.*
+
 ## System Architecture
 
 ### Core Components
