@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const Handlebars = require('handlebars');
-const { getResumeTemplatesDirectory, getResumeDataDirectory, getResumeJSONPath } = require('../jobSquirrelPaths');
+const { getResumeTemplatesDirectory, getResumeDataDirectory, getResumeJSONPath, getCoverLetterPath } = require('../jobSquirrelPaths');
 const { addSkills, hasNewSkills, getApprovedSkills, getApprovedSkillsFromList } = require('../atsAddOnSkills');
 const { addOrUpdateNutNote } = require('../hoard');
 const { generateSessionData } = require('./common');
@@ -61,9 +61,10 @@ async function generateResume(nutNote, templateNumber = 1) {
 
     let unmatchedSkills = await getUnmatchedSkills(nutNote);
     
-    // Check if there are new skills that need approval
-    if (hasNewSkills(unmatchedSkills)) {
+    // Check if there are new skills that need approval (only if not already reviewed)
+    if (!nutNote.skillsReviewed && hasNewSkills(unmatchedSkills)) {
         addSkills(unmatchedSkills);
+        nutNote.skillsReviewed = true; // Mark as reviewed
         throw new Error('NEW_SKILLS_NEED_APPROVAL');
     }
     
@@ -93,7 +94,11 @@ async function generateResume(nutNote, templateNumber = 1) {
     const resumeData = JSON.parse(fs.readFileSync(resumeDataPath, 'utf8'));
 
     // Get approved ATS skills from current job only and combine with resume skills
-    const combinedSkills = [...resumeData.skills, ...approvedCurrentJobSkills];
+    const combinedSkillsWithDuplicates = [...resumeData.skills, ...approvedCurrentJobSkills];
+    
+    // Remove exact duplicates (case-insensitive)
+    const combinedSkills = [...new Set(combinedSkillsWithDuplicates.map(skill => skill.toLowerCase()))]
+        .map(lowerSkill => combinedSkillsWithDuplicates.find(skill => skill.toLowerCase() === lowerSkill));
 
     // Compile the template
     const template = Handlebars.compile(templateSource);
@@ -131,9 +136,10 @@ async function generateCoverLetter(nutNote, templateNumber = 1) {
 
     let unmatchedSkills = await getUnmatchedSkills(nutNote);
     
-    // Check if there are new skills that need approval
-    if (hasNewSkills(unmatchedSkills)) {
+    // Check if there are new skills that need approval (only if not already reviewed)
+    if (!nutNote.skillsReviewed && hasNewSkills(unmatchedSkills)) {
         addSkills(unmatchedSkills);
+        nutNote.skillsReviewed = true; // Mark as reviewed
         throw new Error('NEW_SKILLS_NEED_APPROVAL');
     }
     
@@ -163,7 +169,11 @@ async function generateCoverLetter(nutNote, templateNumber = 1) {
     const resumeData = JSON.parse(fs.readFileSync(resumeDataPath, 'utf8'));
 
     // Get approved ATS skills from current job only and combine with resume skills
-    const combinedSkills = [...resumeData.skills, ...approvedCurrentJobSkills];
+    const combinedSkillsWithDuplicates = [...resumeData.skills, ...approvedCurrentJobSkills];
+    
+    // Remove exact duplicates (case-insensitive)
+    const combinedSkills = [...new Set(combinedSkillsWithDuplicates.map(skill => skill.toLowerCase()))]
+        .map(lowerSkill => combinedSkillsWithDuplicates.find(skill => skill.toLowerCase() === lowerSkill));
 
     // Compile the template
     const template = Handlebars.compile(templateSource);
@@ -195,6 +205,9 @@ async function generateCoverLetter(nutNote, templateNumber = 1) {
 
     // Generate the text content
     const text = template(templateData);
+
+    // Save cover letter to file (same as AI-generated cover letters)
+    fs.writeFileSync(getCoverLetterPath(nutNote.company), text);
 
     // Initialize coverLetter array if it doesn't exist
     if (!nutNote.coverLetter) {
