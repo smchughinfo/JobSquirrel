@@ -66,7 +66,7 @@ async function reduceSkillList(skillList, nutNote) {
         })
     });
     
-    let prompt = `Reduce this skill list to match the job listing. Include peripheral tech but try to eliminate redundancy and just in general, trim it down to a more maneagable size so a hiring manager doesn't see a jack of all trades.`
+    let prompt = `Reduce this skill list slightly to match the job listing. Include peripheral tech but try to eliminate glaring redundancies and just in general, trim it down to a bit so a hiring manager doesn't see a jack of all trades.`
     
     // Read resume data to get candidate skills
     const resumeDataPath = getResumeJSONPath();
