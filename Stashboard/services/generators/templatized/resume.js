@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const Handlebars = require('handlebars');
 const { getResumeTemplatesDirectory, getResumeDataDirectory } = require('../../jobSquirrelPaths');
-const { addSkills, hasNewSkills, getApprovedSkillsFromList } = require('../../atsAddOnSkills');
+const { addSkills, hasNewSkills, getApprovedSkillsFromList, getApprovedSkills } = require('../../atsAddOnSkills');
 const { addOrUpdateNutNote } = require('../../hoard');
 const { generateSessionData } = require('../common');
 const { getUnmatchedSkills } = require('./shared');
@@ -68,7 +68,7 @@ function saveResumeAndUpdateNutNote(html, nutNote) {
     addOrUpdateNutNote(nutNote);
 }
 
-async function generateResume(nutNote, templateNumber = 1) {
+async function generateResume(nutNote, templateNumber = 1, tailor = true, atsAddOns = true) {
     let sessionData = generateSessionData();
     nutNote.sessionData.push(sessionData);
 

@@ -15,6 +15,8 @@ function JobListings({ lastEvent }) {
   const [selectedCoverLetterTemplateNumber, setSelectedCoverLetterTemplateNumber] = useState(1);
   const [templatePreview, setTemplatePreview] = useState({ show: false, x: 0, y: 0, type: 'resume' });
   const [atsSkillsDialog, setAtsSkillsDialog] = useState({ open: false, pendingGeneration: null });
+  const [tailorResume, setTailorResume] = useState(true);
+  const [atsAddOns, setAtsAddOns] = useState(true);
 
   // Fetch jobs from the API
   const fetchJobs = async () => {
@@ -260,7 +262,7 @@ function JobListings({ lastEvent }) {
     }
   };
 
-  const generateTemplateResume = async (job, templateNumber) => {
+  const generateTemplateResume = async (job, templateNumber, tailor = true, atsAddOns = true) => {
     try {
       console.log(`📋 Generating template resume (Template ${templateNumber}) for: ${job.company} - ${job.jobTitle}`);
       
@@ -271,7 +273,9 @@ function JobListings({ lastEvent }) {
         },
         body: JSON.stringify({
           nutNote: job,
-          templateNumber: templateNumber
+          templateNumber: templateNumber,
+          tailor: tailor,
+          atsAddOns: atsAddOns
         })
       });
       
@@ -281,7 +285,7 @@ function JobListings({ lastEvent }) {
         console.log('🎯 New ATS skills detected, showing approval dialog');
         setAtsSkillsDialog({ 
           open: true, 
-          pendingGeneration: { type: 'resume', job, templateNumber } 
+          pendingGeneration: { type: 'resume', job, templateNumber, tailor, atsAddOns } 
         });
       } else if (result.success) {
         console.log('✅ Template resume generation started:', result.message);
@@ -308,7 +312,7 @@ function JobListings({ lastEvent }) {
       // This time it should succeed since skills are now approved
       try {
         if (pendingGeneration.type === 'resume') {
-          await generateTemplateResume(pendingGeneration.job, pendingGeneration.templateNumber);
+          await generateTemplateResume(pendingGeneration.job, pendingGeneration.templateNumber, pendingGeneration.tailor, pendingGeneration.atsAddOns);
         } else if (pendingGeneration.type === 'coverLetter') {
           await generateTemplateCoverLetter(pendingGeneration.job, pendingGeneration.templateNumber);
         }
@@ -1749,8 +1753,70 @@ function JobListings({ lastEvent }) {
                           </select>
                         </div>
                         
+                        {/* Tailor Checkbox */}
+                        <div style={{ marginBottom: '1rem' }}>
+                          <label style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            fontSize: '0.85rem',
+                            fontWeight: '500',
+                            color: '#495057',
+                            cursor: 'pointer'
+                          }}>
+                            <input
+                              type="checkbox"
+                              checked={tailorResume}
+                              onChange={(e) => setTailorResume(e.target.checked)}
+                              style={{
+                                margin: 0,
+                                transform: 'scale(1.1)'
+                              }}
+                            />
+                            Tailor
+                            <span style={{ 
+                              fontSize: '0.8rem', 
+                              color: '#6c757d',
+                              fontWeight: 'normal'
+                            }}>
+                              (Include job-specific skills optimization)
+                            </span>
+                          </label>
+                        </div>
+                        
+                        {/* ATS Add Ons Checkbox */}
+                        <div style={{ marginBottom: '1rem' }}>
+                          <label style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            fontSize: '0.85rem',
+                            fontWeight: '500',
+                            color: '#495057',
+                            cursor: 'pointer'
+                          }}>
+                            <input
+                              type="checkbox"
+                              checked={atsAddOns}
+                              onChange={(e) => setAtsAddOns(e.target.checked)}
+                              style={{
+                                margin: 0,
+                                transform: 'scale(1.1)'
+                              }}
+                            />
+                            ATS Add Ons
+                            <span style={{ 
+                              fontSize: '0.8rem', 
+                              color: '#6c757d',
+                              fontWeight: 'normal'
+                            }}>
+                              (Include pre-approved ATS skills library)
+                            </span>
+                          </label>
+                        </div>
+                        
                         <button
-                          onClick={() => generateTemplateResume(resumeDialog.job, selectedTemplateNumber)}
+                          onClick={() => generateTemplateResume(resumeDialog.job, selectedTemplateNumber, tailorResume, atsAddOns)}
                           style={{
                             background: '#6c757d',
                             color: 'white',
