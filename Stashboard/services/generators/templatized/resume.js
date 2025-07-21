@@ -5,7 +5,7 @@ const { getResumeTemplatesDirectory, getResumeDataDirectory } = require('../../j
 const { addSkills, hasNewSkills, getApprovedSkillsFromList, getApprovedSkills } = require('../../atsAddOnSkills');
 const { addOrUpdateNutNote } = require('../../hoard');
 const { generateSessionData } = require('../common');
-const { getUnmatchedSkills } = require('./shared');
+const { getUnmatchedSkills, getSkillDiffs, reduceSkillList } = require('./shared');
 const { getJSONAsync } = require('../../llm/openai/openai');
 const { z } = require('zod');
 
@@ -70,7 +70,7 @@ function saveResumeAndUpdateNutNote(html, nutNote) {
     addOrUpdateNutNote(nutNote);
 }
 
-async function generateResume(nutNote, templateNumber = 1, tailor = true, atsAddOns = true) {
+async function generateResume(nutNote, templateNumber = 1, tailor = true, atsAddOns = true, reduce = true) {
     let sessionData = generateSessionData();
     nutNote.sessionData.push(sessionData);
 
@@ -79,7 +79,7 @@ async function generateResume(nutNote, templateNumber = 1, tailor = true, atsAdd
     const { templatePath, resumeDataPath } = getResumePaths(templateNumber);
     const templateSource = loadResumeTemplate(templatePath, templateNumber);
     let resumeData = loadResumeData(resumeDataPath);
-    const skillList = await getSkills(resumeData, nutNote, atsAddOns);
+    const skillList = await getSkills(resumeData, nutNote, atsAddOns, reduce);
 
     if(tailor) {
         resumeData = await tailorResumeData(nutNote, resumeData);
@@ -96,7 +96,9 @@ async function generateResume(nutNote, templateNumber = 1, tailor = true, atsAdd
     saveResumeAndUpdateNutNote(html, nutNote);
 }
 
+// 4o and 4o-mini don't perform well on this one. but with future models this code may work...
 async function tailorResumeData(nutNote, resumeData) {
+
     const schema = z.object({
         "tailoredJobResponsibilities": z.object({
             tailoredJobResponsibilities: z.array(z.string()).describe("The revised responsibilities, tailored to match the provided job listing.")
@@ -125,9 +127,10 @@ async function tailorResumeData(nutNote, resumeData) {
     return tailoredResumeData;
 }
 
-async function getSkills(resumeData, nutNote, atsAddOns) {
+async function getSkills(resumeData, nutNote, atsAddOns, reduce) {
+    let skillList = [];
     if(atsAddOns) {
-        let unmatchedSkills = await getUnmatchedSkills(nutNote);
+        let unmatchedSkills = skillDiffs;
     
         // Check if there are new skills that need approval (only if not already reviewed)
         if (!nutNote.skillsReviewed && hasNewSkills(unmatchedSkills)) {
@@ -144,9 +147,15 @@ async function getSkills(resumeData, nutNote, atsAddOns) {
         
         // Combine all skill sources: base resume skills + job-specific skills + library skills
         const allAdditionalSkills = [...approvedCurrentJobSkills, ...approvedLibrarySkills];
-        return combineSkillsWithoutDuplicates(resumeData.skills, allAdditionalSkills);
+        skillList = combineSkillsWithoutDuplicates(resumeData.skills, allAdditionalSkills);
     }
-    return resumeData.skills;
+    skillList = resumeData.skills;
+
+    if(reduce) {
+        skillList = await reduceSkillList(skillList, nutNote);
+    }
+
+    return skillList;
 }
 
 module.exports = { generateResume };

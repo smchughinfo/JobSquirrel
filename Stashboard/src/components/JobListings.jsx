@@ -17,6 +17,7 @@ function JobListings({ lastEvent }) {
   const [atsSkillsDialog, setAtsSkillsDialog] = useState({ open: false, pendingGeneration: null });
   const [tailorResume, setTailorResume] = useState(false);
   const [atsAddOns, setAtsAddOns] = useState(false);
+  const [reduceSkillList, setReduceSkillList] = useState(true);
 
   // Fetch jobs from the API
   const fetchJobs = async () => {
@@ -262,7 +263,7 @@ function JobListings({ lastEvent }) {
     }
   };
 
-  const generateTemplateResume = async (job, templateNumber, tailor = true, atsAddOns = true) => {
+  const generateTemplateResume = async (job, templateNumber, tailor = true, atsAddOns = true, reduceSkillList = true) => {
     try {
       console.log(`📋 Generating template resume (Template ${templateNumber}) for: ${job.company} - ${job.jobTitle}`);
       
@@ -275,7 +276,8 @@ function JobListings({ lastEvent }) {
           nutNote: job,
           templateNumber: templateNumber,
           tailor: tailor,
-          atsAddOns: atsAddOns
+          atsAddOns: atsAddOns,
+          reduceSkillList: reduceSkillList
         })
       });
       
@@ -285,7 +287,7 @@ function JobListings({ lastEvent }) {
         console.log('🎯 New ATS skills detected, showing approval dialog');
         setAtsSkillsDialog({ 
           open: true, 
-          pendingGeneration: { type: 'resume', job, templateNumber, tailor, atsAddOns } 
+          pendingGeneration: { type: 'resume', job, templateNumber, tailor, atsAddOns, reduceSkillList } 
         });
       } else if (result.success) {
         console.log('✅ Template resume generation started:', result.message);
@@ -312,7 +314,7 @@ function JobListings({ lastEvent }) {
       // This time it should succeed since skills are now approved
       try {
         if (pendingGeneration.type === 'resume') {
-          await generateTemplateResume(pendingGeneration.job, pendingGeneration.templateNumber, pendingGeneration.tailor, pendingGeneration.atsAddOns);
+          await generateTemplateResume(pendingGeneration.job, pendingGeneration.templateNumber, pendingGeneration.tailor, pendingGeneration.atsAddOns, pendingGeneration.reduceSkillList);
         } else if (pendingGeneration.type === 'coverLetter') {
           await generateTemplateCoverLetter(pendingGeneration.job, pendingGeneration.templateNumber);
         }
@@ -1815,8 +1817,39 @@ function JobListings({ lastEvent }) {
                           </label>
                         </div>
                         
+                        {/* Reduce Skill List Checkbox */}
+                        <div style={{ marginBottom: '1rem' }}>
+                          <label style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            fontSize: '0.85rem',
+                            fontWeight: '500',
+                            color: '#495057',
+                            cursor: 'pointer'
+                          }}>
+                            <input
+                              type="checkbox"
+                              checked={reduceSkillList}
+                              onChange={(e) => setReduceSkillList(e.target.checked)}
+                              style={{
+                                margin: 0,
+                                transform: 'scale(1.1)'
+                              }}
+                            />
+                            Reduce Skill List
+                            <span style={{ 
+                              fontSize: '0.8rem', 
+                              color: '#6c757d',
+                              fontWeight: 'normal'
+                            }}>
+                              (Trim skills to avoid "jack of all trades" appearance)
+                            </span>
+                          </label>
+                        </div>
+                        
                         <button
-                          onClick={() => generateTemplateResume(resumeDialog.job, selectedTemplateNumber, tailorResume, atsAddOns)}
+                          onClick={() => generateTemplateResume(resumeDialog.job, selectedTemplateNumber, tailorResume, atsAddOns, reduceSkillList)}
                           style={{
                             background: '#6c757d',
                             color: 'white',
