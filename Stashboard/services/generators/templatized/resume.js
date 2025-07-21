@@ -72,35 +72,46 @@ async function generateResume(nutNote, templateNumber = 1, tailor = true, atsAdd
     let sessionData = generateSessionData();
     nutNote.sessionData.push(sessionData);
 
-    let unmatchedSkills = await getUnmatchedSkills(nutNote);
-    
-    // Check if there are new skills that need approval (only if not already reviewed)
-    if (!nutNote.skillsReviewed && hasNewSkills(unmatchedSkills)) {
-        addSkills(unmatchedSkills);
-        nutNote.skillsReviewed = true; // Mark as reviewed
-        throw new Error('NEW_SKILLS_NEED_APPROVAL');
-    }
-    
-    // Get only the approved skills from the current job's unmatched skills
-    const approvedCurrentJobSkills = getApprovedSkillsFromList(unmatchedSkills);
-
     validateResumeTemplate(templateNumber);
     
     const { templatePath, resumeDataPath } = getResumePaths(templateNumber);
     const templateSource = loadResumeTemplate(templatePath, templateNumber);
     const resumeData = loadResumeData(resumeDataPath);
-
-    const combinedSkills = combineSkillsWithoutDuplicates(resumeData.skills, approvedCurrentJobSkills);
+    const skillList = await getSkills(resumeData, nutNote, atsAddOns);
 
     // Compile the template
     const template = Handlebars.compile(templateSource);
 
-    const templateData = prepareResumeTemplateData(resumeData, nutNote, combinedSkills);
+    const templateData = prepareResumeTemplateData(resumeData, nutNote, skillList);
 
     // Generate the HTML
     const html = template(templateData);
 
     saveResumeAndUpdateNutNote(html, nutNote);
+}
+
+async function getSkills(resumeData, nutNote, atsAddOns) {
+    if(atsAddOns) {
+        let unmatchedSkills = await getUnmatchedSkills(nutNote);
+    
+        // Check if there are new skills that need approval (only if not already reviewed)
+        if (!nutNote.skillsReviewed && hasNewSkills(unmatchedSkills)) {
+            addSkills(unmatchedSkills);
+            nutNote.skillsReviewed = true; // Mark as reviewed
+            throw new Error('NEW_SKILLS_NEED_APPROVAL');
+        }
+        
+        // Get approved skills from the current job's unmatched skills
+        const approvedCurrentJobSkills = getApprovedSkillsFromList(unmatchedSkills);
+        
+        // Get all approved skills from the ATS library
+        const approvedLibrarySkills = getApprovedSkills();
+        
+        // Combine all skill sources: base resume skills + job-specific skills + library skills
+        const allAdditionalSkills = [...approvedCurrentJobSkills, ...approvedLibrarySkills];
+        return combineSkillsWithoutDuplicates(resumeData.skills, allAdditionalSkills);
+    }
+    return resumeData.skills;
 }
 
 module.exports = { generateResume };
