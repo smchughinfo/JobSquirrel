@@ -10,8 +10,8 @@ const { getJSONAsync } = require('../../llm/openai/openai');
 const { z } = require('zod');
 
 function validateResumeTemplate(templateNumber) {
-    if (![1, 2].includes(templateNumber)) {
-        throw new Error('Invalid template number. Use 1 or 2.');
+    if (![1, 2, 3].includes(templateNumber)) {
+        throw new Error('Invalid template number. Use 1, 2, or 3.');
     }
 }
 
@@ -56,6 +56,7 @@ function prepareResumeTemplateData(resumeData, nutNote, combinedSkills) {
         email: resumeData.personal_information.email,
         website: resumeData.personal_information.website,
         github: resumeData.personal_information.github,
+        professionalSummary: resumeData.personal_information.professionalSummary,
         experience: resumeData.experience,
         skills: combinedSkills,
         education: resumeData.education,
@@ -128,9 +129,11 @@ async function tailorResumeData(nutNote, resumeData) {
 }
 
 async function getSkills(resumeData, nutNote, atsAddOns, reduce) {
-    let skillList = [];
+    let skillList = resumeData.skills;
+    
     if(atsAddOns) {
-        let unmatchedSkills = skillDiffs;
+        const skillDiffs = await getSkillDiffs(resumeData.skills, nutNote);
+        let unmatchedSkills = skillDiffs.unmatched;
     
         // Check if there are new skills that need approval (only if not already reviewed)
         if (!nutNote.skillsReviewed && hasNewSkills(unmatchedSkills)) {
@@ -149,7 +152,6 @@ async function getSkills(resumeData, nutNote, atsAddOns, reduce) {
         const allAdditionalSkills = [...approvedCurrentJobSkills, ...approvedLibrarySkills];
         skillList = combineSkillsWithoutDuplicates(resumeData.skills, allAdditionalSkills);
     }
-    skillList = resumeData.skills;
 
     if(reduce) {
         skillList = await reduceSkillList(skillList, nutNote);

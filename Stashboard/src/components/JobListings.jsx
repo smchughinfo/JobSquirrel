@@ -11,7 +11,7 @@ function JobListings({ lastEvent }) {
   const [deleteConfirmDialog, setDeleteConfirmDialog] = useState({ open: false, resumeIndex: null });
   const [marginInches, setMarginInches] = useState(0);
   const [editorDialog, setEditorDialog] = useState({ open: false, content: '', loading: false, resumeIndex: null, type: null });
-  const [selectedTemplateNumber, setSelectedTemplateNumber] = useState(1);
+  const [selectedTemplateNumber, setSelectedTemplateNumber] = useState(3);
   const [selectedCoverLetterTemplateNumber, setSelectedCoverLetterTemplateNumber] = useState(1);
   const [templatePreview, setTemplatePreview] = useState({ show: false, x: 0, y: 0, type: 'resume' });
   const [atsSkillsDialog, setAtsSkillsDialog] = useState({ open: false, pendingGeneration: null });
@@ -1752,6 +1752,7 @@ function JobListings({ lastEvent }) {
                             }}>
                             <option value="1">Template 1 - ATS Friendly</option>
                             <option value="2">Template 2 - Enhanced Design</option>
+                            <option value="3">Template 3 - Technical Profile</option>
                           </select>
                         </div>
                         

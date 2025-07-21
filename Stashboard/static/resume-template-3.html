@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{name}} - Resume</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.4;
+            color: #333;
+            font-size: 11pt;
+        }
+
+        .container {
+            max-width: 8.5in;
+            margin: 0 auto;
+            padding: 0.5in;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #0066cc;
+        }
+
+        .name {
+            font-size: 24pt;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .job-title {
+            font-size: 14pt;
+            color: #0066cc;
+            margin-bottom: 10px;
+        }
+
+        .contact-info {
+            font-size: 10pt;
+            color: #666;
+        }
+
+        .section-title {
+            font-size: 12pt;
+            font-weight: bold;
+            color: #0066cc;
+            text-transform: uppercase;
+            margin: 20px 0 10px 0;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 2px;
+        }
+
+        .summary {
+            font-size: 11pt;
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .skills-list {
+            font-size: 10pt;
+            margin-bottom: 15px;
+        }
+
+        .job-title-pos {
+            font-size: 12pt;
+            font-weight: bold;
+            color: #333;
+            margin-top: 15px;
+            margin-bottom: 2px;
+        }
+
+        .company-info {
+            font-size: 11pt;
+            color: #0066cc;
+            margin-bottom: 2px;
+        }
+
+        .duration-location {
+            font-size: 10pt;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .responsibilities {
+            list-style-type: disc;
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        .responsibilities li {
+            font-size: 10pt;
+            margin-bottom: 4px;
+            line-height: 1.4;
+        }
+
+        .project-name {
+            font-size: 11pt;
+            color: #0066cc;
+            margin-top: 10px;
+            margin-bottom: 3px;
+        }
+
+        .project-url {
+            font-size: 10pt;
+            color: #666;
+            font-weight: normal;
+            margin-bottom: 5px;
+        }
+
+        .project-description {
+            font-size: 10pt;
+            margin-bottom: 10px;
+        }
+
+        .education {
+            margin-bottom: 10px;
+        }
+
+        .degree {
+            font-size: 11pt;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .institution {
+            font-size: 10pt;
+            color: #0066cc;
+            margin-bottom: 2px;
+        }
+
+        .edu-duration {
+            font-size: 10pt;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .coursework {
+            font-size: 10pt;
+        }
+
+        .cert-list {
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+
+        .cert-list li {
+            font-size: 10pt;
+            margin-bottom: 3px;
+        }
+
+        @media print {
+            .container {
+                max-width: none;
+                margin: 0;
+                padding: 0.4in;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="name">{{name}}</div>
+            <div class="job-title">{{title}}</div>
+            <div class="contact-info">
+                {{city}}, {{state}} | {{phone}}<br>
+                {{email}}{{#if website}} | {{website}}{{/if}}{{#if github}} | {{github}}{{/if}}
+            </div>
+        </div>
+
+        {{#if professionalSummary}}
+        <div class="section-title">Professional Summary</div>
+        <div class="summary">{{professionalSummary}}</div>
+        {{/if}}
+
+        <div class="section-title">Technical Skills</div>
+        <div class="skills-list">
+            {{#each skills}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}
+        </div>
+
+        <div class="section-title">Professional Experience</div>
+        {{#each experience}}
+        <div class="job-title-pos">{{title}}</div>
+        <div class="company-info">{{company}}</div>
+        <div class="duration-location">{{duration}} | {{location}}</div>
+        {{#if responsibilities}}
+        <ul class="responsibilities">
+            {{#each responsibilities}}
+            <li>{{this}}</li>
+            {{/each}}
+        </ul>
+        {{/if}}
+        {{/each}}
+
+        {{#if projects}}
+        <div class="section-title">Notable Projects</div>
+        {{#each projects}}
+        <div class="project-name">{{name}}</div>
+        {{#if url}}<div class="project-url">{{url}}</div>{{/if}}
+        <div class="project-description">{{description}}</div>
+        {{/each}}
+        {{/if}}
+
+        {{#if education}}
+        <div class="section-title">Education</div>
+        <div class="education">
+            <div class="degree">{{education.degree}}</div>
+            <div class="institution">{{education.institution}}</div>
+            <div class="edu-duration">{{education.duration}}</div>
+            {{#if education.coursework}}
+            <div class="coursework">
+                <strong>Relevant Coursework:</strong> {{#each education.coursework}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}
+            </div>
+            {{/if}}
+        </div>
+        {{/if}}
+
+        {{#if certifications_and_courses}}
+        <div class="section-title">Certifications & Training</div>
+        <ul class="cert-list">
+            {{#each certifications_and_courses}}
+            <li>{{this}}</li>
+            {{/each}}
+        </ul>
+        {{/if}}
+    </div>
+</body>
+</html>
