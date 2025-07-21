@@ -15,8 +15,8 @@ function JobListings({ lastEvent }) {
   const [selectedCoverLetterTemplateNumber, setSelectedCoverLetterTemplateNumber] = useState(1);
   const [templatePreview, setTemplatePreview] = useState({ show: false, x: 0, y: 0, type: 'resume' });
   const [atsSkillsDialog, setAtsSkillsDialog] = useState({ open: false, pendingGeneration: null });
-  const [tailorResume, setTailorResume] = useState(true);
-  const [atsAddOns, setAtsAddOns] = useState(true);
+  const [tailorResume, setTailorResume] = useState(false);
+  const [atsAddOns, setAtsAddOns] = useState(false);
 
   // Fetch jobs from the API
   const fetchJobs = async () => {

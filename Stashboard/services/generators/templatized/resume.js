@@ -6,6 +6,8 @@ const { addSkills, hasNewSkills, getApprovedSkillsFromList, getApprovedSkills } 
 const { addOrUpdateNutNote } = require('../../hoard');
 const { generateSessionData } = require('../common');
 const { getUnmatchedSkills } = require('./shared');
+const { getJSONAsync } = require('../../llm/openai/openai');
+const { z } = require('zod');
 
 function validateResumeTemplate(templateNumber) {
     if (![1, 2].includes(templateNumber)) {
@@ -76,8 +78,12 @@ async function generateResume(nutNote, templateNumber = 1, tailor = true, atsAdd
     
     const { templatePath, resumeDataPath } = getResumePaths(templateNumber);
     const templateSource = loadResumeTemplate(templatePath, templateNumber);
-    const resumeData = loadResumeData(resumeDataPath);
+    let resumeData = loadResumeData(resumeDataPath);
     const skillList = await getSkills(resumeData, nutNote, atsAddOns);
+
+    if(tailor) {
+        resumeData = await tailorResumeData(nutNote, resumeData);
+    }
 
     // Compile the template
     const template = Handlebars.compile(templateSource);
@@ -88,6 +94,35 @@ async function generateResume(nutNote, templateNumber = 1, tailor = true, atsAdd
     const html = template(templateData);
 
     saveResumeAndUpdateNutNote(html, nutNote);
+}
+
+async function tailorResumeData(nutNote, resumeData) {
+    const schema = z.object({
+        "tailoredJobResponsibilities": z.object({
+            tailoredJobResponsibilities: z.array(z.string()).describe("The revised responsibilities, tailored to match the provided job listing.")
+        })
+    });
+
+    // Create a copy to avoid mutating the original
+    const tailoredResumeData = JSON.parse(JSON.stringify(resumeData));
+
+    for(const i in tailoredResumeData.experience) {
+        let job = tailoredResumeData.experience[i];
+        let data = { 
+            jobResponsibilitiesFromResume: job.responsibilities, 
+            jobApplicantSkills: resumeData.skills,
+            jobListing: nutNote.jobListing || nutNote.requirements || nutNote.description
+        };
+        
+        let result = await getJSONAsync("Each jobResponsibility here is from a resume. Make subtle changes to tailor it to the provided job listing. Don't change the actual skills used in each responsibility, only subtly reword or repaint to fit the job listing. If the job responsibility already closely matches the job listing, don't change it at all. The job applicant's full skill list is in jobApplicantSkills.", schema, JSON.stringify(data));
+        
+        // Extract the tailored responsibilities and update the job
+        if (result && result.tailoredJobResponsibilities && result.tailoredJobResponsibilities.tailoredJobResponsibilities) {
+            tailoredResumeData.experience[i].responsibilities = result.tailoredJobResponsibilities.tailoredJobResponsibilities;
+        }
+    }
+    
+    return tailoredResumeData;
 }
 
 async function getSkills(resumeData, nutNote, atsAddOns) {
