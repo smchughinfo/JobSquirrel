@@ -103,6 +103,39 @@ The system features a modern React-based web interface (Stashboard) with real-ti
 **Solution Implemented**: Event queue with 10ms processing delays to force individual React renders
 **Result**: Perfect capture of high-frequency streaming output with complete visibility into Claude's reasoning process
 
+### Revolutionary Resume Profiles System 🗂️
+**Multi-Profile Resume Management**: Advanced resume profile management system enabling users to maintain multiple resume.json configurations for different career paths or applications:
+
+**Profile Management Features**:
+- **Named Profiles**: Create profiles like "Senior Developer", "Technical Lead", "Product Manager" with custom names
+- **Path-Based Configuration**: Each profile points to its own resume.json file via full file path specification
+- **Active Profile System**: One profile marked as currently active for all template generation operations
+- **Professional Dialog Interface**: Clean modal with profile management, inline path editing, and status indicators
+- **Real-time Path Editing**: Text input with monospace font for easy path specification and editing
+- **Dynamic System Integration**: Template generators automatically use active profile without code changes
+
+**Technical Architecture**:
+- **File Storage**: Profiles persisted in `Stashboard/resume-profiles.txt` with JSON structure including id, name, filePath, active status
+- **Service Layer**: `resumeProfiles.js` provides complete CRUD operations for profile management
+- **Path Resolution**: `jobSquirrelPaths.getResumeJSONPath()` dynamically returns active profile path
+- **Template Integration**: Both resume and cover letter generators use active profile automatically
+- **RESTful API**: Complete `/api/resume-profiles` endpoints for frontend integration
+- **Error Handling**: Comprehensive validation and helpful error messages for missing files or configurations
+
+**User Interface**:
+- **Hamburger Menu Access**: "🗂️ Resume Profiles" option in main navigation menu  
+- **Profile Cards**: Visual cards showing profile name, active status, file path, and management controls
+- **Inline Path Editing**: Click "📝 Set Path" to edit file paths with text input and Save/Cancel actions
+- **Active Profile Indicators**: Clear visual indication of which profile is currently active
+- **Profile Actions**: Set Active, Delete, and Path editing with appropriate button states and validation
+
+**System Benefits**:
+- **Career Flexibility**: Maintain separate resume data for different career tracks or industries
+- **Project Separation**: Different profiles for freelance vs full-time vs consulting work
+- **Version Control**: Keep multiple resume versions without file management overhead
+- **Seamless Switching**: Change active profile and all subsequent generations use new data automatically
+- **Zero Configuration**: Default profile created automatically pointing to existing resume.json
+
 ### Revolutionary ATS Skills Optimization System 🎯
 **Intelligent Keyword Management**: Advanced ATS (Applicant Tracking System) skills optimization with user approval workflow that transforms template-based resume generation:
 
@@ -201,6 +234,7 @@ The system features a modern React-based web interface (Stashboard) with real-ti
 │   │   │   ├── ClaudeAssistant.jsx # Live Claude output streaming
 │   │   │   ├── Header.jsx          # Squirrel-themed navigation with ATS skills access
 │   │   │   ├── ATSSkillsDialog.jsx # ATS skills approval and management dialog
+│   │   │   ├── ResumeProfilesDialog.jsx # Resume profiles management dialog
 │   │   │   └── ClipboardMonitor.jsx # Clipboard monitoring component
 │   │   └── hooks/                  # Custom React hooks
 │   │       └── useEventStream.js   # SSE integration with queue mechanism
@@ -217,6 +251,7 @@ The system features a modern React-based web interface (Stashboard) with real-ti
 │   │   │   ├── noTemplate.js       # AI-based resume generation
 │   │   │   └── templatized.js      # Template-based resume generation with ATS skills
 │   │   ├── atsAddOnSkills.js       # ATS skills management service
+│   │   ├── resumeProfiles.js       # Resume profiles management service
 │   │   ├── pdf.js                  # PDF generation service
 │   │   ├── hoard.js                # Job data management
 │   │   ├── eventBroadcaster.js     # Real-time event system
@@ -232,6 +267,7 @@ The system features a modern React-based web interface (Stashboard) with real-ti
 │   │   ├── hoard.js                # Job listing endpoints
 │   │   ├── generation.js           # Resume/cover letter generation endpoints
 │   │   ├── atsSkills.js            # ATS skills management endpoints
+│   │   ├── resumeProfiles.js       # Resume profiles management endpoints
 │   │   ├── pdf.js                  # PDF generation endpoints
 │   │   ├── config.js               # Configuration endpoints
 │   │   └── events.js               # SSE and monitoring endpoints
@@ -244,7 +280,8 @@ The system features a modern React-based web interface (Stashboard) with real-ti
 │   ├── queue/                      # Job queue storage
 │   ├── server.js                   # Express server with modular routes
 │   ├── hoard.json                  # Job data storage with HTML arrays
-│   └── ats-add-on-skills.json      # ATS skills library with approval flags
+│   ├── ats-add-on-skills.json      # ATS skills library with approval flags
+│   └── resume-profiles.txt         # Resume profiles configuration with active profile tracking
 ├── Scamper/                        # Browser extension
 │   ├── manifest.json               # Extension configuration
 │   ├── content.js                  # Job page interaction
@@ -295,10 +332,21 @@ The system features a modern React-based web interface (Stashboard) with real-ti
 - **Smart Controls**: Collapse/expand, delete, and direct links to original postings
 - **Real-time Sync**: File watching ensures UI stays perfectly synchronized with backend changes
 
-### 3. **Hybrid Resume Generation**: AI and template-based options with ATS optimization
+### 3. **Resume Profile Management**: Multi-profile career data organization 🗂️
+- **"🗂️ Resume Profiles" menu**: Access via hamburger menu for complete profile management
+- **Multiple Career Profiles**: Maintain separate resume.json files for different career paths (Senior Developer, Technical Lead, Product Manager)
+- **Active Profile System**: Set any profile as active for all template generation operations
+- **Path-Based Configuration**: Each profile points to its own resume.json file via full file path
+- **Inline Path Editing**: Click "📝 Set Path" to edit file paths with professional text input interface
+- **Dynamic Integration**: All template generation automatically uses active profile data without user intervention
+- **Default Profile Creation**: System automatically creates default profile pointing to existing resume.json
+- **Profile Management**: Add, delete, activate profiles with comprehensive validation and error handling
+
+### 4. **Hybrid Resume Generation**: AI and template-based options with ATS optimization
 - **"🚀 Resume & Cover Letter" button**: Opens unified generation dialog
 - **AI-Generated Resumes**: Claude's creative intelligence for unique, tailored content
 - **Template-Based Resumes**: Clean, consistent, ATS-friendly formatting with Handlebars and automatic skills optimization
+- **Active Profile Integration**: Template generation automatically uses currently active resume profile
 - **ATS Skills Integration**: Template generation automatically detects and incorporates job-specific keywords
 - **Skills Approval Workflow**: New skills trigger professional approval dialog with smart highlighting
 - **Dynamic Job Title Matching**: Resume titles automatically use job posting titles for perfect ATS alignment
@@ -308,21 +356,21 @@ The system features a modern React-based web interface (Stashboard) with real-ti
 - **Tabbed Interface**: Switch between different resume versions seamlessly
 - **Cover Letter Generation**: Automatic cover letter creation alongside resume with same ATS optimization
 
-### 4. **Revolutionary Creative Variations**: The Remix Feature 🎨
+### 5. **Revolutionary Creative Variations**: The Remix Feature 🎨
 - **"🎨 Remix" button**: Opens remix dialog for existing resumes
 - **Natural Language Instructions**: Users describe desired changes in plain English
 - **Unlimited Creative Freedom**: From subtle professional polish to complete thematic transformations
 - **Technical Accuracy Maintained**: AI preserves job relevance while enabling creative expression
 - **Iterative Process**: Build upon previous versions without file conflicts or management overhead
 
-### 5. **Quality Assurance**: The Double Check System ✅
+### 6. **Quality Assurance**: The Double Check System ✅
 - **"✅ Double Check" button**: Available on any resume version
 - **Universal Review**: Any resume can be reviewed and improved, not just the latest
 - **Fresh Session Processing**: Each double check gets unique session data for clean separation
 - **Guidelines Compliance**: Reviews resume against custom instructions for quality assurance
 - **Version Creation**: Creates new improved version while preserving original
 
-### 6. **ATS Skills Optimization**: Intelligent keyword management 🎯
+### 7. **ATS Skills Optimization**: Intelligent keyword management 🎯
 - **Automatic Detection**: System identifies job-specific skills missing from resume during template generation
 - **Smart Approval Dialog**: Professional interface shows all skills with new ones highlighted and badged
 - **Hamburger Menu Access**: "🎯 Manage ATS Skills" for ongoing library management and review
@@ -330,14 +378,14 @@ The system features a modern React-based web interface (Stashboard) with real-ti
 - **Persistent Skills Library**: Approved skills automatically included in all future generations
 - **Dynamic Integration**: `[...resumeData.skills, ...approvedATSSkills]` for optimal keyword coverage
 
-### 7. **Professional PDF Creation**: Precision output generation
+### 8. **Professional PDF Creation**: Precision output generation
 - **Customizable Margins**: 0-2 inch margin control with 0.1-inch precision
 - **One-Click Generation**: Instant PDF creation from any resume version
 - **Clean Naming**: Professional filename format ready for HR submission
 - **Instant Preview**: PDF opens in new tab for immediate review
 - **Automatic Management**: File overwriting prevents version clutter
 
-### 8. **Complete Real-time Monitoring**: Full transparency
+### 9. **Complete Real-time Monitoring**: Full transparency
 - **Claude Output Panel**: Live streaming of AI reasoning and generation process
 - **Event Monitor**: System-wide operation tracking with timestamped events
 - **Expandable Content**: Click to view full responses and detailed information
@@ -462,6 +510,47 @@ All code uses consistent squirrel/woodland-themed language throughout the ecosys
 This consistent theming makes the codebase memorable, fun to work with, and maintains a cohesive identity while providing professional functionality.
 
 ## Recent Major Improvements (January 2025)
+
+### Revolutionary Resume Profiles System Implementation (Current Session)
+**Multi-Profile Career Management**: Implemented comprehensive resume profile management system enabling users to maintain multiple resume configurations for different career paths:
+
+**Complete Frontend Implementation**:
+- **ResumeProfilesDialog.jsx**: Professional modal dialog with profile cards, inline path editing, and management controls
+- **Header.jsx Integration**: Added "🗂️ Resume Profiles" option to hamburger menu with proper state management
+- **App.css Styling**: Complete styling system with profile cards, active indicators, and inline editing forms
+
+**Robust Backend Architecture**:
+- **resumeProfiles.js Service**: Complete CRUD operations for profile management with JSON persistence
+- **routes/resumeProfiles.js**: RESTful API endpoints (`/api/resume-profiles/*`) for all profile operations
+- **Dynamic Path Resolution**: Updated `jobSquirrelPaths.getResumeJSONPath()` to dynamically return active profile path
+
+**Template System Integration**:
+- **Generator Updates**: Both `templatized/resume.js` and `templatized/coverLetter.js` now use active profile automatically
+- **Error Handling**: Comprehensive validation and helpful error messages for missing configurations
+- **Backward Compatibility**: Default profile created automatically pointing to existing resume.json
+
+**User Experience Excellence**:
+- **Text-Based Path Input**: Professional text input with monospace font for easy path specification (avoided browser file chooser limitations)
+- **Inline Editing**: Click "📝 Set Path" for seamless path editing with Save/Cancel workflow
+- **Active Profile Indicators**: Clear visual indication of currently active profile with professional styling
+- **Profile Management**: Add, delete, activate profiles with proper validation and user feedback
+
+**Technical Benefits**:
+- **Career Flexibility**: Separate resume data for different career tracks (Senior Developer, Technical Lead, Product Manager)
+- **Zero Configuration**: System automatically creates default profile and handles all path management
+- **Dynamic Integration**: All existing template generation automatically uses active profile without code changes
+- **Professional File Management**: Full file paths stored with comprehensive error handling and validation
+
+**Key Files Created/Modified**:
+- `src/components/ResumeProfilesDialog.jsx` - New profile management component
+- `services/resumeProfiles.js` - New profile management service  
+- `routes/resumeProfiles.js` - New API endpoints
+- `src/components/Header.jsx` - Added menu option and dialog integration
+- `src/App.css` - Added comprehensive profile dialog styling
+- `services/jobSquirrelPaths.js` - Updated to use dynamic profile resolution
+- `services/generators/templatized/*.js` - Updated to use active profile paths
+
+**System Impact**: Template-based resume and cover letter generation now supports unlimited career profiles with seamless switching and zero manual configuration overhead.
 
 ### Advanced Configuration Management & PDF Processing System (Current Session)
 **Complete Configuration Overhaul**: Implemented comprehensive configuration management with real-time file watching and editing capabilities:

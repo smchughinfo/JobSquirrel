@@ -47,6 +47,13 @@ JobSquirrel offers two powerful resume generation approaches - choose based on y
 - **Hamburger Menu**: Access "🎯 Manage ATS Skills" anytime to review your skills library
 - **Perfect Matching**: Approved skills automatically added to all future resumes
 
+### 🗂️ **Resume Profiles System** (NEW!)
+- **Multiple Career Profiles**: Maintain separate resume.json files for different career paths (Senior Developer, Technical Lead, Product Manager)
+- **Active Profile System**: Set any profile as active - all template generation automatically uses that data
+- **Path Management**: Point each profile to its own resume.json file via full file path
+- **Hamburger Menu Access**: "🗂️ Resume Profiles" for complete profile management
+- **Zero Configuration**: Default profile created automatically, seamless career data switching
+
 ### 🎯 **Multi-Version Resume Management**
 - Generate multiple resume versions per job for iterative improvement
 - Tabbed interface for seamless version switching
