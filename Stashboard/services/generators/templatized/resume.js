@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const Handlebars = require('handlebars');
-const { getResumeTemplatesDirectory, getResumeDataDirectory } = require('../../jobSquirrelPaths');
+const { getResumeTemplatesDirectory, getResumeJSONPath } = require('../../jobSquirrelPaths');
 const { addSkills, hasNewSkills, getApprovedSkillsFromList, getApprovedSkills } = require('../../atsAddOnSkills');
 const { addOrUpdateNutNote } = require('../../hoard');
 const { generateSessionData } = require('../common');
@@ -17,10 +17,14 @@ function validateResumeTemplate(templateNumber) {
 
 function getResumePaths(templateNumber) {
     const templatePath = path.join(getResumeTemplatesDirectory(), `resume-template-${templateNumber}.html`);
-    const resumeDataPath = path.join(getResumeDataDirectory(), 'resume.json');
+    const resumeDataPath = getResumeJSONPath();
     
     if (!fs.existsSync(templatePath)) {
         throw new Error(`Template ${templateNumber} not found at: ${templatePath}`);
+    }
+    
+    if (!resumeDataPath || !fs.existsSync(resumeDataPath)) {
+        throw new Error(`Resume data file not found at: ${resumeDataPath}. Please configure a resume profile.`);
     }
     
     return { templatePath, resumeDataPath };

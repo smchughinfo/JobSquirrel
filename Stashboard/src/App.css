@@ -322,6 +322,214 @@ h2 {
     font-size: 1.1rem;
 }
 
+/* Resume Profiles Dialog Styles */
+.resume-profiles-dialog {
+    max-width: 800px;
+    width: 90%;
+}
+
+.profile-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.profile-item {
+    border: 2px solid rgba(139, 69, 19, 0.2);
+    border-radius: 8px;
+    padding: 1rem;
+    transition: all 0.2s ease;
+}
+
+.profile-item.active {
+    border-color: #fd7e14;
+    background: rgba(253, 126, 20, 0.05);
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.profile-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.active-badge {
+    background: #fd7e14;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.profile-path {
+    margin-bottom: 1rem;
+}
+
+.file-path {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: #666;
+    background: rgba(0, 0, 0, 0.05);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    word-break: break-all;
+}
+
+.no-file {
+    color: #999;
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.profile-button {
+    background: #fd7e14;
+    color: white;
+    border: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.profile-button:hover {
+    background: #e56b0d;
+    transform: translateY(-1px);
+}
+
+.profile-button.disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.profile-button.disabled:hover {
+    background: #ccc;
+    transform: none;
+}
+
+.delete-button {
+    background: #dc3545;
+}
+
+.delete-button:hover {
+    background: #c82333;
+}
+
+.add-profile-trigger {
+    background: rgba(253, 126, 20, 0.1);
+    color: #fd7e14;
+    border: 2px dashed rgba(253, 126, 20, 0.5);
+    border-radius: 8px;
+    padding: 1rem;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.add-profile-trigger:hover {
+    background: rgba(253, 126, 20, 0.2);
+    border-color: #fd7e14;
+}
+
+.add-profile-form {
+    border: 2px solid rgba(139, 69, 19, 0.2);
+    border-radius: 8px;
+    padding: 1rem;
+    background: rgba(253, 126, 20, 0.05);
+}
+
+.profile-name-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid rgba(139, 69, 19, 0.2);
+    border-radius: 6px;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.profile-name-input:focus {
+    border-color: #fd7e14;
+}
+
+.add-profile-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.cancel-button {
+    background: #6c757d;
+}
+
+.cancel-button:hover {
+    background: #5a6268;
+}
+
+.add-button {
+    background: #28a745;
+}
+
+.add-button:hover {
+    background: #218838;
+}
+
+.loading {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+    font-style: italic;
+}
+
+.path-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.path-input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 2px solid rgba(139, 69, 19, 0.2);
+    border-radius: 6px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.path-input:focus {
+    border-color: #fd7e14;
+}
+
+.path-edit-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
 @media (max-width: 768px) {
     .header-content {
         flex-direction: column;

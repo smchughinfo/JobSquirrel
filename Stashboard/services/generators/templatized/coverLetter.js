@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const Handlebars = require('handlebars');
-const { getResumeTemplatesDirectory, getResumeDataDirectory, getCoverLetterPath } = require('../../jobSquirrelPaths');
+const { getResumeTemplatesDirectory, getResumeJSONPath, getCoverLetterPath } = require('../../jobSquirrelPaths');
 const { addSkills, hasNewSkills, getApprovedSkillsFromList } = require('../../atsAddOnSkills');
 const { addOrUpdateNutNote } = require('../../hoard');
 const { generateSessionData } = require('../common');
@@ -15,10 +15,14 @@ function validateCoverLetterTemplate(templateNumber) {
 
 function getCoverLetterPaths(templateNumber) {
     const templatePath = path.join(getResumeTemplatesDirectory(), `cover-letter-template-${templateNumber}.txt`);
-    const resumeDataPath = path.join(getResumeDataDirectory(), 'resume.json');
+    const resumeDataPath = getResumeJSONPath();
     
     if (!fs.existsSync(templatePath)) {
         throw new Error(`Cover letter template ${templateNumber} not found at: ${templatePath}`);
+    }
+    
+    if (!resumeDataPath || !fs.existsSync(resumeDataPath)) {
+        throw new Error(`Resume data file not found at: ${resumeDataPath}. Please configure a resume profile.`);
     }
     
     return { templatePath, resumeDataPath };

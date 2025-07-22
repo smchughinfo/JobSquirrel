@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import ResumeProfilesDialog from './ResumeProfilesDialog'
 
 function Header({ onOpenATSSkillsDialog }) {
   const [isUploading, setIsUploading] = useState(false);
@@ -10,6 +11,7 @@ function Header({ onOpenATSSkillsDialog }) {
     content: '',
     originalContent: ''
   });
+  const [isResumeProfilesDialogOpen, setIsResumeProfilesDialogOpen] = useState(false);
 
   useEffect(() => {
     // Listen for resume data upload events
@@ -206,6 +208,15 @@ function Header({ onOpenATSSkillsDialog }) {
                   </button>
                   <button 
                     className="dropdown-item"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      setIsResumeProfilesDialogOpen(true);
+                    }}
+                  >
+                    🗂️ Resume Profiles
+                  </button>
+                  <button 
+                    className="dropdown-item"
                     onClick={handleProjectNutcrackerClick}
                   >
                     🥜 ProjectNutcracker
@@ -260,6 +271,12 @@ function Header({ onOpenATSSkillsDialog }) {
           </div>
         </div>
       )}
+
+      {/* Resume Profiles Dialog */}
+      <ResumeProfilesDialog 
+        isOpen={isResumeProfilesDialogOpen}
+        onClose={() => setIsResumeProfilesDialogOpen(false)}
+      />
     </>
   )
 }

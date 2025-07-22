@@ -17,7 +17,22 @@ let getSaveSessionIdInstructionsTemplatePath = (wsl) => getJobSquirrelPath(wsl, 
 let getQueueDirectory = (wsl) => getJobSquirrelPath(wsl, ["Stashboard", "queue"]);
 let getResumeTemplatesDirectory = (wsl) => getJobSquirrelPath(wsl, ["Stashboard", "static"]);
 let getATSAddOnSkillsPath = (wsl) => getJobSquirrelPath(wsl, ["Stashboard", "ats-add-on-skills.json"]);
-let getResumeJSONPath = (wsl) => getJobSquirrelPath(wsl, ["Config", "ResumeData", 'resume.json']);
+let getResumeJSONPath = (wsl) => {
+    const { getActiveResumeJsonPath } = require('./resumeProfiles');
+    const activePath = getActiveResumeJsonPath();
+    
+    // If no active profile or path, fallback to default
+    if (!activePath) {
+        return getJobSquirrelPath(wsl, ["Config", "ResumeData", 'resume.json']);
+    }
+    
+    // Convert to WSL path if needed
+    if (wsl) {
+        return convertPathToWSL(activePath);
+    }
+    
+    return activePath;
+};
 
 function getSessionIdData(wsl) {
     let rootDir = getJobSquirrelRootDirectory();
