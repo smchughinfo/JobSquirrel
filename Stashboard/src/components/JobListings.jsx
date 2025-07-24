@@ -17,7 +17,8 @@ function JobListings({ lastEvent }) {
   const [atsSkillsDialog, setAtsSkillsDialog] = useState({ open: false, pendingGeneration: null });
   const [tailorResume, setTailorResume] = useState(false);
   const [atsAddOns, setAtsAddOns] = useState(false);
-  const [reduceSkillList, setReduceSkillList] = useState(true);
+  const [reduceSkillList, setReduceSkillList] = useState(false);
+  const [removeRedundantSkills, setRemoveRedundantSkills] = useState(false);
 
   // Fetch jobs from the API
   const fetchJobs = async () => {
@@ -263,7 +264,7 @@ function JobListings({ lastEvent }) {
     }
   };
 
-  const generateTemplateResume = async (job, templateNumber, tailor = true, atsAddOns = true, reduceSkillList = true) => {
+  const generateTemplateResume = async (job, templateNumber, tailor = true, atsAddOns = false, reduceSkillList = false, removeRedundantSkills = false) => {
     try {
       console.log(`📋 Generating template resume (Template ${templateNumber}) for: ${job.company} - ${job.jobTitle}`);
       
@@ -277,7 +278,8 @@ function JobListings({ lastEvent }) {
           templateNumber: templateNumber,
           tailor: tailor,
           atsAddOns: atsAddOns,
-          reduceSkillList: reduceSkillList
+          reduceSkillList: reduceSkillList,
+          removeRedundantSkills: removeRedundantSkills
         })
       });
       
@@ -1782,7 +1784,7 @@ function JobListings({ lastEvent }) {
                               color: '#6c757d',
                               fontWeight: 'normal'
                             }}>
-                              (Include job-specific skills optimization)
+                              (Tailor bullet points)
                             </span>
                           </label>
                         </div>
@@ -1848,9 +1850,41 @@ function JobListings({ lastEvent }) {
                             </span>
                           </label>
                         </div>
+
+                        {/* Remove Redundant Skills checkbox */}
+                        <div style={{ marginBottom: '1rem' }}>
+                          <label style={{
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            gap: '0.5rem',
+                            fontSize: '0.9rem',
+                            fontWeight: '500',
+                            color: '#495057',
+                            cursor: 'pointer'
+                          }}>
+                            <input
+                              type="checkbox"
+                              checked={removeRedundantSkills}
+                              onChange={(e) => setRemoveRedundantSkills(e.target.checked)}
+                              style={{
+                                marginTop: '2px',
+                                transform: 'scale(1.1)'
+                              }}
+                            />
+                            Remove Redundant Skills
+                            <span style={{
+                              fontSize: '0.8rem',
+                              color: '#6c757d',
+                              fontWeight: 'normal',
+                              lineHeight: '1.2'
+                            }}>
+                              (Clean up duplicate or similar skills for better presentation)
+                            </span>
+                          </label>
+                        </div>
                         
                         <button
-                          onClick={() => generateTemplateResume(resumeDialog.job, selectedTemplateNumber, tailorResume, atsAddOns, reduceSkillList)}
+                          onClick={() => generateTemplateResume(resumeDialog.job, selectedTemplateNumber, tailorResume, atsAddOns, reduceSkillList, removeRedundantSkills)}
                           style={{
                             background: '#6c757d',
                             color: 'white',

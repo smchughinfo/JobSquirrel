@@ -59,14 +59,14 @@ async function getUnmatchedSkills(nutNote) {
     return trulyUnmatchedSkills.join(', ');
 }
 
-async function reduceSkillList(skillList, nutNote) {
+async function reduceSkillList_OLD(skillList, nutNote) {
     const schema = z.object({
         "reducedSkillList": z.object({
             reducedSkillList: z.array(z.string()).describe(`The reduced skill list`)
         })
     });
     
-    let prompt = `Reduce this skill list slightly to match the job listing. Include peripheral tech but try to eliminate glaring redundancies and just in general, trim it down to a bit so a hiring manager doesn't see a jack of all trades.`
+    let prompt = `Reduce this skill list slightly to match the job listing. Don't add any new skills to your output. Only reduce the size of skillList. Use a light touch and include peripheral skills but throw out redundances and obvious misfits.`
     
     // Read resume data to get candidate skills
     const resumeDataPath = getResumeJSONPath();
@@ -74,11 +74,47 @@ async function reduceSkillList(skillList, nutNote) {
     
     let data = {
         skillList: skillList,
-        jobListing: nutNote.jobListing
+        jobListing: nutNote.jobSummary + "\n\nRequirements:\n\n" + nutNote.requirements.join(",")
     };
 
     const aiResult = await getJSONAsync(prompt, schema, JSON.stringify(data));
     return aiResult.reducedSkillList.reducedSkillList;
 }
 
-module.exports = { getSkillDiffs, getUnmatchedSkills, reduceSkillList };
+async function reduceSkillList(skillList, nutNote) {
+    let skillMatchList = {};
+    skillList.forEach(skill => {
+        skillMatchList[skill] = z.boolean().describe(`True if the skill matches the job listing. False if the skill does not match the job listing.`)
+    });
+    const schema = z.object({ "skillMatchList": z.object(skillMatchList) });
+    
+    let prompt = `Mark each skill as True or False depending on whether or not it matches the job listing. It doesn't have to match 100% perfectly. Peripheral matches are okay. For example if the job listing is for web development then include the skill if it's related to web development, even though it's not mentioned in the job description. Only consider the skill to not match if it's extremely different.`;    
+    let data = {
+        skillList: skillList,
+        jobListing: nutNote.jobSummary + "\n\nRequirements:\n\n" + nutNote.requirements.join(",")
+    };
+
+    const aiResult = await getJSONAsync(prompt, schema, JSON.stringify(data));
+    const matchedSkills = skillList.filter(skill => aiResult.skillMatchList[skill]);
+    return matchedSkills;
+}
+
+// this doesn't work either. it's too hard to explain what you want it to do in a general way.
+async function removeRedundantSkills(skillList) {
+    const schema = z.object({
+        "reducedSkillList": z.object({
+            reducedSkillList: z.array(z.string()).describe(`The reduced skill list`)
+        })
+    });
+    
+    let prompt = `If there are any skills in this list that are exactly the same but spelled or phrased differently remove the redundant instance(s) and keep the more canonical instance.`
+    
+    let data = {
+        skillList: skillList
+    };
+
+    const aiResult = await getJSONAsync(prompt, schema, JSON.stringify(data));
+    return aiResult.reducedSkillList.reducedSkillList;
+}
+
+module.exports = { getSkillDiffs, getUnmatchedSkills, reduceSkillList, removeRedundantSkills };

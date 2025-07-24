@@ -13,7 +13,7 @@ router.post('/generate-resume', async (req, res) => {
 // Generate resume endpoint (Template-based)
 router.post('/generate-template-resume', async (req, res) => {
     try {
-        const { nutNote, templateNumber, tailor = true, atsAddOns = true, reduceSkillList = true } = req.body;
+        const { nutNote, templateNumber, tailor = true, atsAddOns = false, reduceSkillList = false, removeRedundantSkills = false } = req.body;
         
         if (!nutNote) {
             return res.status(400).json({ 
@@ -23,7 +23,7 @@ router.post('/generate-template-resume', async (req, res) => {
         
         console.log(`📋 Generating template resume (Template ${templateNumber || 1}) for: ${nutNote.company} - ${nutNote.jobTitle}`);
         
-        await templatized.generateResume(nutNote, templateNumber || 1, tailor, atsAddOns, reduceSkillList);
+        await templatized.generateResume(nutNote, templateNumber || 1, tailor, atsAddOns, reduceSkillList, removeRedundantSkills);
         
         res.json({ 
             success: true, 

@@ -5,7 +5,7 @@ const { getResumeTemplatesDirectory, getResumeJSONPath } = require('../../jobSqu
 const { addSkills, hasNewSkills, getApprovedSkillsFromList, getApprovedSkills } = require('../../atsAddOnSkills');
 const { addOrUpdateNutNote } = require('../../hoard');
 const { generateSessionData } = require('../common');
-const { getUnmatchedSkills, getSkillDiffs, reduceSkillList } = require('./shared');
+const { getSkillDiffs, reduceSkillList, removeRedundantSkills } = require('./shared');
 const { getJSONAsync } = require('../../llm/openai/openai');
 const { z } = require('zod');
 
@@ -75,7 +75,7 @@ function saveResumeAndUpdateNutNote(html, nutNote) {
     addOrUpdateNutNote(nutNote);
 }
 
-async function generateResume(nutNote, templateNumber = 1, tailor = true, atsAddOns = true, reduce = true) {
+async function generateResume(nutNote, templateNumber = 1, tailor = true, atsAddOns = false, reduce = false, removeRedundancies = false) {
     let sessionData = generateSessionData();
     nutNote.sessionData.push(sessionData);
 
@@ -84,7 +84,7 @@ async function generateResume(nutNote, templateNumber = 1, tailor = true, atsAdd
     const { templatePath, resumeDataPath } = getResumePaths(templateNumber);
     const templateSource = loadResumeTemplate(templatePath, templateNumber);
     let resumeData = loadResumeData(resumeDataPath);
-    const skillList = await getSkills(resumeData, nutNote, atsAddOns, reduce);
+    const skillList = await getSkills(resumeData, nutNote, atsAddOns, reduce, removeRedundancies);
 
     if(tailor) {
         resumeData = await tailorResumeData(nutNote, resumeData);
@@ -132,12 +132,12 @@ async function tailorResumeData(nutNote, resumeData) {
     return tailoredResumeData;
 }
 
-async function getSkills(resumeData, nutNote, atsAddOns, reduce) {
+async function getSkills(resumeData, nutNote, atsAddOns, reduce, removeRedundancies) {
     let skillList = resumeData.skills;
     
     if(atsAddOns) {
-        const skillDiffs = await getSkillDiffs(resumeData.skills, nutNote);
-        let unmatchedSkills = skillDiffs.unmatched;
+        const skillDiffs = await getSkillDiffs(nutNote);
+        let unmatchedSkills = skillDiffs.unmatchedSkills;
     
         // Check if there are new skills that need approval (only if not already reviewed)
         if (!nutNote.skillsReviewed && hasNewSkills(unmatchedSkills)) {
@@ -161,6 +161,10 @@ async function getSkills(resumeData, nutNote, atsAddOns, reduce) {
         skillList = await reduceSkillList(skillList, nutNote);
     }
 
+    if(removeRedundancies) {
+        skillList = await removeRedundantSkills(skillList);
+    }
+    
     return skillList;
 }
 
