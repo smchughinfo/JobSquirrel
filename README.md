@@ -21,77 +21,17 @@
 
 <hr>
 
-## ✨ Key Features
-
-### 🎯 **Hybrid Resume Generation System**
-JobSquirrel offers two powerful resume generation approaches - choose based on your needs:
-
-#### **🤖 AI-Generated Resumes** 
-**"Claude Chooses Its Own Adventure"**
-- **What it does**: Claude AI creates completely custom resumes from scratch using your career data
-- **Best for**: Creative positions, unique layouts, highly personalized content
-- **How to use**: Click "🚀 Generate AI Resume" button - Claude will analyze the job and create a tailored resume
-- **Output**: Creative, unique designs with personalized content and styling
-
-#### **📋 Template-Based Resumes**
-**"Structured & ATS-Optimized"**  
-- **What it does**: Uses professional Handlebars templates with your data for consistent, clean formatting
-- **Best for**: Corporate positions, ATS systems, professional consistency
-- **How to use**: Click "📋 Generate Template Resume" → Select template style → Automatic ATS skills optimization
-- **Output**: Clean, professional, ATS-friendly resumes with automatic keyword optimization
-- **Bonus**: Includes ATS Skills system that detects job-specific keywords and lets you approve them for better matching
-
-#### **🎯 ATS Skills Optimization** (Template Generation Only)
-- **Automatic Detection**: System finds job-specific skills you don't have yet
-- **Approval Dialog**: Review and approve new skills with professional interface  
-- **Hamburger Menu**: Access "🎯 Manage ATS Skills" anytime to review your skills library
-- **Perfect Matching**: Approved skills automatically added to all future resumes
-
-### 🎯 **Multi-Version Resume Management**
-- Generate multiple resume versions per job for iterative improvement
-- Tabbed interface for seamless version switching
-- Array-based storage eliminates version conflicts
-
-### 🎨 **Revolutionary Remix Feature**
-Transform resumes with natural language instructions:
-- **"Make it more creative and engaging"** → Enhanced visual appeal
-- **"Emphasize leadership experience"** → Management focus
-- **"Style like a space pirate"** → Complete thematic transformation
-- Maintains technical accuracy while enabling unlimited creativity
-
-### ✅ **Universal Double Check System**
-- Quality review for any resume version, not just the latest
-- Fresh session architecture eliminates Claude confusion
-- One-click quality assurance with custom guidelines compliance
-
-### 📝 **Direct HTML Editor**
-- Edit resume and cover letter content directly in browser
-- Real-time updates with event broadcasting
-
-### 📄 **Professional PDF Generation**
-- Customizable margins (0-2 inches with 0.1-inch precision)
-- Clean filename format ready for HR submission
-- Automatic file overwriting for clean management
-
-### 💉 **Job Listing Injection**
-- Embed the job listing inside your resume (.01px, white font) to maximize keyword matching
-
-## 🏗️ Architecture
-
 ### Core Components
 
-**🌐 Stashboard** - Modern React web interface with:
-- Real-time job hoard display with live updates
+**🌐 Stashboard** - React web interface with:
+- Real-time job display
 - Tabbed resume management (HTML + PDF versions)
-- Revolutionary remix feature with natural language instructions
-- Comprehensive double check system for quality assurance
-- Live Claude output streaming with expandable content
-- Professional PDF generation with margin controls
-- Server-Sent Events (SSE) for real-time updates
+- Easy resume and cover letter remix
+- Output custom resume as PDF
 
 **🏃 Scamper** - Browser extension for manual job capture:
 - One-click job posting capture
-- Seamless integration with Stashboard processing
+- Seamless integration with Stashboard
 
 ## 🚀 Quick Start
 
@@ -138,128 +78,10 @@ Transform resumes with natural language instructions:
    npm run build
    node server.js
    # Interface available at http://localhost:3000
-   ```
 
-
-## 📁 Project Structure
-
-```
-JobSquirrel/
-├── Stashboard/                     # Main web interface (React + Node.js)
-│   ├── src/                        # React frontend components
-│   │   ├── components/             # Core UI components
-│   │   │   ├── JobListings.jsx     # Job cards + multi-version resume + remix + double check
-│   │   │   ├── EventMonitor.jsx    # Real-time system event display
-│   │   │   ├── ClaudeAssistant.jsx # Live Claude output streaming
-│   │   │   ├── Header.jsx          # Squirrel-themed navigation with ATS skills access
-│   │   │   ├── ATSSkillsDialog.jsx # ATS skills approval and management dialog
-│   │   │   └── ClipboardMonitor.jsx # Clipboard monitoring component
-│   │   └── hooks/                  # Custom React hooks
-│   │       └── useEventStream.js   # SSE integration with queue mechanism
-│   ├── services/                   # Backend services and utilities
-│   │   ├── llm/                    # AI integration services
-│   │   │   ├── anthropic.js        # Claude integration with streaming
-│   │   │   ├── ollama.js           # Ollama local LLM integration (deprecated)
-│   │   │   └── openai/             # OpenAI services
-│   │   │       ├── assistant.js    # OpenAI assistant integration (deprecated)
-│   │   │       ├── index.js        # OpenAI main service
-│   │   │       └── openai.js       # OpenAI API wrapper
-│   │   ├── generators/             # Resume generation engines
-│   │   │   ├── common.js           # Shared generation utilities
-│   │   │   ├── noTemplate.js       # AI-based resume generation
-│   │   │   └── templatized.js      # Template-based resume generation with ATS skills
-│   │   ├── atsAddOnSkills.js       # ATS skills management service
-│   │   ├── pdf.js                  # PDF generation service
-│   │   ├── hoard.js                # Job data management
-│   │   ├── eventBroadcaster.js     # Real-time event system
-│   │   ├── jobSquirrelPaths.js     # Centralized path management
-│   │   ├── clipboard.js            # Clipboard monitoring service
-│   │   ├── jobQueue.js             # Job processing queue
-│   │   ├── jobListingProcessor.js  # Job listing processing logic
-│   │   ├── htmlUtilities.js        # HTML processing utilities
-│   │   ├── commandRunner.js        # Command execution service
-│   │   └── utilities.js            # General utility functions
-│   ├── routes/                     # Modular API route handlers
-│   │   ├── index.js                # Route registration hub
-│   │   ├── hoard.js                # Job listing endpoints
-│   │   ├── generation.js           # Resume/cover letter generation endpoints
-│   │   ├── atsSkills.js            # ATS skills management endpoints
-│   │   ├── pdf.js                  # PDF generation endpoints
-│   │   ├── config.js               # Configuration endpoints
-│   │   └── events.js               # SSE and monitoring endpoints
-│   ├── public/                     # Static web assets (built by Vite)
-│   │   └── assets/                 # Built CSS/JS assets
-│   ├── static/                     # Template files and static assets
-│   │   ├── resume-template-1.html  # ATS-friendly resume template
-│   │   ├── resume-template-2.html  # Enhanced design resume template
-│   │   └── cover-letter-template-1.txt # Professional cover letter template
-│   ├── queue/                      # Job queue storage
-│   ├── server.js                   # Express server with modular routes
-│   ├── hoard.json                  # Job data storage with HTML arrays
-│   └── ats-add-on-skills.json      # ATS skills library with approval flags
-├── Scamper/                        # Browser extension
-│   ├── manifest.json               # Extension configuration
-│   ├── content.js                  # Job page interaction
-│   └── background.js               # Extension background tasks
-├── Config/                         # Configuration and career data
-│   ├── ResumeData/                 # User's career data sources
-│   │   ├── chat-gpt-career-related-memory-dump.md
-│   │   ├── nutkins cover letter template.txt
-│   │   ├── resume1.txt             # Resume data file
-│   │   └── resume2.txt             # Resume data file
-│   │   └── resume.json             # Required for templatized resumes
-│   ├── personal-information.txt    # Contact information
-│   └── custom-resume-instructions.txt # AI processing guidelines
-├── Cache/                          # Session tracking and temp files
-│   ├── working-resume-[uid].html   # Resume generation temp files
-│   ├── double-checked-resume-[uid].html # Double check output files
-│   ├── session-id-[uid].txt        # Claude session tracking
-│   ├── cover-letter-[uid].txt      # Cover letter temp files
-│   ├── job-listing-[uid].md        # Job listing temp files
-│   ├── remix-resume-[uid].html     # Resume being remixed
-│   ├── remix-resume-instructions-[uid].txt # User's remix instructions
-│   └── save-session-id-[uid]-instructions.txt # Session save instructions
-├── ScriptsForClaude/               # Claude Code utility scripts
-│   ├── get-current-session-id.sh   # Session ID retrieval script
-│   └── save-session-id-instructions-template.txt # Template for session instructions
-├── Documentation/                  # Project documentation
-│   ├── JobSquirrel in a nutshell.svg
-│   ├── YouTube.png
-│   ├── resume1.svg
-│   ├── resume2.svg
-│   └── resume3.svg
-└── GeneratedResumes/               # Final PDF and resume outputs (created dynamically)
-    ├── [Company Name] - Sean McHugh.pdf # Resume PDFs
-    └── [Company Name] - Sean McHugh.txt # Cover letter files
-```
-
-## 🔧 Technology Stack
-
-### Frontend
-- **React 19.1.0** with modern hooks and component architecture
-- **Vite 7.0.0** for lightning-fast development and building
-- **Server-Sent Events** for real-time browser updates
-- **Custom React hooks** for SSE integration
-
-### Backend
-- **Node.js + Express** with modular route architecture
-- **Server-Sent Events** for real-time client communication
-- **File watching** with debounced change detection
-- **Event broadcasting** system for multi-client support
-- **Handlebars templating** for template-based resume generation
-
-### AI Integration
-- **Claude Code** via WSL bridge with TTY emulation
-- **Real-time streaming** of AI reasoning and generation
-- **Cross-platform compatibility** (Windows + WSL)
-- **Custom instruction processing** for personalized results
 
 ## 🤖 Claude Code Credits
 
-- **Co-author** Claude Code wrote most of the front end and was terrifically helpful throughout the entire development process. This project was completed in half the time thanks to Claude Code.
-- **Self-improvement** It should be noted that among Claude Code's many amazing accomplishments during development was literal self-improvement. Claude wrote `/ScriptsForClaude/get-current-session-id.sh` to retrieve its own session ID, which it cannot do out of the box and only seemed to discover that it could do after investigating its own configuration. I first heard about self-improvement years ago and then one night, while working on JobSquirrel, it happened in front of my eyes.
-
-## ❓ Help
-- **Help** As this project was a collaboration with Claude Code, the correct way to troubleshoot any problems you are having with it is to set your working directory to the JobSquirrel repository and ask Claude Code.
+- **Co-author** Claude Code wrote most of the front end and was terrifically helpful throughout the entire development process.
 
 
